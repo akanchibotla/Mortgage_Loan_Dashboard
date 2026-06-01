@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadPmms, loadStatesIndex } from "../lib/loadStateData";
+import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
 
 const UsChoropleth = lazy(() =>
   import("../components/UsChoropleth").then((m) => ({ default: m.UsChoropleth })),
@@ -9,6 +10,7 @@ const UsChoropleth = lazy(() =>
 export default function HomePage() {
   const { states, built_at_utc } = loadStatesIndex();
   const { pmms15, pmms30 } = loadPmms();
+  usePageMeta({ title: BASE_TITLE });
   const latestUs15 = pmms15.at(-1);
   const latestUs30 = pmms30.at(-1);
   const [term, setTerm] = useState<15 | 30>(30);

@@ -1,10 +1,7 @@
-import { useMemo, useState } from "react";
+import { Suspense, use, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { geoAlbersUsa, geoPath } from "d3-geo";
-import { feature, mesh } from "topojson-client";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import countiesTopo from "us-atlas/counties-10m.json";
-import type { Topology, GeometryCollection } from "topojson-specification";
 import type { CountyEntry } from "../types";
 
 interface Props {
@@ -12,6 +9,29 @@ interface Props {
   stateFips: string;
   counties: CountyEntry[];
   term: 15 | 30;
+}
+
+interface StateTopoFile {
+  state_fips: string;
+  n_counties: number;
+  counties: FeatureCollection<Geometry, { name: string }>;
+  state: Feature<Geometry, { name: string }> | null;
+}
+
+const stateTopoLoaders = import.meta.glob("../data/topo/*.json", {
+  import: "default",
+}) as Record<string, () => Promise<unknown>>;
+
+const stateTopoCache = new Map<string, Promise<StateTopoFile | null>>();
+
+function getStateTopoPromise(fips: string): Promise<StateTopoFile | null> {
+  if (stateTopoCache.has(fips)) return stateTopoCache.get(fips)!;
+  const loader = stateTopoLoaders[`../data/topo/${fips}.json`];
+  const p = loader
+    ? (loader() as Promise<StateTopoFile>)
+    : Promise.resolve(null);
+  stateTopoCache.set(fips, p);
+  return p;
 }
 
 const WIDTH = 975;
@@ -25,7 +45,16 @@ function colorFor(rate: number | null | undefined, minR: number, maxR: number): 
 }
 
 export function CountyChoropleth({ stateSlug, stateFips, counties, term }: Props) {
+  return (
+    <Suspense fallback={<p className="loading">Loading {stateSlug} county map…</p>}>
+      <ChoroplethBody stateSlug={stateSlug} stateFips={stateFips} counties={counties} term={term} />
+    </Suspense>
+  );
+}
+
+function ChoroplethBody({ stateSlug, stateFips, counties, term }: Props) {
   const navigate = useNavigate();
+  const topo = use(getStateTopoPromise(stateFips));
   const [hovered, setHovered] = useState<{ name: string; rate?: number; x: number; y: number } | null>(
     null,
   );
@@ -42,41 +71,25 @@ export function CountyChoropleth({ stateSlug, stateFips, counties, term }: Props
   const minR = filledRates.length ? Math.min(...filledRates) - 0.05 : 5.0;
   const maxR = filledRates.length ? Math.max(...filledRates) + 0.05 : 7.5;
 
-  const { stateFeatures, stateBorder } = useMemo(() => {
-    const topo = countiesTopo as unknown as Topology<{
-      states: GeometryCollection;
-      counties: GeometryCollection;
-    }>;
-    const counties = feature(topo, topo.objects.counties) as unknown as FeatureCollection<
-      Geometry,
-      { name: string }
-    >;
-    const filtered = counties.features.filter((f) =>
-      String(f.id).padStart(5, "0").startsWith(stateFips),
-    );
-    const stateMesh = mesh(topo, topo.objects.states, (a, b) => a !== b);
-    return { stateFeatures: filtered, stateBorder: stateMesh };
-  }, [stateFips]);
+  const stateFeatures = topo?.counties.features ?? [];
+  const stateBorder = topo?.state ?? null;
 
-  // Compute a bounding-box-fitted projection for this state's counties.
-  const { pathFn, viewBox } = useMemo(() => {
-    const fc: FeatureCollection<Geometry> = {
-      type: "FeatureCollection",
-      features: stateFeatures,
-    };
+  const pathFn = useMemo(() => {
+    if (!stateFeatures.length) return null;
+    const fc: FeatureCollection<Geometry> = { type: "FeatureCollection", features: stateFeatures };
     const projection = geoAlbersUsa();
-    projection.fitExtent(
-      [[20, 20], [WIDTH - 20, HEIGHT - 20]],
-      fc,
-    );
-    const pathFn = geoPath(projection);
-    return { pathFn, viewBox: `0 0 ${WIDTH} ${HEIGHT}` };
+    projection.fitExtent([[20, 20], [WIDTH - 20, HEIGHT - 20]], fc);
+    return geoPath(projection);
   }, [stateFeatures]);
+
+  if (!topo || !pathFn) {
+    return <p className="loading">No county map for {stateSlug}.</p>;
+  }
 
   return (
     <div className="map-wrap">
-      <svg viewBox={viewBox} className="us-choropleth" preserveAspectRatio="xMidYMid meet">
-        {stateFeatures.map((f: Feature<Geometry, { name: string }>) => {
+      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="us-choropleth" preserveAspectRatio="xMidYMid meet">
+        {stateFeatures.map((f) => {
           const fips = String(f.id).padStart(5, "0");
           const entry = byFips.get(fips);
           const dist = entry ? (term === 15 ? entry.term_15 : entry.term_30) : null;
@@ -117,13 +130,15 @@ export function CountyChoropleth({ stateSlug, stateFips, counties, term }: Props
             </path>
           );
         })}
-        <path
-          d={pathFn(stateBorder) ?? ""}
-          fill="none"
-          stroke="#1a1a1a"
-          strokeWidth={1.2}
-          pointerEvents="none"
-        />
+        {stateBorder && (
+          <path
+            d={pathFn(stateBorder) ?? ""}
+            fill="none"
+            stroke="#1a1a1a"
+            strokeWidth={1.2}
+            pointerEvents="none"
+          />
+        )}
       </svg>
       <div className="map-legend">
         <span className="legend-label">HMDA {term}-yr mean</span>
@@ -137,9 +152,7 @@ export function CountyChoropleth({ stateSlug, stateFips, counties, term }: Props
         <div className="map-tooltip" style={{ left: hovered.x + 12, top: hovered.y + 12 }}>
           <b>{hovered.name}</b>
           <br />
-          {hovered.rate != null
-            ? `HMDA ${term}-yr mean: ${hovered.rate.toFixed(2)}%`
-            : "no data"}
+          {hovered.rate != null ? `HMDA ${term}-yr mean: ${hovered.rate.toFixed(2)}%` : "no data"}
         </div>
       )}
     </div>

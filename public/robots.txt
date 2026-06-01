@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://akanchibotla.github.io/Mortgage_Loan_Dashboard/sitemap.xml

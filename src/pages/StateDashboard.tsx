@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, use } from "react";
 import { Link, useParams } from "react-router-dom";
 import { loadPmms, loadStateData, type StateData } from "../lib/loadStateData";
+import { usePageMeta } from "../lib/usePageMeta";
 
 const RateChart = lazy(() =>
   import("../components/RateChart").then((m) => ({ default: m.RateChart })),
@@ -36,6 +37,12 @@ function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
   const { pmms15, pmms30 } = loadPmms();
   const [countyMapTerm, setCountyMapTerm] = useState<15 | 30>(30);
+  usePageMeta({
+    title: data ? `${data.meta.name} mortgage rates` : `${slug} mortgage rates`,
+    description: data
+      ? `Today's Bankrate + Mortgage News Daily quotes for ${data.meta.name} 15-yr and 30-yr fixed mortgages alongside the HMDA 2024 actual closed-loan distribution and per-county breakdowns.`
+      : undefined,
+  });
 
   if (!data) {
     return (

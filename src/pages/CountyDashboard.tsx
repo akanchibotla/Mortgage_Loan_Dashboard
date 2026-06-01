@@ -1,6 +1,7 @@
 import { Suspense, use, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { loadStateData, type StateData } from "../lib/loadStateData";
+import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
 
 const cache = new Map<string, Promise<StateData | null>>();
@@ -24,6 +25,15 @@ export default function CountyDashboard() {
 
 function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) {
   const data = use(getStatePromise(slug));
+  const county = data?.counties?.counties.find((c) => c.fips === countyFips);
+  usePageMeta({
+    title: county
+      ? `${county.name} County, ${data!.meta.postal} mortgage rates`
+      : `County ${countyFips}`,
+    description: county
+      ? `HMDA 2024 closed-loan distribution for ${county.name} County, ${data!.meta.postal}: p10–p90 rate range, n=${county.term_30.n_loans.toLocaleString()} 30-yr originations plus ${county.term_15.n_loans.toLocaleString()} 15-yr, vs state aggregate.`
+      : undefined,
+  });
   if (!data) {
     return notFound(slug);
   }
@@ -41,7 +51,6 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
       </div>
     );
   }
-  const county = data.counties.counties.find((c) => c.fips === countyFips);
   if (!county) {
     return notFound(slug, countyFips);
   }

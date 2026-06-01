@@ -1,6 +1,7 @@
 import { Suspense, use, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
+import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
 
 const cache = new Map<string, Promise<StateData | null>>();
@@ -29,6 +30,11 @@ function latestNonNull(rows: { rate: number | null }[] | null | undefined): numb
 }
 
 export default function CalculatorPage() {
+  usePageMeta({
+    title: "Borrower expectation calculator",
+    description:
+      "Enter your state, county, loan term, and loan amount. See your expected rate range based on the HMDA 2024 actual closed-loan distribution for your county, plus monthly P&I estimates at p10/median/p90 rates.",
+  });
   const { states } = loadStatesIndex();
   const ordered = useMemo(
     () =>
