@@ -103,6 +103,11 @@ function ChoroplethBody({ stateSlug, stateFips, counties, term }: Props) {
               stroke="#fff"
               strokeWidth={0.4}
               style={{ cursor: entry ? "pointer" : "default", transition: "fill 0.15s" }}
+              aria-label={
+                entry
+                  ? `${entry.name} County: ${rate != null ? `${rate.toFixed(2)}% HMDA ${term}-yr mean` : "no data"}`
+                  : undefined
+              }
               onMouseEnter={(e) =>
                 setHovered({
                   name: entry?.name ?? f.properties?.name ?? "",
@@ -121,13 +126,7 @@ function ChoroplethBody({ stateSlug, stateFips, counties, term }: Props) {
               }
               onMouseLeave={() => setHovered(null)}
               onClick={() => entry && navigate(`/state/${stateSlug}/county/${fips}`)}
-            >
-              <title>
-                {entry
-                  ? `${entry.name} County: ${rate != null ? `${rate.toFixed(2)}% (HMDA ${term}-yr mean)` : "no data"}`
-                  : ""}
-              </title>
-            </path>
+            />
           );
         })}
         {stateBorder && (
