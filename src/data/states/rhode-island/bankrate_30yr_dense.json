@@ -1,0 +1,107 @@
+[
+  {
+    "month": "2024-06",
+    "as_of": null,
+    "wayback_timestamp": "20240623054735",
+    "bankrate_table_pct": null,
+    "bankrate_intro_pct": 6.71
+  },
+  {
+    "month": "2024-07",
+    "as_of": null,
+    "wayback_timestamp": "20240718011738",
+    "bankrate_table_pct": null,
+    "bankrate_intro_pct": 6.94
+  },
+  {
+    "month": "2024-08",
+    "as_of": null,
+    "wayback_timestamp": "20240823010123",
+    "bankrate_table_pct": null,
+    "bankrate_intro_pct": 6.42
+  },
+  {
+    "month": "2024-09",
+    "as_of": null,
+    "wayback_timestamp": "20240926173418",
+    "bankrate_table_pct": null,
+    "bankrate_intro_pct": 6.08
+  },
+  {
+    "month": "2024-11",
+    "as_of": null,
+    "wayback_timestamp": "20241127013126",
+    "bankrate_table_pct": 7.03,
+    "bankrate_intro_pct": 7.06
+  },
+  {
+    "month": "2024-12",
+    "as_of": null,
+    "wayback_timestamp": "20241212120502",
+    "bankrate_table_pct": 6.73,
+    "bankrate_intro_pct": 6.63
+  },
+  {
+    "month": "2025-01",
+    "as_of": null,
+    "wayback_timestamp": "20250126223728",
+    "bankrate_table_pct": 7.04,
+    "bankrate_intro_pct": 6.84
+  },
+  {
+    "month": "2025-03",
+    "as_of": null,
+    "wayback_timestamp": "20250319101844",
+    "bankrate_table_pct": 6.72,
+    "bankrate_intro_pct": 7.0
+  },
+  {
+    "month": "2025-06",
+    "as_of": null,
+    "wayback_timestamp": "20250623163734",
+    "bankrate_table_pct": 6.83,
+    "bankrate_intro_pct": 6.66
+  },
+  {
+    "month": "2025-10",
+    "as_of": null,
+    "wayback_timestamp": "20251015091252",
+    "bankrate_table_pct": 6.31,
+    "bankrate_intro_pct": 6.37
+  },
+  {
+    "month": "2025-11",
+    "as_of": null,
+    "wayback_timestamp": "20251114183749",
+    "bankrate_table_pct": 6.26,
+    "bankrate_intro_pct": 6.1
+  },
+  {
+    "month": "2025-12",
+    "as_of": null,
+    "wayback_timestamp": "20251230232559",
+    "bankrate_table_pct": 6.29,
+    "bankrate_intro_pct": 5.79
+  },
+  {
+    "month": "2026-01",
+    "as_of": null,
+    "wayback_timestamp": "20260122051411",
+    "bankrate_table_pct": 6.13,
+    "bankrate_intro_pct": 6.08
+  },
+  {
+    "month": "2026-02",
+    "as_of": null,
+    "wayback_timestamp": "20260222140839",
+    "bankrate_table_pct": 6.07,
+    "bankrate_intro_pct": 6.1
+  },
+  {
+    "month": "2026-04",
+    "as_of": null,
+    "wayback_timestamp": "20260411060707",
+    "bankrate_table_pct": 6.41,
+    "bankrate_intro_pct": 6.44
+  }
+]

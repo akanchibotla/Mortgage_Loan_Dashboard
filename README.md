@@ -11,11 +11,13 @@ Three pages:
 
 Daily auto-refresh at 12 UTC via GitHub Actions; data is committed back to the repo and re-deployed to Pages.
 
-## State coverage
+## State coverage — full national
 
-- **HMDA + county drilldown: all 51 states** (DC + 50). Every county in the U.S. has a 2024 origination distribution.
-- **Live Bankrate + MND rate history: 22 states** (NC, CA, FL, TX, NY, IL, GA, PA, OH, MI, WA, AZ, NJ, VA, MA, IN, TN, MO, MD, WI, CO, MN). Daily auto-refresh via GitHub Actions.
-- Remaining 29 states have HMDA + counties but no time-series Bankrate history yet (each needs a 5–10 min Wayback backfill run). See `ROADMAP.md`.
+- **HMDA 2024 distributions + county drilldown: all 51 states** (DC + 50).
+- **HMDA demographic breakdowns: all 51 states** — race × ethnicity × sex × loan-amount bracket per 15/30-yr.
+- **Live Bankrate + MND daily refresh: all 51 states** (workflow auto-iterates `src/data/states/*`).
+- **Wayback historical rate series: 50 states** (one state, DC, has no Wayback Bankrate coverage; some others are sparse).
+- 3,141 U.S. counties with HMDA-actual closed-loan distributions; ~7 million originations partitioned.
 
 ## Quick start (local)
 

@@ -1,5 +1,5 @@
 {
-  "built_at_utc": "2026-06-01T16:23:33+00:00",
+  "built_at_utc": "2026-06-01T16:59:48+00:00",
   "n_states": 51,
   "states": [
     {
@@ -116,11 +116,11 @@
       "has_counties": true,
       "n_counties": 3,
       "n_loans_hmda": 11767,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.05,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.6,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "district-of-columbia",
@@ -176,11 +176,11 @@
       "has_counties": true,
       "n_counties": 4,
       "n_loans_hmda": 7430,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.75,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.44,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "idaho",
@@ -191,11 +191,11 @@
       "has_counties": true,
       "n_counties": 44,
       "n_loans_hmda": 22784,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.03,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.69,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "illinois",
@@ -236,11 +236,11 @@
       "has_counties": true,
       "n_counties": 99,
       "n_loans_hmda": 28950,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.75,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.44,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "kansas",
@@ -252,10 +252,10 @@
       "n_counties": 105,
       "n_loans_hmda": 24222,
       "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "latest_15": 5.58,
+      "latest_15_month": "2026-03",
+      "latest_30": 6.22,
+      "latest_30_month": "2026-03"
     },
     {
       "slug": "kentucky",
@@ -266,11 +266,11 @@
       "has_counties": true,
       "n_counties": 120,
       "n_loans_hmda": 37317,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.05,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.6,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "louisiana",
@@ -281,11 +281,11 @@
       "has_counties": true,
       "n_counties": 64,
       "n_loans_hmda": 30012,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.19,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "maine",
@@ -296,11 +296,11 @@
       "has_counties": true,
       "n_counties": 16,
       "n_loans_hmda": 11972,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.16,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.66,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "maryland",
@@ -371,11 +371,11 @@
       "has_counties": true,
       "n_counties": 82,
       "n_loans_hmda": 19394,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.75,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.44,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "missouri",
@@ -401,11 +401,11 @@
       "has_counties": true,
       "n_counties": 56,
       "n_loans_hmda": 8436,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.93,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.46,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "nebraska",
@@ -416,11 +416,11 @@
       "has_counties": true,
       "n_counties": 89,
       "n_loans_hmda": 17029,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.05,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.48,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "nevada",
@@ -431,11 +431,11 @@
       "has_counties": true,
       "n_counties": 17,
       "n_loans_hmda": 34954,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.03,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "new-hampshire",
@@ -446,11 +446,11 @@
       "has_counties": true,
       "n_counties": 10,
       "n_loans_hmda": 11705,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.08,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.63,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "new-jersey",
@@ -476,11 +476,11 @@
       "has_counties": true,
       "n_counties": 32,
       "n_loans_hmda": 18569,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.0,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.63,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "new-york",
@@ -521,11 +521,11 @@
       "has_counties": true,
       "n_counties": 52,
       "n_loans_hmda": 6473,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.75,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.44,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "ohio",
@@ -551,11 +551,11 @@
       "has_counties": true,
       "n_counties": 77,
       "n_loans_hmda": 34349,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.79,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.41,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "oregon",
@@ -566,11 +566,11 @@
       "has_counties": true,
       "n_counties": 36,
       "n_loans_hmda": 36822,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.16,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.66,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "pennsylvania",
@@ -596,11 +596,11 @@
       "has_counties": true,
       "n_counties": 5,
       "n_loans_hmda": 8426,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.93,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.46,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "south-carolina",
@@ -611,11 +611,11 @@
       "has_counties": true,
       "n_counties": 46,
       "n_loans_hmda": 67091,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.57,
+      "latest_15_month": "2026-02",
+      "latest_30": 6.44,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "south-dakota",
@@ -626,11 +626,11 @@
       "has_counties": true,
       "n_counties": 63,
       "n_loans_hmda": 7359,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.73,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.4,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "tennessee",
@@ -672,10 +672,10 @@
       "n_counties": 29,
       "n_loans_hmda": 38396,
       "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "latest_15": 5.53,
+      "latest_15_month": "2026-03",
+      "latest_30": 6.11,
+      "latest_30_month": "2026-03"
     },
     {
       "slug": "vermont",
@@ -686,11 +686,11 @@
       "has_counties": true,
       "n_counties": 14,
       "n_loans_hmda": 4777,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.0,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "virginia",
@@ -731,11 +731,11 @@
       "has_counties": true,
       "n_counties": 55,
       "n_loans_hmda": 13004,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.0,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "wisconsin",
@@ -761,11 +761,11 @@
       "has_counties": true,
       "n_counties": 23,
       "n_loans_hmda": 5093,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.19,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
     }
   ]
 }

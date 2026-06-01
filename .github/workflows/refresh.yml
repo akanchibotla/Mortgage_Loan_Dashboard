@@ -9,9 +9,6 @@ on:
 permissions:
   contents: write
 
-env:
-  ACTIVE_STATES: "north-carolina california florida texas new-york illinois georgia pennsylvania ohio michigan washington arizona new-jersey virginia massachusetts indiana tennessee missouri maryland wisconsin colorado minnesota"
-
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -29,41 +26,49 @@ jobs:
       - name: Install Playwright Chromium
         run: python -m playwright install --with-deps chromium
 
+      - name: Discover active states
+        id: states
+        run: |
+          set -e
+          slugs=$(ls src/data/states 2>/dev/null | sort | tr '\n' ' ')
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          echo "Active states: $slugs"
+
       - name: Fetch FRED PMMS (national)
         run: python scripts/fetch_fred.py
 
       - name: Fetch Bankrate live per state
         run: |
           set -e
-          for s in $ACTIVE_STATES; do
+          for s in ${{ steps.states.outputs.slugs }}; do
             echo "::group::Bankrate $s"
             python scripts/fetch_bankrate_state.py --state "$s" || echo "Bankrate $s failed (continuing)"
-            sleep 5
+            sleep 4
             echo "::endgroup::"
           done
 
       - name: Fetch MND live per state
         run: |
           set -e
-          for s in $ACTIVE_STATES; do
+          for s in ${{ steps.states.outputs.slugs }}; do
             echo "::group::MND $s"
             python scripts/fetch_mnd_state.py --state "$s" || echo "MND $s failed (continuing)"
-            sleep 3
+            sleep 2
             echo "::endgroup::"
           done
 
       - name: Aggregate + reconcile per state
         run: |
           set -e
-          for s in $ACTIVE_STATES; do
-            echo "::group::Aggregate/reconcile $s"
+          for s in ${{ steps.states.outputs.slugs }}; do
             python scripts/aggregate_mnd_state.py --state "$s"
             python scripts/reconcile_state.py --state "$s"
-            echo "::endgroup::"
           done
 
-      - name: Build states index
-        run: python scripts/build_states_index.py
+      - name: Build states index + sitemap
+        run: |
+          python scripts/build_states_index.py
+          python scripts/build_sitemap.py
 
       - name: Commit refreshed data
         env:
@@ -73,7 +78,7 @@ jobs:
           GIT_COMMITTER_EMAIL: 'github-actions[bot]@users.noreply.github.com'
         run: |
           set -e
-          git add data/daily src/data
+          git add data/daily src/data public/sitemap.xml
           if git diff --cached --quiet; then
             echo "No data changes today."
             exit 0
