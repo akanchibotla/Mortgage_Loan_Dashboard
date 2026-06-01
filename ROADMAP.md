@@ -6,10 +6,11 @@
 
 The unique value is the **combination**. Bankrate and Zillow have today's quoted rates per state but no closed-loan reality. The FFIEC HMDA Data Browser has actual closings per county but no time series and no quote comparison. The calculator that asks "based on your loan amount, where do you sit?" doesn't exist in a polished form anywhere. We're building the missing connective tissue.
 
-## Current state — v2 phase 2 (shipped 2026-06-01)
+## Current state — v3 phase 1 (shipped 2026-06-01)
 
 - **Live URL:** https://akanchibotla.github.io/Mortgage_Loan_Dashboard/
-- **7 states bundled**: NC, CA, FL, TX, NY, IL, GA — each with Wayback historical (12–20 months) + live Bankrate trailing + today's MND.
+- **12 states bundled**: NC, CA, FL, TX, NY, IL, GA, PA, OH, MI, WA, AZ — each with Wayback historical (12–20 months) + live Bankrate trailing + today's MND.
+- **County drilldown (NC)**: 100 NC counties with HMDA 2024 origination distributions (n=120,955 loans). Interactive county choropleth on the NC state page colored by HMDA mean rate. Click any county → per-county distribution band, p10–p90 stats, county-vs-state delta, nearest-peer counties.
 - **Home page**: U.S. state choropleth (D3 + TopoJSON via `us-atlas`) colored by current 15-yr or 30-yr Bankrate rate; click any state to drill in.
 - **State page** (`/state/:slug`): per-state dashboard with FRED PMMS (national), Bankrate, MND, and HMDA reference band where bundled (NC only currently).
 - **Calculator** (`/calculator`): state + term + loan-amount inputs; HMDA percentile-anchored rate range (where available); P&I at p10/median/p90 rates.
@@ -34,11 +35,11 @@ Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 
 ---
 
-## v2 — National time series (50 states) — IN PROGRESS (7 / 51)
+## v2 — National time series (50 states) — IN PROGRESS (12 / 51)
 
 **Why first**: scope-up before depth-down. Once Bankrate/MND can be fetched per state with the same pipeline, every later phase trivially generalizes.
 
-**Status**: 7 states live (NC, CA, FL, TX, NY, IL, GA). Architecture proven end-to-end. Remaining 44 = bulk Wayback runs (~6–8 hours total) + adding each slug to `ACTIVE_STATES`. No code changes needed.
+**Status**: 12 states live (NC, CA, FL, TX, NY, IL, GA, PA, OH, MI, WA, AZ). Architecture proven end-to-end. Remaining 39 = bulk Wayback runs (~5–6 hours total) + adding each slug to `ACTIVE_STATES`. No code changes needed.
 
 ### Deliverables
 - Per-state daily JSONL: `data/daily/bankrate_{state}.jsonl`, `data/daily/mnd_{state}.jsonl`
@@ -69,9 +70,11 @@ Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 
 ---
 
-## v3 — County-level HMDA depth (the differentiator)
+## v3 — County-level HMDA depth (the differentiator) — IN PROGRESS (NC done)
 
 **Why next**: this is the actual market gap. Nobody shows per-county 2024 origination distributions in a clean UI. Bankrate/MND don't go below state. The closer we get to "your specific county", the more useful.
+
+**Status**: NC fully drilled — 100 counties, ~121K originations, choropleth + dashboard + peer-comparison shipped. Remaining 49 states require either the FFIEC HMDA bulk download (currently 403 to scripted requests) or per-state manual exports. Implementation pattern (`partition_hmda_counties.py` + `CountyDashboard` + `CountyChoropleth`) is fully reusable — adding a state's counties is a one-script-run once that state's HMDA CSV is on hand.
 
 ### Deliverables
 - Per-county HMDA aggregate JSON per state: `data/states/{state}/counties.json` with one entry per county containing `{fips, name, n_loans_15, n_loans_30, distribution_15: {mean, weighted_mean, p10/25/50/75/90}, distribution_30: {...}}`
