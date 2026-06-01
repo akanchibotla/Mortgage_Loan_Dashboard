@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Link, Route, Routes } from "react-router-dom";
+import { useExternalLinks } from "./lib/useExternalLinks";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StateDashboard = lazy(() => import("./pages/StateDashboard"));
@@ -8,6 +9,7 @@ const CountyDashboard = lazy(() => import("./pages/CountyDashboard"));
 const MethodologyPage = lazy(() => import("./pages/MethodologyPage"));
 
 export default function App() {
+  useExternalLinks();
   return (
     <>
       <nav className="topnav">
