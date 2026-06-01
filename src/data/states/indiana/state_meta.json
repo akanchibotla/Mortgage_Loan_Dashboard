@@ -1,0 +1,9 @@
+{
+  "slug": "indiana",
+  "postal": "IN",
+  "fips": "18",
+  "name": "Indiana",
+  "built_at_utc": "2026-06-01T16:01:23+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

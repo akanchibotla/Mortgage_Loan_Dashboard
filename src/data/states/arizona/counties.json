@@ -1,0 +1,392 @@
+{
+  "state_slug": "arizona",
+  "state_postal": "AZ",
+  "state_fips": "04",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T15:59:46+00:00",
+  "counties": [
+    {
+      "fips": "04001",
+      "name": "Apache",
+      "term_15": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.312,
+        "amount_weighted_mean_pct": 6.612,
+        "p10_pct": 3.125,
+        "p25_pct": 3.125,
+        "p50_pct": 6.375,
+        "p75_pct": 7.0,
+        "p90_pct": 7.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 171,
+        "simple_mean_pct": 6.783,
+        "amount_weighted_mean_pct": 6.771,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.25,
+        "p90_pct": 7.75,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04003",
+      "name": "Cochise",
+      "term_15": {
+        "n_loans": 18,
+        "simple_mean_pct": 6.612,
+        "amount_weighted_mean_pct": 6.098,
+        "p10_pct": 5.125,
+        "p25_pct": 5.5,
+        "p50_pct": 6.25,
+        "p75_pct": 7.125,
+        "p90_pct": 8.51,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 1251,
+        "simple_mean_pct": 6.596,
+        "amount_weighted_mean_pct": 6.568,
+        "p10_pct": 5.75,
+        "p25_pct": 6.249,
+        "p50_pct": 6.625,
+        "p75_pct": 7.075,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04005",
+      "name": "Coconino",
+      "term_15": {
+        "n_loans": 20,
+        "simple_mean_pct": 6.439,
+        "amount_weighted_mean_pct": 5.702,
+        "p10_pct": 5.0,
+        "p25_pct": 5.25,
+        "p50_pct": 5.99,
+        "p75_pct": 6.375,
+        "p90_pct": 7.375,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 1225,
+        "simple_mean_pct": 6.786,
+        "amount_weighted_mean_pct": 6.79,
+        "p10_pct": 5.99,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04007",
+      "name": "Gila",
+      "term_15": {
+        "n_loans": 15,
+        "simple_mean_pct": 5.824,
+        "amount_weighted_mean_pct": 5.762,
+        "p10_pct": 4.75,
+        "p25_pct": 5.0,
+        "p50_pct": 5.875,
+        "p75_pct": 6.25,
+        "p90_pct": 6.375,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 558,
+        "simple_mean_pct": 6.801,
+        "amount_weighted_mean_pct": 6.811,
+        "p10_pct": 5.875,
+        "p25_pct": 6.375,
+        "p50_pct": 6.875,
+        "p75_pct": 7.25,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04009",
+      "name": "Graham",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.202,
+        "amount_weighted_mean_pct": 5.672,
+        "p10_pct": 4.625,
+        "p25_pct": 4.625,
+        "p50_pct": 6.99,
+        "p75_pct": 6.99,
+        "p90_pct": 6.99,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 273,
+        "simple_mean_pct": 6.598,
+        "amount_weighted_mean_pct": 6.58,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04011",
+      "name": "Greenlee",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 26,
+        "simple_mean_pct": 6.706,
+        "amount_weighted_mean_pct": 6.692,
+        "p10_pct": 6.125,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "04012",
+      "name": "La Paz",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.995,
+        "amount_weighted_mean_pct": 6.995,
+        "p10_pct": 6.75,
+        "p25_pct": 6.75,
+        "p50_pct": 6.75,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 76,
+        "simple_mean_pct": 7.128,
+        "amount_weighted_mean_pct": 7.166,
+        "p10_pct": 6.25,
+        "p25_pct": 6.625,
+        "p50_pct": 7.0,
+        "p75_pct": 7.625,
+        "p90_pct": 7.994,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04013",
+      "name": "Maricopa",
+      "term_15": {
+        "n_loans": 819,
+        "simple_mean_pct": 6.302,
+        "amount_weighted_mean_pct": 5.896,
+        "p10_pct": 4.99,
+        "p25_pct": 5.5,
+        "p50_pct": 5.99,
+        "p75_pct": 6.5,
+        "p90_pct": 8.0,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 47380,
+        "simple_mean_pct": 6.408,
+        "amount_weighted_mean_pct": 6.43,
+        "p10_pct": 5.25,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04015",
+      "name": "Mohave",
+      "term_15": {
+        "n_loans": 39,
+        "simple_mean_pct": 6.955,
+        "amount_weighted_mean_pct": 6.35,
+        "p10_pct": 5.75,
+        "p25_pct": 5.875,
+        "p50_pct": 6.375,
+        "p75_pct": 7.5,
+        "p90_pct": 9.49,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2942,
+        "simple_mean_pct": 6.801,
+        "amount_weighted_mean_pct": 6.81,
+        "p10_pct": 5.99,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 7.25,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04017",
+      "name": "Navajo",
+      "term_15": {
+        "n_loans": 13,
+        "simple_mean_pct": 7.129,
+        "amount_weighted_mean_pct": 6.806,
+        "p10_pct": 5.5,
+        "p25_pct": 5.75,
+        "p50_pct": 7.0,
+        "p75_pct": 8.42,
+        "p90_pct": 8.95,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 931,
+        "simple_mean_pct": 6.826,
+        "amount_weighted_mean_pct": 6.834,
+        "p10_pct": 5.99,
+        "p25_pct": 6.375,
+        "p50_pct": 6.875,
+        "p75_pct": 7.25,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04019",
+      "name": "Pima",
+      "term_15": {
+        "n_loans": 227,
+        "simple_mean_pct": 6.091,
+        "amount_weighted_mean_pct": 5.893,
+        "p10_pct": 4.75,
+        "p25_pct": 5.5,
+        "p50_pct": 6.0,
+        "p75_pct": 6.5,
+        "p90_pct": 7.0,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 10955,
+        "simple_mean_pct": 6.339,
+        "amount_weighted_mean_pct": 6.332,
+        "p10_pct": 4.999,
+        "p25_pct": 5.875,
+        "p50_pct": 6.49,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04021",
+      "name": "Pinal",
+      "term_15": {
+        "n_loans": 90,
+        "simple_mean_pct": 6.568,
+        "amount_weighted_mean_pct": 5.94,
+        "p10_pct": 4.75,
+        "p25_pct": 5.5,
+        "p50_pct": 6.125,
+        "p75_pct": 7.25,
+        "p90_pct": 9.5,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 10138,
+        "simple_mean_pct": 6.032,
+        "amount_weighted_mean_pct": 6.018,
+        "p10_pct": 4.875,
+        "p25_pct": 5.25,
+        "p50_pct": 6.0,
+        "p75_pct": 6.75,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04023",
+      "name": "Santa Cruz",
+      "term_15": {
+        "n_loans": 4,
+        "simple_mean_pct": 5.969,
+        "amount_weighted_mean_pct": 5.902,
+        "p10_pct": 5.625,
+        "p25_pct": 5.625,
+        "p50_pct": 6.0,
+        "p75_pct": 6.0,
+        "p90_pct": 6.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 372,
+        "simple_mean_pct": 6.625,
+        "amount_weighted_mean_pct": 6.639,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04025",
+      "name": "Yavapai",
+      "term_15": {
+        "n_loans": 56,
+        "simple_mean_pct": 6.785,
+        "amount_weighted_mean_pct": 6.255,
+        "p10_pct": 5.375,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 7.0,
+        "p90_pct": 9.0,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2862,
+        "simple_mean_pct": 6.69,
+        "amount_weighted_mean_pct": 6.697,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.125,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "04027",
+      "name": "Yuma",
+      "term_15": {
+        "n_loans": 31,
+        "simple_mean_pct": 6.802,
+        "amount_weighted_mean_pct": 6.074,
+        "p10_pct": 5.375,
+        "p25_pct": 5.5,
+        "p50_pct": 6.25,
+        "p75_pct": 6.885,
+        "p90_pct": 9.625,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2242,
+        "simple_mean_pct": 6.554,
+        "amount_weighted_mean_pct": 6.533,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    }
+  ]
+}

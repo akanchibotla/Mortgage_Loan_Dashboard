@@ -28,6 +28,7 @@ export interface StateData {
   mnd15: NcMonthlySnapshot[] | null;
   mnd30: NcMonthlySnapshot[] | null;
   hmda15?: HmdaSummary;
+  hmda30?: HmdaSummary;
   counties?: CountiesFile;
 }
 
@@ -62,12 +63,13 @@ async function loadOptional<T>(slug: string, leaf: string): Promise<T | null> {
 export async function loadStateData(slug: string): Promise<StateData | null> {
   const meta = metaForSlug(slug);
   if (!meta) return null;
-  const [bankrate15, bankrate30, mnd15, mnd30, hmda15, counties] = await Promise.all([
+  const [bankrate15, bankrate30, mnd15, mnd30, hmda15, hmda30, counties] = await Promise.all([
     loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_15yr.json"),
     loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
     loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
     loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
     loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
+    loadOptional<HmdaSummary>(slug, "hmda_2024_30yr.json"),
     loadOptional<CountiesFile>(slug, "counties.json"),
   ]);
   return {
@@ -78,6 +80,7 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     mnd15,
     mnd30,
     hmda15: hmda15 ?? undefined,
+    hmda30: hmda30 ?? undefined,
     counties: counties ?? undefined,
   };
 }

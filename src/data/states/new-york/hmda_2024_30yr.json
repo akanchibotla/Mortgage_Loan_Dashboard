@@ -1,0 +1,12 @@
+{
+  "n_loans": 92316,
+  "simple_mean_pct": 6.611,
+  "amount_weighted_mean_pct": 6.532,
+  "p10_pct": 5.875,
+  "p25_pct": 6.25,
+  "p50_pct": 6.625,
+  "p75_pct": 6.99,
+  "p90_pct": 7.375,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), NY, loan_purpose=home_purchase, action_taken=originated, loan_term=360"
+}

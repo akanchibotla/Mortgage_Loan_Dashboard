@@ -1,0 +1,12 @@
+{
+  "n_loans": 8450,
+  "simple_mean_pct": 6.39,
+  "amount_weighted_mean_pct": 6.042,
+  "p10_pct": 5.125,
+  "p25_pct": 5.625,
+  "p50_pct": 6.0,
+  "p75_pct": 6.81,
+  "p90_pct": 8.0,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), TX, loan_purpose=home_purchase, action_taken=originated, loan_term=180"
+}

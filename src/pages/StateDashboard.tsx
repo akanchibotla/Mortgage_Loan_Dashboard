@@ -101,6 +101,7 @@ function StateBody({ slug }: { slug: string }) {
           usData={pmms30}
           ncData={data.bankrate30 ?? []}
           mndData={data.mnd30 ?? undefined}
+          hmdaBand={data.hmda30}
           title={`30-year fixed mortgage rate — ${name} vs U.S.`}
           usLabel="U.S. 30-yr FRM (FRED MORTGAGE30US, monthly mean)"
           ncLabel={`${name} 30-yr fixed (Bankrate, monthly)`}

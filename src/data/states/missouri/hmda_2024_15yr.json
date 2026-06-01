@@ -1,0 +1,12 @@
+{
+  "n_loans": 1162,
+  "simple_mean_pct": 6.499,
+  "amount_weighted_mean_pct": 6.143,
+  "p10_pct": 5.475,
+  "p25_pct": 5.875,
+  "p50_pct": 6.25,
+  "p75_pct": 6.75,
+  "p90_pct": 7.5,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), MO, loan_purpose=home_purchase, action_taken=originated, loan_term=180"
+}

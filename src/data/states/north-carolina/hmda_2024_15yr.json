@@ -1,5 +1,4 @@
 {
-  "source": "HMDA 2024 LAR public (FFIEC), NC, loan_purpose=home_purchase, action_taken=originated, loan_term=180",
   "n_loans": 3079,
   "simple_mean_pct": 6.08,
   "amount_weighted_mean_pct": 5.933,
@@ -7,5 +6,7 @@
   "p25_pct": 5.5,
   "p50_pct": 5.925,
   "p75_pct": 6.423,
-  "p90_pct": 6.875
+  "p90_pct": 6.875,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), NC, loan_purpose=home_purchase, action_taken=originated, loan_term=180"
 }

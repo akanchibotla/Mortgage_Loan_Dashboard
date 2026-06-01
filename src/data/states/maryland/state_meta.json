@@ -1,0 +1,9 @@
+{
+  "slug": "maryland",
+  "postal": "MD",
+  "fips": "24",
+  "name": "Maryland",
+  "built_at_utc": "2026-06-01T16:02:42+00:00",
+  "has_hmda_band": false,
+  "live_trailing": true
+}
