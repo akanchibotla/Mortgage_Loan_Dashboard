@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadPmms, loadStatesIndex } from "../lib/loadStateData";
 import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
@@ -10,13 +10,49 @@ const UsChoropleth = lazy(() =>
 export default function HomePage() {
   const { states, built_at_utc } = loadStatesIndex();
   const { pmms15, pmms30 } = loadPmms();
-  usePageMeta({ title: BASE_TITLE });
   const latestUs15 = pmms15.at(-1);
   const latestUs30 = pmms30.at(-1);
   const [term, setTerm] = useState<15 | 30>(30);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [filter, setFilter] = useState("");
+  usePageMeta({ title: BASE_TITLE });
+
+  // Default the panel open on wide screens, closed on narrow.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setPanelOpen(window.innerWidth >= 1024);
+  }, []);
+
+  const filteredStates = useMemo(() => {
+    const f = filter.trim().toLowerCase();
+    if (!f) return states;
+    return states.filter(
+      (s) => s.name.toLowerCase().includes(f) || s.postal.toLowerCase().includes(f),
+    );
+  }, [states, filter]);
 
   return (
     <>
+      <StatePanel
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        states={states}
+        filteredStates={filteredStates}
+        term={term}
+        filter={filter}
+        onFilter={setFilter}
+      />
+      <button
+        type="button"
+        className={`side-panel-toggle ${panelOpen ? "open" : ""}`}
+        onClick={() => setPanelOpen((v) => !v)}
+        aria-label={panelOpen ? "Close state list" : "Open state list"}
+        title={panelOpen ? "Hide state list" : "Show all states"}
+      >
+        <span className="hamburger">{panelOpen ? "✕" : "☰"}</span>
+        <span className="toggle-label">{panelOpen ? "Hide" : "All states"}</span>
+      </button>
+
       <h1>U.S. mortgage rates — by state, with HMDA-anchored context</h1>
       <p className="sub">
         For each U.S. state, compare today's quoted rates with the actual 2024 closed-loan
@@ -33,9 +69,9 @@ export default function HomePage() {
       </div>
       <div className="notes">
         <b>Coverage today:</b> {states.length} of 51 states bundled.{" "}
-        <b>{states.filter((s) => s.has_hmda_band).length}</b> with HMDA 2024 distributions +
-        county drilldowns. <b>{states.filter((s) => s.latest_30 != null).length}</b> with
-        daily-refreshing Bankrate/MND rate history.
+        <b>{states.filter((s) => s.has_hmda_band).length}</b> with HMDA 2024 distributions + county
+        drilldowns. <b>{states.filter((s) => s.latest_30 != null).length}</b> with daily-refreshing
+        Bankrate/MND rate quotes.
       </div>
 
       <section className="section">
@@ -62,38 +98,16 @@ export default function HomePage() {
           <UsChoropleth index={states} term={term} />
         </Suspense>
         <p className="map-caption">
-          Shaded states have data bundled ({states.length} of 51 today). Click any colored state to
-          drill in. Gray = not yet backfilled.
+          Hover any state for a snapshot, click to drill into its dashboard. Use the{" "}
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => setPanelOpen(true)}
+          >
+            state list panel
+          </button>{" "}
+          on the left for an alphabetical view with search.
         </p>
-      </section>
-
-      <section className="section">
-        <h3>Available states (alphabetical)</h3>
-        <ul className="state-list">
-          {states.map((s) => (
-            <li key={s.slug}>
-              <Link to={`/state/${s.slug}`}>
-                <span className="state-name">{s.name}</span>
-                <span className="state-postal">{s.postal}</span>
-                {term === 30
-                  ? s.latest_30 != null && (
-                      <span className="state-tag tag-rate">{s.latest_30.toFixed(2)}%</span>
-                    )
-                  : s.latest_15 != null && (
-                      <span className="state-tag tag-rate">{s.latest_15.toFixed(2)}%</span>
-                    )}
-                {s.n_counties ? (
-                  <span className="state-tag" title={`${s.n_loans_hmda?.toLocaleString() ?? ""} HMDA originations`}>
-                    {s.n_counties} counties
-                  </span>
-                ) : (
-                  s.has_hmda_band && <span className="state-tag">HMDA</span>
-                )}
-                {s.live_trailing && <span className="state-tag tag-live">live</span>}
-              </Link>
-            </li>
-          ))}
-        </ul>
       </section>
 
       <div className="notes">
@@ -104,14 +118,86 @@ export default function HomePage() {
         </p>
         <p>
           Data refreshed{" "}
-          {new Date(built_at_utc).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.{" "}
-          See the <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard">repo</a> and{" "}
+          {new Date(built_at_utc).toLocaleString(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
+          . See the <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard">repo</a> and{" "}
           <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard/blob/main/ROADMAP.md">
             roadmap
-          </a>{" "}
-          for the path to all 50 states + county drilldown + borrower calculator.
+          </a>
+          .
         </p>
       </div>
+    </>
+  );
+}
+
+interface PanelProps {
+  open: boolean;
+  onClose: () => void;
+  states: ReturnType<typeof loadStatesIndex>["states"];
+  filteredStates: ReturnType<typeof loadStatesIndex>["states"];
+  term: 15 | 30;
+  filter: string;
+  onFilter: (v: string) => void;
+}
+
+function StatePanel({
+  open,
+  onClose,
+  states,
+  filteredStates,
+  term,
+  filter,
+  onFilter,
+}: PanelProps) {
+  return (
+    <>
+      {open && <div className="side-panel-backdrop" onClick={onClose} aria-hidden="true" />}
+      <aside className={`side-panel ${open ? "open" : ""}`} aria-hidden={!open}>
+        <div className="side-panel-header">
+          <div>
+            <h3>States ({states.length})</h3>
+            <p className="side-panel-sub">
+              {term}-yr rate · click to drill in
+            </p>
+          </div>
+          <button
+            type="button"
+            className="side-panel-close"
+            onClick={onClose}
+            aria-label="Close panel"
+          >
+            ✕
+          </button>
+        </div>
+        <input
+          type="search"
+          placeholder="Filter by name or postal…"
+          className="side-panel-search"
+          value={filter}
+          onChange={(e) => onFilter(e.target.value)}
+        />
+        <ul className="side-panel-list">
+          {filteredStates.length === 0 ? (
+            <li className="side-panel-empty">No states match "{filter}"</li>
+          ) : (
+            filteredStates.map((s) => {
+              const rate = term === 30 ? s.latest_30 : s.latest_15;
+              return (
+                <li key={s.slug}>
+                  <Link to={`/state/${s.slug}`} onClick={onClose}>
+                    <span className="sp-name">{s.name}</span>
+                    <span className="sp-postal">{s.postal}</span>
+                    <span className="sp-rate">{rate != null ? `${rate.toFixed(2)}%` : "—"}</span>
+                  </Link>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      </aside>
     </>
   );
 }
