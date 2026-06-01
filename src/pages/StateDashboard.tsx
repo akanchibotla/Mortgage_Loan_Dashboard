@@ -88,46 +88,6 @@ function StateBody({ slug }: { slug: string }) {
         )}
       </p>
 
-      <section className="section">
-        <h2>15-year fixed</h2>
-        <RateChart
-          usData={pmms15}
-          ncData={data.bankrate15 ?? []}
-          mndData={data.mnd15 ?? undefined}
-          hmdaBand={data.hmda15}
-          title={`15-year fixed mortgage rate — ${name} vs U.S.`}
-          usLabel="U.S. 15-yr FRM (FRED MORTGAGE15US, monthly mean)"
-          ncLabel={`${name} 15-yr fixed (Bankrate, monthly)`}
-          mndLabel={`${name} 15-yr fixed (Mortgage News Daily, monthly)`}
-          yMin={4.5}
-          yMax={7.5}
-        />
-        {data.bankrate15 && <RateTable usData={pmms15} ncData={data.bankrate15} />}
-      </section>
-
-      <section className="section">
-        <h2>30-year fixed</h2>
-        <RateChart
-          usData={pmms30}
-          ncData={data.bankrate30 ?? []}
-          mndData={data.mnd30 ?? undefined}
-          hmdaBand={data.hmda30}
-          title={`30-year fixed mortgage rate — ${name} vs U.S.`}
-          usLabel="U.S. 30-yr FRM (FRED MORTGAGE30US, monthly mean)"
-          ncLabel={`${name} 30-yr fixed (Bankrate, monthly)`}
-          mndLabel={`${name} 30-yr fixed (Mortgage News Daily, monthly)`}
-          yMin={5.5}
-          yMax={7.5}
-        />
-        {data.bankrate30 && <RateTable usData={pmms30} ncData={data.bankrate30} />}
-      </section>
-
-      {data.demographics && (
-        <Suspense fallback={<p className="loading">Loading demographic breakdowns…</p>}>
-          <DemographicsPanel data={data.demographics} stateName={name} />
-        </Suspense>
-      )}
-
       {counties.length > 0 && (
         <section className="section">
           <div className="map-controls">
@@ -192,6 +152,46 @@ function StateBody({ slug }: { slug: string }) {
             </ul>
           </details>
         </section>
+      )}
+
+      <section className="section">
+        <h2>15-year fixed</h2>
+        <RateChart
+          usData={pmms15}
+          ncData={data.bankrate15 ?? []}
+          mndData={data.mnd15 ?? undefined}
+          hmdaBand={data.hmda15}
+          title={`15-year fixed mortgage rate — ${name} vs U.S.`}
+          usLabel="U.S. 15-yr FRM (FRED MORTGAGE15US, monthly mean)"
+          ncLabel={`${name} 15-yr fixed (Bankrate, monthly)`}
+          mndLabel={`${name} 15-yr fixed (Mortgage News Daily, monthly)`}
+          yMin={4.5}
+          yMax={7.5}
+        />
+        {data.bankrate15 && <RateTable usData={pmms15} ncData={data.bankrate15} />}
+      </section>
+
+      <section className="section">
+        <h2>30-year fixed</h2>
+        <RateChart
+          usData={pmms30}
+          ncData={data.bankrate30 ?? []}
+          mndData={data.mnd30 ?? undefined}
+          hmdaBand={data.hmda30}
+          title={`30-year fixed mortgage rate — ${name} vs U.S.`}
+          usLabel="U.S. 30-yr FRM (FRED MORTGAGE30US, monthly mean)"
+          ncLabel={`${name} 30-yr fixed (Bankrate, monthly)`}
+          mndLabel={`${name} 30-yr fixed (Mortgage News Daily, monthly)`}
+          yMin={5.5}
+          yMax={7.5}
+        />
+        {data.bankrate30 && <RateTable usData={pmms30} ncData={data.bankrate30} />}
+      </section>
+
+      {data.demographics && (
+        <Suspense fallback={<p className="loading">Loading demographic breakdowns…</p>}>
+          <DemographicsPanel data={data.demographics} stateName={name} />
+        </Suspense>
       )}
 
       <div className="notes">
