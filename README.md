@@ -1,80 +1,81 @@
 # Mortgage Loan Dashboard
 
-Self-updating dashboard comparing North Carolina vs. U.S. mortgage rates (15-yr and 30-yr fixed). Built on Vite + React + TypeScript with Chart.js. Data refreshes daily via GitHub Actions and deploys to GitHub Pages.
+Self-updating dashboard comparing **state-level U.S. mortgage rates** with the actual closed-loan distribution from HMDA. Built on Vite + React + TypeScript with Chart.js + D3.
+
+**Live:** https://akanchibotla.github.io/Mortgage_Loan_Dashboard/
+
+Three pages:
+- **Home** — U.S. state choropleth colored by current 15-yr / 30-yr Bankrate rate; click any state to drill in.
+- **State** (`/state/:slug`) — per-state time-series chart with Freddie PMMS (US), Bankrate state, Mortgage News Daily state, and HMDA 2024 reference band where bundled.
+- **Calculator** (`/calculator`) — pick state + term + loan amount; see HMDA p10–p90 rate band, today's quoted market, and monthly P&I at low / central / high rates.
+
+Daily auto-refresh at 12 UTC via GitHub Actions; data is committed back to the repo and re-deployed to Pages.
+
+## State coverage
+
+Currently 7 of 51 states bundled (NC, CA, FL, TX, NY, IL, GA). Architecture is fully parameterized — adding a state is a script run, not code work. See `ROADMAP.md` for the full path to 50 states + county HMDA drilldown.
 
 ## Quick start (local)
 
 ```
 npm install
 pip install -r requirements.txt
-python -m playwright install chromium     # for headless Bankrate fetch
+python -m playwright install chromium
 npm run dev
 ```
 
 Open http://localhost:5173.
 
-To refresh the data locally before viewing:
+## Adding a state
 
 ```
-python scripts/fetch_fred.py                  # U.S. monthly series (FRED PMMS)
-python scripts/fetch_bankrate_nc_browser.py   # today's Bankrate NC values (headless Chromium)
-python scripts/fetch_mnd_nc.py                # today's Mortgage News Daily NC values
-python scripts/aggregate_mnd_monthly.py       # JSONL -> monthly chart data
-python scripts/reconcile_nc.py                # merge Wayback + live for trailing month
+python scripts/backfill_bankrate_state_wayback.py --state pennsylvania
+python scripts/fetch_bankrate_state.py --state pennsylvania
+python scripts/fetch_mnd_state.py --state pennsylvania
+python scripts/aggregate_mnd_state.py --state pennsylvania
+python scripts/reconcile_state.py --state pennsylvania
+python scripts/build_states_index.py
 ```
 
-## Deploy to GitHub Pages
-
-This repo is set up to auto-deploy and auto-refresh. To activate:
-
-1. Create an **empty public GitHub repo** named `Mortgage_Loan_Dashboard` (or any name — see step 3 to override).
-2. From this directory:
-   ```
-   git remote add origin https://github.com/<your-user>/Mortgage_Loan_Dashboard.git
-   git add .
-   git commit -m "Initial dashboard"
-   git push -u origin main
-   ```
-3. In the repo's **Settings → Pages**, set **Source = GitHub Actions**.
-4. (Only if your repo name differs from `Mortgage_Loan_Dashboard`): the deploy workflow auto-derives the base path from `github.event.repository.name`, so no further change is needed. If using a custom domain, set `VITE_BASE_PATH=/` in the workflow env.
-
-On the first push:
-- `.github/workflows/deploy.yml` runs → builds → deploys to Pages. URL appears under **Actions → Deploy to GitHub Pages → page_url**.
-- `.github/workflows/refresh.yml` runs **daily at 12:00 UTC** → fetches fresh data → commits → triggers a re-deploy. You can also trigger it manually from the **Actions** tab (`Daily refresh → Run workflow`).
+Then append `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`. The daily cron picks it up.
 
 ## Data sources
 
-| Source | Where | Refresh |
+| Source | Coverage | Refresh |
 |---|---|---|
-| Freddie Mac PMMS (U.S. 15-yr and 30-yr weekly) | [FRED MORTGAGE15US](https://fred.stlouisfed.org/series/MORTGAGE15US) / [MORTGAGE30US](https://fred.stlouisfed.org/series/MORTGAGE30US) | Weekly (auto via `fetch_fred.py`) |
-| Bankrate NC purchase rates | [bankrate.com](https://www.bankrate.com/mortgages/mortgage-rates/north-carolina/) (live, headless Chromium) + Internet Archive | Daily (auto via `fetch_bankrate_nc_browser.py`) for trailing month; historical from Wayback (one-shot) |
-| Mortgage News Daily NC | [mortgagenewsdaily.com](https://www.mortgagenewsdaily.com/mortgage-rates/north-carolina) (live) + Wayback (sparse) | Daily (auto via `fetch_mnd_nc.py`); historical from `backfill_mnd_wayback.py` |
-| HMDA 2024 NC 15-yr origination distribution | [FFIEC HMDA Data Browser](https://ffiec.cfpb.gov/data-browser/) | Annual, frozen (no live refresh needed) |
-
-Chart-ready JSON lives in `src/data/`. Append-only daily accumulators live in `data/daily/`. Raw inputs (HMDA CSV, Bankrate Wayback HTML, Freddie xlsx) live outside the repo in `C:\Users\akanc\Documents\` and aren't committed.
+| Freddie Mac PMMS (US 15/30-yr) | [FRED MORTGAGE15US](https://fred.stlouisfed.org/series/MORTGAGE15US) / [MORTGAGE30US](https://fred.stlouisfed.org/series/MORTGAGE30US) | Weekly via `fetch_fred.py` |
+| Bankrate state purchase rates | Per-state pages, headless Chromium + Wayback backfill | Daily live + one-shot historical |
+| Mortgage News Daily state | Per-state pages, static HTML + Wayback | Daily live + sparse historical |
+| HMDA 2024 origination distribution | [FFIEC HMDA LAR](https://ffiec.cfpb.gov/data-browser/), per-state filter (NC only currently — bulk download deferred, see ROADMAP) | Annual |
 
 ## File layout
 
 ```
-src/                  React + TS dashboard
-  data/               Chart-ready JSON (committed; auto-refreshed)
-  chart/              Chart.js registration + options factory
-  components/         RateChart, RateTable
-  App.tsx, main.tsx   Layout entry
-data/daily/           Append-only JSONL accumulators (committed)
-scripts/              Python fetchers + reconciliation
-  _paths.py           Repo-relative path constants
-  _window.py          Rolling window (24-month start through current month)
+src/
+  data/                  Chart-ready JSON (committed; auto-refreshed)
+    states/{slug}/       Per-state files: bankrate_*, mnd_*, hmda_*, state_meta
+    states_index.json    Latest rate per state (powers the choropleth)
+    pmms_*_monthly.json  National Freddie series
+    window.json          Rolling time window
+  chart/                 Chart.js registration + options factory
+  components/            RateChart (Chart.js), RateTable, UsChoropleth (D3)
+  pages/                 HomePage, StateDashboard, CalculatorPage
+  lib/                   loadStateData (lazy per-state JSON loader)
+data/daily/              Append-only JSONL accumulators (committed)
+scripts/                 Python fetchers + reconcilers + index builder
+  _paths.py, _window.py  Shared helpers
+  states.py              Canonical 50-state + DC registry
 .github/workflows/
-  deploy.yml          Build + Pages deploy on push to main
-  refresh.yml         Daily cron: fetch, aggregate, commit
-requirements.txt      Python deps (Playwright, openpyxl)
-package.json          Node deps (Vite, React, Chart.js)
+  deploy.yml             Build + Pages deploy on push
+  refresh.yml            Daily cron: fetch all ACTIVE_STATES, commit
 ```
 
 ## Known limitations
 
-- **Bankrate hydrates rates via client-side JS**, so the browser-fetcher needs Chromium installed both locally and in CI (handled automatically; ~60s extra on cold runs).
-- **MND historical via Wayback is sparse** (~4 snapshots in 24 months as of writing). The series grows denser as daily forward-collection accumulates.
-- **HMDA has no month-of-origination field**, so the HMDA reference band is annual only (2024 distribution shown as a 2024-spanning box).
-- **Pages requires a public repo** on the free tier. For a private repo, switch deploys to Cloudflare Pages / Vercel or upgrade GitHub.
+- **HMDA bulk download** is gated behind a JS-rendered FFIEC page; the data-browser API returned 403 to scripted requests. NC HMDA was obtained out-of-band. Per-state HMDA expansion requires the bulk national LAR (~3 GB) or per-state manual exports from the FFIEC browser UI.
+- **MND historical via Wayback is sparse** (4–10 snapshots per state in 24 months). Series grows denser via forward daily collection.
+- **County drilldown** (v3) is unblocked but requires HMDA bulk first.
+
+## Bundle stats
+
+Main bundle 233 KB / 75 KB gzipped. Chart.js (~260 KB) lazy-loaded per route. Choropleth (~140 KB) lazy-loaded on home only.

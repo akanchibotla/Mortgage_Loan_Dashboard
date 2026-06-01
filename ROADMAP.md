@@ -6,20 +6,39 @@
 
 The unique value is the **combination**. Bankrate and Zillow have today's quoted rates per state but no closed-loan reality. The FFIEC HMDA Data Browser has actual closings per county but no time series and no quote comparison. The calculator that asks "based on your loan amount, where do you sit?" doesn't exist in a polished form anywhere. We're building the missing connective tissue.
 
-## Current state — v1 (shipped 2026-06-01)
+## Current state — v2 phase 2 (shipped 2026-06-01)
 
-- NC-only dashboard at https://akanchibotla.github.io/Mortgage_Loan_Dashboard/
-- Two charts (15-yr, 30-yr) with FRED PMMS (national), Bankrate NC, Mortgage News Daily NC, and an HMDA 2024 NC 15-yr p10–p90 reference band
-- Daily auto-refresh via GitHub Actions cron; rolling window starting Jun 2024
-- Pipeline: `scripts/_window.py`, `scripts/_paths.py`, headless-Chromium Bankrate fetcher, Wayback backfill, JSONL accumulators
+- **Live URL:** https://akanchibotla.github.io/Mortgage_Loan_Dashboard/
+- **7 states bundled**: NC, CA, FL, TX, NY, IL, GA — each with Wayback historical (12–20 months) + live Bankrate trailing + today's MND.
+- **Home page**: U.S. state choropleth (D3 + TopoJSON via `us-atlas`) colored by current 15-yr or 30-yr Bankrate rate; click any state to drill in.
+- **State page** (`/state/:slug`): per-state dashboard with FRED PMMS (national), Bankrate, MND, and HMDA reference band where bundled (NC only currently).
+- **Calculator** (`/calculator`): state + term + loan-amount inputs; HMDA percentile-anchored rate range (where available); P&I at p10/median/p90 rates.
+- **Architecture**:
+  - `scripts/states.py` 50-state + DC registry; all fetchers take `--state SLUG`.
+  - Per-state JSON in `src/data/states/{slug}/`, lazy-loaded per route.
+  - `src/data/states_index.json` powers the map and the calculator dropdown.
+  - Daily GitHub Actions cron iterates `ACTIVE_STATES` (currently 7).
+  - Bundle: main 233KB / 75KB gzipped; Chart.js + choropleth lazy-loaded.
+- Same data plumbing as v1 (FRED, Bankrate browser, MND, JSONL accumulators, Wayback backfill, rolling window, idempotent appends).
 
-This proves the data plumbing. Every later phase reuses it.
+**Adding a state is now a 3-line task**:
+```
+python scripts/backfill_bankrate_state_wayback.py --state pennsylvania
+python scripts/fetch_bankrate_state.py --state pennsylvania
+python scripts/fetch_mnd_state.py --state pennsylvania
+python scripts/aggregate_mnd_state.py --state pennsylvania
+python scripts/reconcile_state.py --state pennsylvania
+python scripts/build_states_index.py
+```
+Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 
 ---
 
-## v2 — National time series (50 states)
+## v2 — National time series (50 states) — IN PROGRESS (7 / 51)
 
 **Why first**: scope-up before depth-down. Once Bankrate/MND can be fetched per state with the same pipeline, every later phase trivially generalizes.
+
+**Status**: 7 states live (NC, CA, FL, TX, NY, IL, GA). Architecture proven end-to-end. Remaining 44 = bulk Wayback runs (~6–8 hours total) + adding each slug to `ACTIVE_STATES`. No code changes needed.
 
 ### Deliverables
 - Per-state daily JSONL: `data/daily/bankrate_{state}.jsonl`, `data/daily/mnd_{state}.jsonl`
