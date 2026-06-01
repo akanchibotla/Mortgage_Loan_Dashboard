@@ -471,9 +471,58 @@ h1 {
 
 .calc-out-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   font-variant-numeric: tabular-nums;
+  flex-wrap: wrap;
+}
+
+.rate-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(31, 95, 168, 0.15);
+  border-radius: 8px;
+  padding: 3px 4px;
+}
+
+.step-btn-sm {
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.rate-input {
+  width: 56px;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-family: inherit;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+
+.rate-input:focus {
+  outline: none;
+}
+
+.rate-input::-webkit-outer-spin-button,
+.rate-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rate-suffix {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-ink-soft);
 }
 
 .calc-out-rate {

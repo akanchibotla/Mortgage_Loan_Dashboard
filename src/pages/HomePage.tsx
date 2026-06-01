@@ -14,9 +14,19 @@ const SHIFT_STEP = 50_000;
 const MIN_AMOUNT = 25_000;
 const MAX_AMOUNT = 5_000_000;
 
+const RATE_STEP = 0.05;
+const RATE_SHIFT_STEP = 0.25;
+const MIN_RATE = 0.5;
+const MAX_RATE = 25;
+
 function clampLoan(v: number): number {
   if (!Number.isFinite(v)) return MIN_AMOUNT;
   return Math.max(MIN_AMOUNT, Math.min(MAX_AMOUNT, Math.round(v / STEP) * STEP));
+}
+
+function clampRate(v: number): number {
+  if (!Number.isFinite(v)) return MIN_RATE;
+  return Math.max(MIN_RATE, Math.min(MAX_RATE, +v.toFixed(3)));
 }
 
 export default function HomePage() {
@@ -26,6 +36,7 @@ export default function HomePage() {
   const latestUs30 = pmms30.at(-1);
   const [term, setTerm] = useState<15 | 30>(30);
   const [loanAmount, setLoanAmount] = useState(DEFAULT_LOAN);
+  const [rateText, setRateText] = useState<string>(""); // "" = follow FRED PMMS
   const [panelOpen, setPanelOpen] = useState(false);
   const [filter, setFilter] = useState("");
   usePageMeta({ title: BASE_TITLE });
@@ -43,9 +54,25 @@ export default function HomePage() {
     );
   }, [states, filter]);
 
-  const usRate = term === 15 ? latestUs15?.rate : latestUs30?.rate;
+  const pmmsRate = (term === 15 ? latestUs15?.rate : latestUs30?.rate) ?? null;
   const usMonth = term === 15 ? latestUs15?.month : latestUs30?.month;
-  const usPI = usRate != null ? monthlyPayment(loanAmount, usRate, term) : null;
+  const customRate = useMemo<number | null>(() => {
+    if (rateText === "") return null;
+    const v = parseFloat(rateText);
+    return Number.isFinite(v) ? v : null;
+  }, [rateText]);
+  const effectiveRate = customRate ?? pmmsRate;
+  const effectivePI =
+    effectiveRate != null ? monthlyPayment(loanAmount, effectiveRate, term) : null;
+  const rateInputValue =
+    rateText === "" && pmmsRate != null ? pmmsRate.toFixed(2) : rateText;
+  const isCustomRate = customRate != null && pmmsRate != null && customRate !== pmmsRate;
+
+  function bumpRate(dir: -1 | 1, e: React.MouseEvent) {
+    const step = e.shiftKey ? RATE_SHIFT_STEP : RATE_STEP;
+    const base = effectiveRate ?? 6;
+    setRateText(clampRate(base + dir * step).toFixed(2));
+  }
 
   return (
     <>
@@ -160,11 +187,64 @@ export default function HomePage() {
           </label>
 
           <div className="calc-output-card">
-            <div className="calc-out-label">U.S. national (FRED PMMS, {usMonth ?? "—"})</div>
+            <div className="calc-out-label">Your rate</div>
             <div className="calc-out-row">
-              <span className="calc-out-rate">{fmtRate(usRate)}</span>
+              <div className="rate-stepper">
+                <button
+                  type="button"
+                  className="step-btn step-btn-sm"
+                  onClick={(e) => bumpRate(-1, e)}
+                  disabled={effectiveRate != null && effectiveRate <= MIN_RATE}
+                  title="Decrease by 0.05% (Shift+click for 0.25%)"
+                  aria-label="Decrease rate"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  className="rate-input"
+                  min={MIN_RATE}
+                  max={MAX_RATE}
+                  step={RATE_STEP}
+                  value={rateInputValue}
+                  onChange={(e) => setRateText(e.target.value)}
+                  onBlur={() => {
+                    if (customRate != null) setRateText(clampRate(customRate).toFixed(2));
+                  }}
+                  aria-label="Interest rate (percent)"
+                />
+                <span className="rate-suffix">%</span>
+                <button
+                  type="button"
+                  className="step-btn step-btn-sm"
+                  onClick={(e) => bumpRate(1, e)}
+                  disabled={effectiveRate != null && effectiveRate >= MAX_RATE}
+                  title="Increase by 0.05% (Shift+click for 0.25%)"
+                  aria-label="Increase rate"
+                >
+                  +
+                </button>
+              </div>
               <span className="calc-out-arrow">→</span>
-              <span className="calc-out-payment">{fmtMoney(usPI)}/mo</span>
+              <span className="calc-out-payment">{fmtMoney(effectivePI)}/mo</span>
+            </div>
+            <div className="calc-out-hint">
+              {pmmsRate == null ? (
+                <span>FRED PMMS unavailable</span>
+              ) : isCustomRate ? (
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={() => setRateText("")}
+                  title={`Reset to FRED PMMS ${term}-yr ${pmmsRate.toFixed(2)}%`}
+                >
+                  ↺ Reset to FRED PMMS {pmmsRate.toFixed(2)}%
+                </button>
+              ) : (
+                <span>
+                  matches FRED PMMS {term}-yr {pmmsRate.toFixed(2)}% ({usMonth})
+                </span>
+              )}
             </div>
             <div className="calc-out-hint">↓ Hover a state below for state-specific numbers</div>
           </div>
