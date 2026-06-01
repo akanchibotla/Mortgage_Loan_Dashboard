@@ -5,6 +5,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const StateDashboard = lazy(() => import("./pages/StateDashboard"));
 const CalculatorPage = lazy(() => import("./pages/CalculatorPage"));
 const CountyDashboard = lazy(() => import("./pages/CountyDashboard"));
+const MethodologyPage = lazy(() => import("./pages/MethodologyPage"));
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           Mortgage rates by state
         </Link>
         <Link to="/calculator">Calculator</Link>
+        <Link to="/methodology">Methodology</Link>
         <a
           href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard"
           target="_blank"
@@ -28,6 +30,7 @@ export default function App() {
           <Route path="/state/:slug" element={<StateDashboard />} />
           <Route path="/state/:slug/county/:countyFips" element={<CountyDashboard />} />
           <Route path="/calculator" element={<CalculatorPage />} />
+          <Route path="/methodology" element={<MethodologyPage />} />
           <Route
             path="*"
             element={
