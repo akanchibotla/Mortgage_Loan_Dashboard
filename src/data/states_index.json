@@ -1,5 +1,5 @@
 {
-  "built_at_utc": "2026-06-01T16:05:55+00:00",
+  "built_at_utc": "2026-06-01T16:16:31+00:00",
   "n_states": 51,
   "states": [
     {
@@ -9,11 +9,11 @@
       "name": "Alabama",
       "has_hmda_band": true,
       "has_counties": true,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.93,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.46,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "alaska",
@@ -22,11 +22,11 @@
       "name": "Alaska",
       "has_hmda_band": true,
       "has_counties": true,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.0,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.63,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "arizona",

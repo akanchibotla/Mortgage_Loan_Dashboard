@@ -31,6 +31,12 @@ export default function HomePage() {
         <b>15-yr FRM {latestUs15?.rate.toFixed(2)}%</b> ({latestUs15?.month}),{" "}
         <b>30-yr FRM {latestUs30?.rate.toFixed(2)}%</b> ({latestUs30?.month}).
       </div>
+      <div className="notes">
+        <b>Coverage today:</b> {states.length} of 51 states bundled.{" "}
+        <b>{states.filter((s) => s.has_hmda_band).length}</b> with HMDA 2024 distributions +
+        county drilldowns. <b>{states.filter((s) => s.latest_30 != null).length}</b> with
+        daily-refreshing Bankrate/MND rate history.
+      </div>
 
       <section className="section">
         <div className="map-controls">
