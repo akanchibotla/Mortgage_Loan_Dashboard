@@ -13,7 +13,9 @@ Daily auto-refresh at 12 UTC via GitHub Actions; data is committed back to the r
 
 ## State coverage
 
-Currently 7 of 51 states bundled (NC, CA, FL, TX, NY, IL, GA). Architecture is fully parameterized — adding a state is a script run, not code work. See `ROADMAP.md` for the full path to 50 states + county HMDA drilldown.
+- **HMDA + county drilldown: all 51 states** (DC + 50). Every county in the U.S. has a 2024 origination distribution.
+- **Live Bankrate + MND rate history: 22 states** (NC, CA, FL, TX, NY, IL, GA, PA, OH, MI, WA, AZ, NJ, VA, MA, IN, TN, MO, MD, WI, CO, MN). Daily auto-refresh via GitHub Actions.
+- Remaining 29 states have HMDA + counties but no time-series Bankrate history yet (each needs a 5–10 min Wayback backfill run). See `ROADMAP.md`.
 
 ## Quick start (local)
 

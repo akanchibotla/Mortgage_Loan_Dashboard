@@ -1,0 +1,9 @@
+{
+  "slug": "montana",
+  "postal": "MT",
+  "fips": "30",
+  "name": "Montana",
+  "built_at_utc": "2026-06-01T16:04:35+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

@@ -1,0 +1,12 @@
+{
+  "n_loans": 600,
+  "simple_mean_pct": 6.901,
+  "amount_weighted_mean_pct": 6.23,
+  "p10_pct": 5.26,
+  "p25_pct": 5.875,
+  "p50_pct": 6.375,
+  "p75_pct": 7.0,
+  "p90_pct": 9.75,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), LA, loan_purpose=home_purchase, action_taken=originated, loan_term=180"
+}

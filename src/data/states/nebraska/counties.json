@@ -1,0 +1,1980 @@
+{
+  "state_slug": "nebraska",
+  "state_postal": "NE",
+  "state_fips": "31",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:04:36+00:00",
+  "counties": [
+    {
+      "fips": "31001",
+      "name": "Adams",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.058,
+        "amount_weighted_mean_pct": 6.071,
+        "p10_pct": 5.99,
+        "p25_pct": 5.99,
+        "p50_pct": 5.99,
+        "p75_pct": 5.99,
+        "p90_pct": 5.99,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 245,
+        "simple_mean_pct": 6.532,
+        "amount_weighted_mean_pct": 6.559,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31003",
+      "name": "Antelope",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 5.688,
+        "amount_weighted_mean_pct": 5.803,
+        "p10_pct": 5.5,
+        "p25_pct": 5.5,
+        "p50_pct": 5.5,
+        "p75_pct": 5.5,
+        "p90_pct": 5.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 19,
+        "simple_mean_pct": 6.582,
+        "amount_weighted_mean_pct": 6.641,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31007",
+      "name": "Banner",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 6,
+        "simple_mean_pct": 6.33,
+        "amount_weighted_mean_pct": 6.326,
+        "p10_pct": 5.25,
+        "p25_pct": 5.625,
+        "p50_pct": 6.125,
+        "p75_pct": 6.99,
+        "p90_pct": 6.99,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31011",
+      "name": "Boone",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 22,
+        "simple_mean_pct": 6.73,
+        "amount_weighted_mean_pct": 6.736,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31013",
+      "name": "Box Butte",
+      "term_15": {
+        "n_loans": 6,
+        "simple_mean_pct": 6.875,
+        "amount_weighted_mean_pct": 7.018,
+        "p10_pct": 6.125,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 51,
+        "simple_mean_pct": 6.649,
+        "amount_weighted_mean_pct": 6.552,
+        "p10_pct": 6.125,
+        "p25_pct": 6.25,
+        "p50_pct": 6.75,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31015",
+      "name": "Boyd",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.875,
+        "amount_weighted_mean_pct": 6.875,
+        "p10_pct": 6.875,
+        "p25_pct": 6.875,
+        "p50_pct": 6.875,
+        "p75_pct": 6.875,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31017",
+      "name": "Brown",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 16,
+        "simple_mean_pct": 6.508,
+        "amount_weighted_mean_pct": 6.441,
+        "p10_pct": 6.0,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.75,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31019",
+      "name": "Buffalo",
+      "term_15": {
+        "n_loans": 6,
+        "simple_mean_pct": 6.375,
+        "amount_weighted_mean_pct": 6.337,
+        "p10_pct": 5.875,
+        "p25_pct": 6.0,
+        "p50_pct": 6.375,
+        "p75_pct": 6.375,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 326,
+        "simple_mean_pct": 6.618,
+        "amount_weighted_mean_pct": 6.644,
+        "p10_pct": 6.0,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31021",
+      "name": "Burt",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 52,
+        "simple_mean_pct": 6.56,
+        "amount_weighted_mean_pct": 6.522,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31023",
+      "name": "Butler",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.333,
+        "amount_weighted_mean_pct": 6.425,
+        "p10_pct": 6.0,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 51,
+        "simple_mean_pct": 6.568,
+        "amount_weighted_mean_pct": 6.565,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31025",
+      "name": "Cass",
+      "term_15": {
+        "n_loans": 9,
+        "simple_mean_pct": 7.599,
+        "amount_weighted_mean_pct": 6.899,
+        "p10_pct": 6.0,
+        "p25_pct": 6.875,
+        "p50_pct": 7.125,
+        "p75_pct": 7.125,
+        "p90_pct": 7.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 321,
+        "simple_mean_pct": 6.665,
+        "amount_weighted_mean_pct": 6.667,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31027",
+      "name": "Cedar",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 24,
+        "simple_mean_pct": 6.468,
+        "amount_weighted_mean_pct": 6.534,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.375,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31029",
+      "name": "Chase",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.375,
+        "amount_weighted_mean_pct": 5.375,
+        "p10_pct": 5.375,
+        "p25_pct": 5.375,
+        "p50_pct": 5.375,
+        "p75_pct": 5.375,
+        "p90_pct": 5.375,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 15,
+        "simple_mean_pct": 7.015,
+        "amount_weighted_mean_pct": 7.123,
+        "p10_pct": 6.625,
+        "p25_pct": 6.75,
+        "p50_pct": 6.99,
+        "p75_pct": 7.375,
+        "p90_pct": 7.5,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31031",
+      "name": "Cherry",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.875,
+        "amount_weighted_mean_pct": 5.875,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 5.875,
+        "p75_pct": 5.875,
+        "p90_pct": 5.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 27,
+        "simple_mean_pct": 6.534,
+        "amount_weighted_mean_pct": 6.63,
+        "p10_pct": 5.5,
+        "p25_pct": 6.188,
+        "p50_pct": 6.5,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31033",
+      "name": "Cheyenne",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.245,
+        "amount_weighted_mean_pct": 6.334,
+        "p10_pct": 5.99,
+        "p25_pct": 5.99,
+        "p50_pct": 5.99,
+        "p75_pct": 5.99,
+        "p90_pct": 5.99,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 67,
+        "simple_mean_pct": 6.752,
+        "amount_weighted_mean_pct": 6.849,
+        "p10_pct": 5.998,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31035",
+      "name": "Clay",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 35,
+        "simple_mean_pct": 6.585,
+        "amount_weighted_mean_pct": 6.693,
+        "p10_pct": 5.999,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.75,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31037",
+      "name": "Colfax",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.0,
+        "amount_weighted_mean_pct": 6.056,
+        "p10_pct": 5.5,
+        "p25_pct": 5.5,
+        "p50_pct": 5.5,
+        "p75_pct": 5.5,
+        "p90_pct": 5.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 41,
+        "simple_mean_pct": 6.6,
+        "amount_weighted_mean_pct": 6.636,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31039",
+      "name": "Cuming",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 42,
+        "simple_mean_pct": 6.576,
+        "amount_weighted_mean_pct": 6.602,
+        "p10_pct": 6.0,
+        "p25_pct": 6.125,
+        "p50_pct": 6.576,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31041",
+      "name": "Custer",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.08,
+        "amount_weighted_mean_pct": 6.119,
+        "p10_pct": 5.99,
+        "p25_pct": 5.99,
+        "p50_pct": 6.0,
+        "p75_pct": 6.0,
+        "p90_pct": 6.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 48,
+        "simple_mean_pct": 6.82,
+        "amount_weighted_mean_pct": 6.854,
+        "p10_pct": 6.0,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 7.25,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31043",
+      "name": "Dakota",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 11.057,
+        "amount_weighted_mean_pct": 8.958,
+        "p10_pct": 5.5,
+        "p25_pct": 5.5,
+        "p50_pct": 13.7,
+        "p75_pct": 13.7,
+        "p90_pct": 13.7,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 80,
+        "simple_mean_pct": 6.526,
+        "amount_weighted_mean_pct": 6.558,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.75,
+        "p90_pct": 7.0,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31045",
+      "name": "Dawes",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.25,
+        "amount_weighted_mean_pct": 6.25,
+        "p10_pct": 6.25,
+        "p25_pct": 6.25,
+        "p50_pct": 6.25,
+        "p75_pct": 6.25,
+        "p90_pct": 6.25,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 44,
+        "simple_mean_pct": 6.727,
+        "amount_weighted_mean_pct": 6.666,
+        "p10_pct": 6.0,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 7.125,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31047",
+      "name": "Dawson",
+      "term_15": {
+        "n_loans": 5,
+        "simple_mean_pct": 6.673,
+        "amount_weighted_mean_pct": 6.191,
+        "p10_pct": 5.875,
+        "p25_pct": 5.99,
+        "p50_pct": 6.125,
+        "p75_pct": 6.875,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 177,
+        "simple_mean_pct": 6.657,
+        "amount_weighted_mean_pct": 6.649,
+        "p10_pct": 6.0,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31049",
+      "name": "Deuel",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.81,
+        "amount_weighted_mean_pct": 6.805,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 6.99,
+        "p75_pct": 7.125,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31051",
+      "name": "Dixon",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 28,
+        "simple_mean_pct": 6.557,
+        "amount_weighted_mean_pct": 6.521,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31053",
+      "name": "Dodge",
+      "term_15": {
+        "n_loans": 6,
+        "simple_mean_pct": 6.103,
+        "amount_weighted_mean_pct": 5.937,
+        "p10_pct": 5.25,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.375,
+        "p90_pct": 6.49,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 298,
+        "simple_mean_pct": 6.476,
+        "amount_weighted_mean_pct": 6.497,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31055",
+      "name": "Douglas",
+      "term_15": {
+        "n_loans": 117,
+        "simple_mean_pct": 6.563,
+        "amount_weighted_mean_pct": 6.066,
+        "p10_pct": 5.375,
+        "p25_pct": 5.75,
+        "p50_pct": 6.25,
+        "p75_pct": 6.625,
+        "p90_pct": 7.625,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 5608,
+        "simple_mean_pct": 6.594,
+        "amount_weighted_mean_pct": 6.606,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31057",
+      "name": "Dundy",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.5,
+        "amount_weighted_mean_pct": 7.5,
+        "p10_pct": 7.5,
+        "p25_pct": 7.5,
+        "p50_pct": 7.5,
+        "p75_pct": 7.5,
+        "p90_pct": 7.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 5,
+        "simple_mean_pct": 6.848,
+        "amount_weighted_mean_pct": 6.766,
+        "p10_pct": 5.75,
+        "p25_pct": 6.49,
+        "p50_pct": 6.875,
+        "p75_pct": 7.5,
+        "p90_pct": 7.5,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31059",
+      "name": "Fillmore",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.375,
+        "amount_weighted_mean_pct": 5.375,
+        "p10_pct": 5.375,
+        "p25_pct": 5.375,
+        "p50_pct": 5.375,
+        "p75_pct": 5.375,
+        "p90_pct": 5.375,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 44,
+        "simple_mean_pct": 6.621,
+        "amount_weighted_mean_pct": 6.579,
+        "p10_pct": 6.0,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31061",
+      "name": "Franklin",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 26,
+        "simple_mean_pct": 6.504,
+        "amount_weighted_mean_pct": 6.499,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31063",
+      "name": "Frontier",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 13,
+        "simple_mean_pct": 6.394,
+        "amount_weighted_mean_pct": 6.481,
+        "p10_pct": 5.5,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31065",
+      "name": "Furnas",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.75,
+        "amount_weighted_mean_pct": 6.75,
+        "p10_pct": 6.75,
+        "p25_pct": 6.75,
+        "p50_pct": 6.75,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 36,
+        "simple_mean_pct": 6.703,
+        "amount_weighted_mean_pct": 6.741,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.875,
+        "p75_pct": 7.125,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31067",
+      "name": "Gage",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.875,
+        "amount_weighted_mean_pct": 5.875,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 5.875,
+        "p75_pct": 5.875,
+        "p90_pct": 5.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 164,
+        "simple_mean_pct": 6.509,
+        "amount_weighted_mean_pct": 6.527,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31069",
+      "name": "Garden",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 4.75,
+        "amount_weighted_mean_pct": 4.75,
+        "p10_pct": 4.75,
+        "p25_pct": 4.75,
+        "p50_pct": 4.75,
+        "p75_pct": 4.75,
+        "p90_pct": 4.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 7,
+        "simple_mean_pct": 7.393,
+        "amount_weighted_mean_pct": 7.252,
+        "p10_pct": 6.625,
+        "p25_pct": 6.75,
+        "p50_pct": 7.375,
+        "p75_pct": 7.5,
+        "p90_pct": 7.625,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31071",
+      "name": "Garfield",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.0,
+        "amount_weighted_mean_pct": 7.0,
+        "p10_pct": 7.0,
+        "p25_pct": 7.0,
+        "p50_pct": 7.0,
+        "p75_pct": 7.0,
+        "p90_pct": 7.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.719,
+        "amount_weighted_mean_pct": 6.901,
+        "p10_pct": 6.125,
+        "p25_pct": 6.125,
+        "p50_pct": 6.25,
+        "p75_pct": 6.875,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31073",
+      "name": "Gosper",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 14,
+        "simple_mean_pct": 6.267,
+        "amount_weighted_mean_pct": 6.22,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.25,
+        "p75_pct": 6.5,
+        "p90_pct": 6.625,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31075",
+      "name": "Grant",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.125,
+        "amount_weighted_mean_pct": 7.125,
+        "p10_pct": 7.125,
+        "p25_pct": 7.125,
+        "p50_pct": 7.125,
+        "p75_pct": 7.125,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31077",
+      "name": "Greeley",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 7,
+        "simple_mean_pct": 6.481,
+        "amount_weighted_mean_pct": 6.411,
+        "p10_pct": 5.99,
+        "p25_pct": 6.0,
+        "p50_pct": 6.375,
+        "p75_pct": 6.75,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31079",
+      "name": "Hall",
+      "term_15": {
+        "n_loans": 7,
+        "simple_mean_pct": 7.131,
+        "amount_weighted_mean_pct": 6.361,
+        "p10_pct": 5.5,
+        "p25_pct": 6.0,
+        "p50_pct": 6.25,
+        "p75_pct": 6.5,
+        "p90_pct": 7.25,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 379,
+        "simple_mean_pct": 6.537,
+        "amount_weighted_mean_pct": 6.543,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31081",
+      "name": "Hamilton",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 5.875,
+        "amount_weighted_mean_pct": 5.805,
+        "p10_pct": 5.375,
+        "p25_pct": 5.375,
+        "p50_pct": 5.875,
+        "p75_pct": 5.875,
+        "p90_pct": 5.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 98,
+        "simple_mean_pct": 6.591,
+        "amount_weighted_mean_pct": 6.567,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31083",
+      "name": "Harlan",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 11,
+        "simple_mean_pct": 6.76,
+        "amount_weighted_mean_pct": 6.714,
+        "p10_pct": 6.125,
+        "p25_pct": 6.375,
+        "p50_pct": 6.875,
+        "p75_pct": 7.0,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31085",
+      "name": "Hayes",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 2,
+        "simple_mean_pct": 7.125,
+        "amount_weighted_mean_pct": 7.079,
+        "p10_pct": 7.0,
+        "p25_pct": 7.0,
+        "p50_pct": 7.0,
+        "p75_pct": 7.0,
+        "p90_pct": 7.0,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31087",
+      "name": "Hitchcock",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 12,
+        "simple_mean_pct": 6.322,
+        "amount_weighted_mean_pct": 6.36,
+        "p10_pct": 5.25,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 7.125,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31089",
+      "name": "Holt",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 31,
+        "simple_mean_pct": 6.612,
+        "amount_weighted_mean_pct": 6.574,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.75,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31091",
+      "name": "Hooker",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.812,
+        "amount_weighted_mean_pct": 6.741,
+        "p10_pct": 6.625,
+        "p25_pct": 6.625,
+        "p50_pct": 6.625,
+        "p75_pct": 6.625,
+        "p90_pct": 6.625,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31093",
+      "name": "Howard",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.75,
+        "amount_weighted_mean_pct": 6.75,
+        "p10_pct": 6.75,
+        "p25_pct": 6.75,
+        "p50_pct": 6.75,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 37,
+        "simple_mean_pct": 6.638,
+        "amount_weighted_mean_pct": 6.613,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.625,
+        "p75_pct": 6.75,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31095",
+      "name": "Jefferson",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.625,
+        "amount_weighted_mean_pct": 6.625,
+        "p10_pct": 6.625,
+        "p25_pct": 6.625,
+        "p50_pct": 6.625,
+        "p75_pct": 6.625,
+        "p90_pct": 6.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 55,
+        "simple_mean_pct": 6.661,
+        "amount_weighted_mean_pct": 6.594,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31097",
+      "name": "Johnson",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.99,
+        "amount_weighted_mean_pct": 6.99,
+        "p10_pct": 6.99,
+        "p25_pct": 6.99,
+        "p50_pct": 6.99,
+        "p75_pct": 6.99,
+        "p90_pct": 6.99,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 15,
+        "simple_mean_pct": 6.608,
+        "amount_weighted_mean_pct": 6.392,
+        "p10_pct": 5.25,
+        "p25_pct": 6.25,
+        "p50_pct": 6.75,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31099",
+      "name": "Kearney",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 4.875,
+        "amount_weighted_mean_pct": 4.875,
+        "p10_pct": 4.875,
+        "p25_pct": 4.875,
+        "p50_pct": 4.875,
+        "p75_pct": 4.875,
+        "p90_pct": 4.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 40,
+        "simple_mean_pct": 6.508,
+        "amount_weighted_mean_pct": 6.567,
+        "p10_pct": 5.875,
+        "p25_pct": 6.0,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31101",
+      "name": "Keith",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.5,
+        "amount_weighted_mean_pct": 6.5,
+        "p10_pct": 6.5,
+        "p25_pct": 6.5,
+        "p50_pct": 6.5,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 47,
+        "simple_mean_pct": 6.763,
+        "amount_weighted_mean_pct": 6.845,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 7.0,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31103",
+      "name": "Keya Paha",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.375,
+        "amount_weighted_mean_pct": 6.375,
+        "p10_pct": 6.375,
+        "p25_pct": 6.375,
+        "p50_pct": 6.375,
+        "p75_pct": 6.375,
+        "p90_pct": 6.375,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31105",
+      "name": "Kimball",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 19,
+        "simple_mean_pct": 6.921,
+        "amount_weighted_mean_pct": 6.901,
+        "p10_pct": 5.75,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31107",
+      "name": "Knox",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.75,
+        "amount_weighted_mean_pct": 6.75,
+        "p10_pct": 6.75,
+        "p25_pct": 6.75,
+        "p50_pct": 6.75,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 17,
+        "simple_mean_pct": 6.728,
+        "amount_weighted_mean_pct": 6.682,
+        "p10_pct": 5.875,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31109",
+      "name": "Lancaster",
+      "term_15": {
+        "n_loans": 73,
+        "simple_mean_pct": 6.458,
+        "amount_weighted_mean_pct": 6.186,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.25,
+        "p75_pct": 6.625,
+        "p90_pct": 6.875,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 3057,
+        "simple_mean_pct": 6.565,
+        "amount_weighted_mean_pct": 6.593,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31111",
+      "name": "Lincoln",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.167,
+        "amount_weighted_mean_pct": 6.174,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.125,
+        "p90_pct": 6.125,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 241,
+        "simple_mean_pct": 6.588,
+        "amount_weighted_mean_pct": 6.617,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31113",
+      "name": "Logan",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.438,
+        "amount_weighted_mean_pct": 6.432,
+        "p10_pct": 6.25,
+        "p25_pct": 6.25,
+        "p50_pct": 6.25,
+        "p75_pct": 6.25,
+        "p90_pct": 6.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31115",
+      "name": "Loup",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.25,
+        "amount_weighted_mean_pct": 6.25,
+        "p10_pct": 6.25,
+        "p25_pct": 6.25,
+        "p50_pct": 6.25,
+        "p75_pct": 6.25,
+        "p90_pct": 6.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31119",
+      "name": "Madison",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.562,
+        "amount_weighted_mean_pct": 6.439,
+        "p10_pct": 6.125,
+        "p25_pct": 6.125,
+        "p50_pct": 6.125,
+        "p75_pct": 6.125,
+        "p90_pct": 6.125,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 212,
+        "simple_mean_pct": 6.552,
+        "amount_weighted_mean_pct": 6.516,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31121",
+      "name": "Merrick",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 7.0,
+        "amount_weighted_mean_pct": 6.448,
+        "p10_pct": 5.75,
+        "p25_pct": 5.75,
+        "p50_pct": 6.625,
+        "p75_pct": 6.625,
+        "p90_pct": 6.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 59,
+        "simple_mean_pct": 6.696,
+        "amount_weighted_mean_pct": 6.74,
+        "p10_pct": 5.875,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 7.0,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31123",
+      "name": "Morrill",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 7,
+        "simple_mean_pct": 6.677,
+        "amount_weighted_mean_pct": 6.707,
+        "p10_pct": 4.875,
+        "p25_pct": 6.25,
+        "p50_pct": 7.125,
+        "p75_pct": 7.125,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31125",
+      "name": "Nance",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.5,
+        "amount_weighted_mean_pct": 6.5,
+        "p10_pct": 6.5,
+        "p25_pct": 6.5,
+        "p50_pct": 6.5,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 21,
+        "simple_mean_pct": 6.565,
+        "amount_weighted_mean_pct": 6.605,
+        "p10_pct": 6.0,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 7.124,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31127",
+      "name": "Nemaha",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.122,
+        "amount_weighted_mean_pct": 6.139,
+        "p10_pct": 5.99,
+        "p25_pct": 5.99,
+        "p50_pct": 6.125,
+        "p75_pct": 6.125,
+        "p90_pct": 6.125,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 42,
+        "simple_mean_pct": 6.474,
+        "amount_weighted_mean_pct": 6.457,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.999,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31129",
+      "name": "Nuckolls",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 20,
+        "simple_mean_pct": 6.668,
+        "amount_weighted_mean_pct": 6.688,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31131",
+      "name": "Otoe",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 10.373,
+        "amount_weighted_mean_pct": 7.67,
+        "p10_pct": 6.25,
+        "p25_pct": 6.25,
+        "p50_pct": 12.05,
+        "p75_pct": 12.05,
+        "p90_pct": 12.05,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 130,
+        "simple_mean_pct": 6.556,
+        "amount_weighted_mean_pct": 6.577,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31133",
+      "name": "Pawnee",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 13,
+        "simple_mean_pct": 6.576,
+        "amount_weighted_mean_pct": 6.483,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.49,
+        "p75_pct": 6.75,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31135",
+      "name": "Perkins",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 12,
+        "simple_mean_pct": 6.781,
+        "amount_weighted_mean_pct": 6.836,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.875,
+        "p75_pct": 7.0,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31137",
+      "name": "Phelps",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 56,
+        "simple_mean_pct": 6.607,
+        "amount_weighted_mean_pct": 6.651,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31139",
+      "name": "Pierce",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.5,
+        "amount_weighted_mean_pct": 6.5,
+        "p10_pct": 6.5,
+        "p25_pct": 6.5,
+        "p50_pct": 6.5,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 23,
+        "simple_mean_pct": 6.635,
+        "amount_weighted_mean_pct": 6.718,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31141",
+      "name": "Platte",
+      "term_15": {
+        "n_loans": 7,
+        "simple_mean_pct": 5.982,
+        "amount_weighted_mean_pct": 5.932,
+        "p10_pct": 5.0,
+        "p25_pct": 5.375,
+        "p50_pct": 6.0,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 267,
+        "simple_mean_pct": 6.624,
+        "amount_weighted_mean_pct": 6.629,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31143",
+      "name": "Polk",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 37,
+        "simple_mean_pct": 6.607,
+        "amount_weighted_mean_pct": 6.632,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.975,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31145",
+      "name": "Red Willow",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 64,
+        "simple_mean_pct": 6.548,
+        "amount_weighted_mean_pct": 6.573,
+        "p10_pct": 5.75,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 7.0,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31147",
+      "name": "Richardson",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.625,
+        "amount_weighted_mean_pct": 7.625,
+        "p10_pct": 7.625,
+        "p25_pct": 7.625,
+        "p50_pct": 7.625,
+        "p75_pct": 7.625,
+        "p90_pct": 7.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 37,
+        "simple_mean_pct": 6.638,
+        "amount_weighted_mean_pct": 6.617,
+        "p10_pct": 6.0,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31149",
+      "name": "Rock",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 3,
+        "simple_mean_pct": 7.167,
+        "amount_weighted_mean_pct": 7.397,
+        "p10_pct": 6.5,
+        "p25_pct": 6.5,
+        "p50_pct": 7.125,
+        "p75_pct": 7.125,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31151",
+      "name": "Saline",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 96,
+        "simple_mean_pct": 6.636,
+        "amount_weighted_mean_pct": 6.639,
+        "p10_pct": 6.0,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31153",
+      "name": "Sarpy",
+      "term_15": {
+        "n_loans": 39,
+        "simple_mean_pct": 6.374,
+        "amount_weighted_mean_pct": 5.988,
+        "p10_pct": 5.25,
+        "p25_pct": 5.5,
+        "p50_pct": 6.0,
+        "p75_pct": 6.5,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2666,
+        "simple_mean_pct": 6.482,
+        "amount_weighted_mean_pct": 6.479,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31155",
+      "name": "Saunders",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.0,
+        "amount_weighted_mean_pct": 6.0,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 5.875,
+        "p75_pct": 5.875,
+        "p90_pct": 5.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 218,
+        "simple_mean_pct": 6.585,
+        "amount_weighted_mean_pct": 6.592,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31157",
+      "name": "Scotts Bluff",
+      "term_15": {
+        "n_loans": 6,
+        "simple_mean_pct": 6.478,
+        "amount_weighted_mean_pct": 6.54,
+        "p10_pct": 6.0,
+        "p25_pct": 6.125,
+        "p50_pct": 6.125,
+        "p75_pct": 6.625,
+        "p90_pct": 6.99,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 133,
+        "simple_mean_pct": 6.813,
+        "amount_weighted_mean_pct": 6.806,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31159",
+      "name": "Seward",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.0,
+        "amount_weighted_mean_pct": 6.0,
+        "p10_pct": 6.0,
+        "p25_pct": 6.0,
+        "p50_pct": 6.0,
+        "p75_pct": 6.0,
+        "p90_pct": 6.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 97,
+        "simple_mean_pct": 6.496,
+        "amount_weighted_mean_pct": 6.501,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31161",
+      "name": "Sheridan",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 22,
+        "simple_mean_pct": 6.766,
+        "amount_weighted_mean_pct": 6.875,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31163",
+      "name": "Sherman",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 8,
+        "simple_mean_pct": 6.608,
+        "amount_weighted_mean_pct": 6.722,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 6.75,
+        "p75_pct": 6.99,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31167",
+      "name": "Stanton",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 31,
+        "simple_mean_pct": 6.659,
+        "amount_weighted_mean_pct": 6.64,
+        "p10_pct": 6.125,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31169",
+      "name": "Thayer",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 11,
+        "simple_mean_pct": 6.476,
+        "amount_weighted_mean_pct": 6.508,
+        "p10_pct": 5.625,
+        "p25_pct": 6.0,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 6.99,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31171",
+      "name": "Thomas",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.833,
+        "amount_weighted_mean_pct": 6.618,
+        "p10_pct": 6.25,
+        "p25_pct": 6.25,
+        "p50_pct": 6.875,
+        "p75_pct": 6.875,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31173",
+      "name": "Thurston",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 11,
+        "simple_mean_pct": 6.307,
+        "amount_weighted_mean_pct": 6.698,
+        "p10_pct": 5.625,
+        "p25_pct": 5.75,
+        "p50_pct": 6.5,
+        "p75_pct": 6.5,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31175",
+      "name": "Valley",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 13,
+        "simple_mean_pct": 6.356,
+        "amount_weighted_mean_pct": 6.384,
+        "p10_pct": 5.5,
+        "p25_pct": 6.0,
+        "p50_pct": 6.375,
+        "p75_pct": 6.5,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31177",
+      "name": "Washington",
+      "term_15": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.623,
+        "amount_weighted_mean_pct": 6.107,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 5.99,
+        "p75_pct": 6.125,
+        "p90_pct": 6.125,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 196,
+        "simple_mean_pct": 6.55,
+        "amount_weighted_mean_pct": 6.561,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31179",
+      "name": "Wayne",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 32,
+        "simple_mean_pct": 6.605,
+        "amount_weighted_mean_pct": 6.65,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.875,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "31181",
+      "name": "Webster",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 18,
+        "simple_mean_pct": 6.833,
+        "amount_weighted_mean_pct": 6.897,
+        "p10_pct": 5.625,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.625,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31183",
+      "name": "Wheeler",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.438,
+        "amount_weighted_mean_pct": 6.438,
+        "p10_pct": 6.0,
+        "p25_pct": 6.0,
+        "p50_pct": 6.0,
+        "p75_pct": 6.0,
+        "p90_pct": 6.0,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "31185",
+      "name": "York",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.875,
+        "amount_weighted_mean_pct": 5.875,
+        "p10_pct": 5.875,
+        "p25_pct": 5.875,
+        "p50_pct": 5.875,
+        "p75_pct": 5.875,
+        "p90_pct": 5.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 92,
+        "simple_mean_pct": 6.661,
+        "amount_weighted_mean_pct": 6.66,
+        "p10_pct": 5.99,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    }
+  ]
+}

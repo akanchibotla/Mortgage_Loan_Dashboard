@@ -1,0 +1,12 @@
+{
+  "n_loans": 1016,
+  "simple_mean_pct": 6.778,
+  "amount_weighted_mean_pct": 6.201,
+  "p10_pct": 5.375,
+  "p25_pct": 5.875,
+  "p50_pct": 6.25,
+  "p75_pct": 6.99,
+  "p90_pct": 9.15,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), KY, loan_purpose=home_purchase, action_taken=originated, loan_term=180"
+}

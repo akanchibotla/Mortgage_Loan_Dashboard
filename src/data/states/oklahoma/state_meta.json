@@ -1,0 +1,9 @@
+{
+  "slug": "oklahoma",
+  "postal": "OK",
+  "fips": "40",
+  "name": "Oklahoma",
+  "built_at_utc": "2026-06-01T16:04:55+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

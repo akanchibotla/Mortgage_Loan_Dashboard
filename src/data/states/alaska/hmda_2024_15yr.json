@@ -1,0 +1,12 @@
+{
+  "n_loans": 173,
+  "simple_mean_pct": 6.21,
+  "amount_weighted_mean_pct": 6.027,
+  "p10_pct": 5.375,
+  "p25_pct": 5.625,
+  "p50_pct": 6.0,
+  "p75_pct": 6.75,
+  "p90_pct": 7.375,
+  "low_n": false,
+  "source": "HMDA 2024 LAR public (FFIEC), AK, loan_purpose=home_purchase, action_taken=originated, loan_term=180"
+}

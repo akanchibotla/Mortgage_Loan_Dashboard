@@ -1,0 +1,9 @@
+{
+  "slug": "wyoming",
+  "postal": "WY",
+  "fips": "56",
+  "name": "Wyoming",
+  "built_at_utc": "2026-06-01T16:05:31+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

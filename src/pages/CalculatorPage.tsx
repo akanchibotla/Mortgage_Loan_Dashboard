@@ -1,6 +1,7 @@
 import { Suspense, use, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
+import type { CountyEntry, HmdaSummary } from "../types";
 
 const cache = new Map<string, Promise<StateData | null>>();
 function getStatePromise(slug: string): Promise<StateData | null> {
@@ -29,19 +30,18 @@ function latestNonNull(rows: { rate: number | null }[] | null | undefined): numb
 
 export default function CalculatorPage() {
   const { states } = loadStatesIndex();
-  // Order: HMDA-supported states first, then others.
   const ordered = useMemo(
     () =>
       [...states].sort(
         (a, b) =>
-          Number(b.has_hmda_band) - Number(a.has_hmda_band) ||
-          a.name.localeCompare(b.name),
+          Number(b.has_hmda_band) - Number(a.has_hmda_band) || a.name.localeCompare(b.name),
       ),
     [states],
   );
   const defaultSlug =
     ordered.find((s) => s.has_hmda_band)?.slug ?? ordered[0]?.slug ?? "north-carolina";
   const [slug, setSlug] = useState(defaultSlug);
+  const [countyFips, setCountyFips] = useState<string>("");
   const [term, setTerm] = useState<15 | 30>(30);
   const [loanAmount, setLoanAmount] = useState(350_000);
 
@@ -52,15 +52,21 @@ export default function CalculatorPage() {
       </p>
       <h1>Borrower expectation calculator</h1>
       <p className="sub">
-        Inputs are <i>indicative</i>. Estimated rate range is anchored to the HMDA 2024 actual closed-loan
-        distribution where available (currently only NC). When HMDA isn't available for a state, we show
-        today's Bankrate and Mortgage News Daily rates and skip the band.
+        Pick a state, county (when available), loan term, and loan amount. The calculator anchors
+        your <i>expected rate range</i> in the HMDA 2024 actual closed-loan distribution for that
+        area, then estimates monthly P&amp;I at the p10 / median / p90 of that distribution.
       </p>
 
       <section className="section calc-form">
         <label>
           <span>State</span>
-          <select value={slug} onChange={(e) => setSlug(e.target.value)}>
+          <select
+            value={slug}
+            onChange={(e) => {
+              setSlug(e.target.value);
+              setCountyFips("");
+            }}
+          >
             {ordered.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.name} {s.has_hmda_band ? "(HMDA)" : ""}
@@ -68,21 +74,16 @@ export default function CalculatorPage() {
             ))}
           </select>
         </label>
+        <Suspense fallback={<label><span>County</span><select disabled><option>loading…</option></select></label>}>
+          <CountyPicker slug={slug} countyFips={countyFips} onChange={setCountyFips} />
+        </Suspense>
         <label>
           <span>Loan term</span>
           <div className="term-toggle">
-            <button
-              type="button"
-              className={term === 15 ? "active" : ""}
-              onClick={() => setTerm(15)}
-            >
+            <button type="button" className={term === 15 ? "active" : ""} onClick={() => setTerm(15)}>
               15-year
             </button>
-            <button
-              type="button"
-              className={term === 30 ? "active" : ""}
-              onClick={() => setTerm(30)}
-            >
+            <button type="button" className={term === 30 ? "active" : ""} onClick={() => setTerm(30)}>
               30-year
             </button>
           </div>
@@ -110,116 +111,247 @@ export default function CalculatorPage() {
       </section>
 
       <Suspense fallback={<p className="loading">Loading {slug}…</p>}>
-        <CalculatorOutput slug={slug} term={term} loanAmount={loanAmount} />
+        <CalculatorOutput slug={slug} countyFips={countyFips} term={term} loanAmount={loanAmount} />
       </Suspense>
     </>
   );
 }
 
+function CountyPicker({
+  slug,
+  countyFips,
+  onChange,
+}: {
+  slug: string;
+  countyFips: string;
+  onChange: (fips: string) => void;
+}) {
+  const data = use(getStatePromise(slug));
+  const counties = data?.counties?.counties ?? [];
+  if (counties.length === 0) {
+    return (
+      <label>
+        <span>County</span>
+        <select disabled>
+          <option>not bundled for this state</option>
+        </select>
+      </label>
+    );
+  }
+  const ordered = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
+  return (
+    <label>
+      <span>County (optional)</span>
+      <select value={countyFips} onChange={(e) => onChange(e.target.value)}>
+        <option value="">— all of {data?.meta?.name ?? slug} —</option>
+        {ordered.map((c) => (
+          <option key={c.fips} value={c.fips}>
+            {c.name} (n={c.term_30.n_loans.toLocaleString()})
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function CalculatorOutput({
   slug,
+  countyFips,
   term,
   loanAmount,
 }: {
   slug: string;
+  countyFips: string;
   term: 15 | 30;
   loanAmount: number;
 }) {
   const data = use(getStatePromise(slug));
   if (!data) {
-    return (
-      <p className="loading">
-        No data bundled for {slug} yet. Pick another state or come back when this one is backfilled.
-      </p>
-    );
+    return <p className="loading">No data bundled for {slug} yet.</p>;
   }
+  const county: CountyEntry | undefined = countyFips
+    ? data.counties?.counties.find((c) => c.fips === countyFips)
+    : undefined;
   const bankrate = term === 15 ? data.bankrate15 : data.bankrate30;
   const mnd = term === 15 ? data.mnd15 : data.mnd30;
   const liveBankrate = latestNonNull(bankrate);
   const liveMnd = latestNonNull(mnd);
-  const hmda = term === 15 ? data.hmda15 : undefined;
+  const stateHmda: HmdaSummary | undefined = term === 15 ? data.hmda15 : data.hmda30;
+  const countyDist = county ? (term === 15 ? county.term_15 : county.term_30) : undefined;
 
-  const medianRate = hmda?.simple_mean_pct ?? liveBankrate ?? liveMnd ?? null;
-  const p10 = hmda?.p10_pct ?? null;
-  const p90 = hmda?.p90_pct ?? null;
+  // Pick the distribution to anchor on: county if user picked one and it has data,
+  // otherwise the state-level HMDA.
+  const distLabel = countyDist?.n_loans
+    ? `${county!.name} County (n=${countyDist.n_loans.toLocaleString()})`
+    : stateHmda?.n_loans
+      ? `${data.meta.name} (n=${stateHmda.n_loans.toLocaleString()})`
+      : null;
+
+  const p10 = countyDist?.p10_pct ?? stateHmda?.p10_pct;
+  const p25 = countyDist?.p25_pct ?? stateHmda?.p25_pct;
+  const p50 = countyDist?.p50_pct ?? stateHmda?.p50_pct;
+  const p75 = countyDist?.p75_pct ?? stateHmda?.p75_pct;
+  const p90 = countyDist?.p90_pct ?? stateHmda?.p90_pct;
+  const meanRate =
+    countyDist?.simple_mean_pct ?? stateHmda?.simple_mean_pct ?? liveBankrate ?? liveMnd ?? null;
 
   return (
     <>
       <section className="section">
         <h2>Today's market — {data.meta.name}</h2>
         <div className="kv-grid">
-          <div className="kv">
-            <span className="k">Bankrate ({term}-yr fixed)</span>
-            <span className="v">{liveBankrate != null ? `${liveBankrate.toFixed(2)}%` : "—"}</span>
-          </div>
-          <div className="kv">
-            <span className="k">Mortgage News Daily ({term}-yr fixed)</span>
-            <span className="v">{liveMnd != null ? `${liveMnd.toFixed(2)}%` : "—"}</span>
-          </div>
+          <Stat
+            k={`Bankrate (${term}-yr, today)`}
+            v={liveBankrate != null ? `${liveBankrate.toFixed(2)}%` : "—"}
+          />
+          <Stat
+            k={`Mortgage News Daily (${term}-yr, today)`}
+            v={liveMnd != null ? `${liveMnd.toFixed(2)}%` : "—"}
+          />
         </div>
       </section>
 
-      {hmda ? (
+      {distLabel ? (
         <section className="section">
           <h2>
-            HMDA 2024 {data.meta.postal} 15-yr distribution (n={hmda.n_loans.toLocaleString()})
+            What borrowers actually paid in 2024 — {distLabel} {term}-yr
           </h2>
-          <p className="sub">
-            Term {term}=15 only (HMDA 30-yr band not yet bundled). What NC borrowers actually closed in 2024.
-          </p>
+          {p10 != null && p90 != null && (
+            <DistributionBar
+              p10={p10}
+              p25={p25}
+              p50={p50}
+              p75={p75}
+              p90={p90}
+              market={liveBankrate ?? liveMnd ?? undefined}
+            />
+          )}
           <div className="kv-grid">
-            <Stat k="p10" v={`${hmda.p10_pct.toFixed(2)}%`} />
-            <Stat k="p25" v={`${hmda.p25_pct.toFixed(2)}%`} />
-            <Stat k="median (p50)" v={`${hmda.p50_pct.toFixed(2)}%`} />
-            <Stat k="p75" v={`${hmda.p75_pct.toFixed(2)}%`} />
-            <Stat k="p90" v={`${hmda.p90_pct.toFixed(2)}%`} />
-            <Stat k="simple mean" v={`${hmda.simple_mean_pct.toFixed(2)}%`} />
-            <Stat k="loan-amount-weighted mean" v={`${hmda.amount_weighted_mean_pct.toFixed(2)}%`} />
+            {p10 != null && <Stat k="p10 (low)" v={`${p10.toFixed(2)}%`} />}
+            {p25 != null && <Stat k="p25" v={`${p25.toFixed(2)}%`} />}
+            {p50 != null && <Stat k="median" v={`${p50.toFixed(2)}%`} />}
+            {p75 != null && <Stat k="p75" v={`${p75.toFixed(2)}%`} />}
+            {p90 != null && <Stat k="p90 (high)" v={`${p90.toFixed(2)}%`} />}
           </div>
         </section>
       ) : (
         <section className="section">
           <p className="loading">
-            HMDA band not bundled for {data.meta.name} yet (needs FFIEC national LAR partition). The
-            payment estimates below use the Bankrate latest as the central rate.
+            HMDA distribution not bundled for {data.meta.name}{" "}
+            {term}-yr yet. Payment estimates below use today's Bankrate rate as the central anchor.
           </p>
         </section>
       )}
 
       <section className="section">
-        <h2>Estimated monthly P&amp;I — ${loanAmount.toLocaleString()} over {term} years</h2>
+        <h2>
+          Estimated monthly P&amp;I — ${loanAmount.toLocaleString()} / {term} yr
+        </h2>
         <div className="kv-grid">
-          {medianRate != null && (
+          {meanRate != null && (
             <Stat
-              k={`@ ${medianRate.toFixed(2)}% (central)`}
-              v={`$${monthlyPayment(loanAmount, medianRate, term).toFixed(0).toLocaleString()}`}
+              k={`@ ${meanRate.toFixed(2)}% (central)`}
+              v={`$${monthlyPayment(loanAmount, meanRate, term).toFixed(0)}`}
             />
           )}
           {p10 != null && (
             <Stat
-              k={`@ ${p10.toFixed(2)}% (HMDA p10, "best case")`}
-              v={`$${monthlyPayment(loanAmount, p10, term).toFixed(0).toLocaleString()}`}
+              k={`@ ${p10.toFixed(2)}% (best 10%)`}
+              v={`$${monthlyPayment(loanAmount, p10, term).toFixed(0)}`}
             />
           )}
           {p90 != null && (
             <Stat
-              k={`@ ${p90.toFixed(2)}% (HMDA p90, "worst case")`}
-              v={`$${monthlyPayment(loanAmount, p90, term).toFixed(0).toLocaleString()}`}
+              k={`@ ${p90.toFixed(2)}% (worst 10%)`}
+              v={`$${monthlyPayment(loanAmount, p90, term).toFixed(0)}`}
             />
           )}
         </div>
         <p className="sub">
-          Principal &amp; interest only. Excludes taxes, insurance, PMI, HOA. Lender quotes will vary
-          by credit profile, LTV, and program.
+          Principal &amp; interest only. Excludes taxes, insurance, PMI, HOA. Lender quotes vary by
+          credit profile, LTV, and program.
         </p>
       </section>
 
       <div className="notes">
         <p>
           <Link to={`/state/${slug}`}>See full {data.meta.name} dashboard &rarr;</Link>
+          {countyFips && (
+            <>
+              {" · "}
+              <Link to={`/state/${slug}/county/${countyFips}`}>
+                See {county?.name ?? "county"} County dashboard &rarr;
+              </Link>
+            </>
+          )}
         </p>
       </div>
     </>
+  );
+}
+
+function DistributionBar({
+  p10,
+  p25,
+  p50,
+  p75,
+  p90,
+  market,
+}: {
+  p10: number;
+  p25?: number;
+  p50?: number;
+  p75?: number;
+  p90: number;
+  market?: number;
+}) {
+  const RANGE_LO = 4;
+  const RANGE_HI = 10;
+  const span = RANGE_HI - RANGE_LO;
+  const pct = (v: number) => `${((v - RANGE_LO) / span) * 100}%`;
+  const w = (a: number, b: number) => `${((b - a) / span) * 100}%`;
+  return (
+    <div className="dist-bar">
+      <div className="dist-axis">
+        {[4, 5, 6, 7, 8, 9, 10].map((v) => (
+          <span key={v} style={{ left: pct(v) }}>
+            {v}%
+          </span>
+        ))}
+      </div>
+      <div className="dist-track">
+        <div
+          className="dist-band-outer"
+          style={{ left: pct(p10), width: w(p10, p90) }}
+          title={`p10–p90: ${p10.toFixed(2)}%–${p90.toFixed(2)}%`}
+        />
+        {p25 != null && p75 != null && (
+          <div
+            className="dist-band-inner"
+            style={{ left: pct(p25), width: w(p25, p75) }}
+            title={`p25–p75: ${p25.toFixed(2)}%–${p75.toFixed(2)}%`}
+          />
+        )}
+        {p50 != null && (
+          <div
+            className="dist-median"
+            style={{ left: pct(p50) }}
+            title={`median: ${p50.toFixed(2)}%`}
+          />
+        )}
+        {market != null && market >= RANGE_LO && market <= RANGE_HI && (
+          <div
+            className="dist-market"
+            style={{ left: pct(market) }}
+            title={`Today's market: ${market.toFixed(2)}%`}
+          />
+        )}
+      </div>
+      <p className="sub" style={{ marginTop: 8 }}>
+        Light green band: middle 80% of borrowers. Dark green: middle 50%. Black line: median.{" "}
+        {market != null && "Blue line: today's market quote."}
+      </p>
+    </div>
   );
 }
 

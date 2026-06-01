@@ -1,0 +1,608 @@
+{
+  "state_slug": "alaska",
+  "state_postal": "AK",
+  "state_fips": "02",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:03:41+00:00",
+  "counties": [
+    {
+      "fips": "02016",
+      "name": "Aleutians West",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 7,
+        "simple_mean_pct": 6.411,
+        "amount_weighted_mean_pct": 6.357,
+        "p10_pct": 5.749,
+        "p25_pct": 5.75,
+        "p50_pct": 6.375,
+        "p75_pct": 6.625,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02020",
+      "name": "Anchorage",
+      "term_15": {
+        "n_loans": 76,
+        "simple_mean_pct": 5.807,
+        "amount_weighted_mean_pct": 5.797,
+        "p10_pct": 5.25,
+        "p25_pct": 5.5,
+        "p50_pct": 5.75,
+        "p75_pct": 6.0,
+        "p90_pct": 6.375,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2760,
+        "simple_mean_pct": 6.329,
+        "amount_weighted_mean_pct": 6.345,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.25,
+        "p75_pct": 6.625,
+        "p90_pct": 7.0,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02050",
+      "name": "Bethel",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 6.625,
+        "amount_weighted_mean_pct": 6.625,
+        "p10_pct": 6.625,
+        "p25_pct": 6.625,
+        "p50_pct": 6.625,
+        "p75_pct": 6.625,
+        "p90_pct": 6.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 29,
+        "simple_mean_pct": 6.431,
+        "amount_weighted_mean_pct": 6.43,
+        "p10_pct": 5.375,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.75,
+        "p90_pct": 7.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02060",
+      "name": "Bristol Bay",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.375,
+        "amount_weighted_mean_pct": 6.389,
+        "p10_pct": 6.125,
+        "p25_pct": 6.125,
+        "p50_pct": 6.25,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02068",
+      "name": "Denali",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 12,
+        "simple_mean_pct": 6.396,
+        "amount_weighted_mean_pct": 6.427,
+        "p10_pct": 5.75,
+        "p25_pct": 5.75,
+        "p50_pct": 6.375,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02070",
+      "name": "Dillingham",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 13,
+        "simple_mean_pct": 6.701,
+        "amount_weighted_mean_pct": 6.692,
+        "p10_pct": 6.125,
+        "p25_pct": 6.5,
+        "p50_pct": 6.75,
+        "p75_pct": 7.0,
+        "p90_pct": 7.125,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02063",
+      "name": "FIPS 02063",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 53,
+        "simple_mean_pct": 6.328,
+        "amount_weighted_mean_pct": 6.339,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.625,
+        "p90_pct": 6.875,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02066",
+      "name": "FIPS 02066",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.75,
+        "amount_weighted_mean_pct": 5.75,
+        "p10_pct": 5.75,
+        "p25_pct": 5.75,
+        "p50_pct": 5.75,
+        "p75_pct": 5.75,
+        "p90_pct": 5.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 9,
+        "simple_mean_pct": 6.402,
+        "amount_weighted_mean_pct": 6.4,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.625,
+        "p90_pct": 6.625,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02090",
+      "name": "Fairbanks North Star",
+      "term_15": {
+        "n_loans": 18,
+        "simple_mean_pct": 6.409,
+        "amount_weighted_mean_pct": 6.373,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.375,
+        "p75_pct": 6.99,
+        "p90_pct": 7.125,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 754,
+        "simple_mean_pct": 6.468,
+        "amount_weighted_mean_pct": 6.464,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02100",
+      "name": "Haines",
+      "term_15": {
+        "n_loans": 3,
+        "simple_mean_pct": 6.455,
+        "amount_weighted_mean_pct": 6.23,
+        "p10_pct": 5.625,
+        "p25_pct": 5.625,
+        "p50_pct": 6.75,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 9,
+        "simple_mean_pct": 6.687,
+        "amount_weighted_mean_pct": 6.702,
+        "p10_pct": 6.0,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 6.75,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02105",
+      "name": "Hoonah-Angoon",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.5,
+        "amount_weighted_mean_pct": 7.5,
+        "p10_pct": 7.5,
+        "p25_pct": 7.5,
+        "p50_pct": 7.5,
+        "p75_pct": 7.5,
+        "p90_pct": 7.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.468,
+        "amount_weighted_mean_pct": 6.376,
+        "p10_pct": 6.25,
+        "p25_pct": 6.25,
+        "p50_pct": 6.25,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02110",
+      "name": "Juneau",
+      "term_15": {
+        "n_loans": 8,
+        "simple_mean_pct": 6.516,
+        "amount_weighted_mean_pct": 6.44,
+        "p10_pct": 5.625,
+        "p25_pct": 5.75,
+        "p50_pct": 6.375,
+        "p75_pct": 6.624,
+        "p90_pct": 7.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 268,
+        "simple_mean_pct": 6.53,
+        "amount_weighted_mean_pct": 6.551,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02122",
+      "name": "Kenai Peninsula",
+      "term_15": {
+        "n_loans": 29,
+        "simple_mean_pct": 6.861,
+        "amount_weighted_mean_pct": 6.653,
+        "p10_pct": 5.75,
+        "p25_pct": 6.5,
+        "p50_pct": 6.875,
+        "p75_pct": 7.625,
+        "p90_pct": 7.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 537,
+        "simple_mean_pct": 6.503,
+        "amount_weighted_mean_pct": 6.497,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02130",
+      "name": "Ketchikan Gateway",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 63,
+        "simple_mean_pct": 6.615,
+        "amount_weighted_mean_pct": 6.603,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 7.0,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02150",
+      "name": "Kodiak Island",
+      "term_15": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.0,
+        "amount_weighted_mean_pct": 6.0,
+        "p10_pct": 6.0,
+        "p25_pct": 6.0,
+        "p50_pct": 6.0,
+        "p75_pct": 6.0,
+        "p90_pct": 6.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 76,
+        "simple_mean_pct": 6.435,
+        "amount_weighted_mean_pct": 6.437,
+        "p10_pct": 5.75,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 6.75,
+        "p90_pct": 7.0,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02170",
+      "name": "Matanuska-Susitna",
+      "term_15": {
+        "n_loans": 30,
+        "simple_mean_pct": 6.379,
+        "amount_weighted_mean_pct": 6.109,
+        "p10_pct": 5.375,
+        "p25_pct": 5.749,
+        "p50_pct": 6.25,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 1462,
+        "simple_mean_pct": 6.411,
+        "amount_weighted_mean_pct": 6.405,
+        "p10_pct": 5.75,
+        "p25_pct": 6.0,
+        "p50_pct": 6.375,
+        "p75_pct": 6.75,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02180",
+      "name": "Nome",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.75,
+        "amount_weighted_mean_pct": 5.75,
+        "p10_pct": 5.75,
+        "p25_pct": 5.75,
+        "p50_pct": 5.75,
+        "p75_pct": 5.75,
+        "p90_pct": 5.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 17,
+        "simple_mean_pct": 6.316,
+        "amount_weighted_mean_pct": 6.398,
+        "p10_pct": 5.75,
+        "p25_pct": 6.0,
+        "p50_pct": 6.25,
+        "p75_pct": 6.625,
+        "p90_pct": 6.875,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02185",
+      "name": "North Slope",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 7,
+        "simple_mean_pct": 6.606,
+        "amount_weighted_mean_pct": 6.648,
+        "p10_pct": 6.125,
+        "p25_pct": 6.125,
+        "p50_pct": 6.49,
+        "p75_pct": 6.625,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02188",
+      "name": "Northwest Arctic",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 6,
+        "simple_mean_pct": 6.104,
+        "amount_weighted_mean_pct": 6.102,
+        "p10_pct": 5.75,
+        "p25_pct": 5.75,
+        "p50_pct": 5.875,
+        "p75_pct": 6.125,
+        "p90_pct": 6.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02195",
+      "name": "Petersburg",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.625,
+        "amount_weighted_mean_pct": 5.625,
+        "p10_pct": 5.625,
+        "p25_pct": 5.625,
+        "p50_pct": 5.625,
+        "p75_pct": 5.625,
+        "p90_pct": 5.625,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 8,
+        "simple_mean_pct": 6.502,
+        "amount_weighted_mean_pct": 6.452,
+        "p10_pct": 5.65,
+        "p25_pct": 6.0,
+        "p50_pct": 6.375,
+        "p75_pct": 6.625,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02198",
+      "name": "Prince of Wales-Hyder",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 11,
+        "simple_mean_pct": 6.499,
+        "amount_weighted_mean_pct": 6.454,
+        "p10_pct": 5.875,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 6.75,
+        "p90_pct": 6.99,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02220",
+      "name": "Sitka",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 28,
+        "simple_mean_pct": 6.406,
+        "amount_weighted_mean_pct": 6.413,
+        "p10_pct": 5.5,
+        "p25_pct": 6.125,
+        "p50_pct": 6.49,
+        "p75_pct": 6.625,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02230",
+      "name": "Skagway",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.094,
+        "amount_weighted_mean_pct": 6.06,
+        "p10_pct": 5.625,
+        "p25_pct": 5.625,
+        "p50_pct": 6.0,
+        "p75_pct": 6.25,
+        "p90_pct": 6.25,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02240",
+      "name": "Southeast Fairbanks",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.5,
+        "amount_weighted_mean_pct": 5.5,
+        "p10_pct": 5.5,
+        "p25_pct": 5.5,
+        "p50_pct": 5.5,
+        "p75_pct": 5.5,
+        "p90_pct": 5.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 54,
+        "simple_mean_pct": 6.37,
+        "amount_weighted_mean_pct": 6.298,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.75,
+        "p90_pct": 7.125,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02275",
+      "name": "Wrangell",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 4,
+        "simple_mean_pct": 6.495,
+        "amount_weighted_mean_pct": 6.438,
+        "p10_pct": 5.375,
+        "p25_pct": 5.375,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 6.99,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02282",
+      "name": "Yakutat",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.0,
+        "amount_weighted_mean_pct": 7.0,
+        "p10_pct": 7.0,
+        "p25_pct": 7.0,
+        "p50_pct": 7.0,
+        "p75_pct": 7.0,
+        "p90_pct": 7.0,
+        "low_n": true
+      }
+    },
+    {
+      "fips": "02290",
+      "name": "Yukon-Koyukuk",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 7.125,
+        "amount_weighted_mean_pct": 7.125,
+        "p10_pct": 7.125,
+        "p25_pct": 7.125,
+        "p50_pct": 7.125,
+        "p75_pct": 7.125,
+        "p90_pct": 7.125,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 2,
+        "simple_mean_pct": 6.87,
+        "amount_weighted_mean_pct": 6.885,
+        "p10_pct": 6.75,
+        "p25_pct": 6.75,
+        "p50_pct": 6.75,
+        "p75_pct": 6.75,
+        "p90_pct": 6.75,
+        "low_n": true
+      }
+    }
+  ]
+}

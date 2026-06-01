@@ -1,0 +1,9 @@
+{
+  "slug": "south-dakota",
+  "postal": "SD",
+  "fips": "46",
+  "name": "South Dakota",
+  "built_at_utc": "2026-06-01T16:05:05+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

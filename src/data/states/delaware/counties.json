@@ -1,0 +1,88 @@
+{
+  "state_slug": "delaware",
+  "state_postal": "DE",
+  "state_fips": "10",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:03:55+00:00",
+  "counties": [
+    {
+      "fips": "10001",
+      "name": "Kent",
+      "term_15": {
+        "n_loans": 34,
+        "simple_mean_pct": 6.135,
+        "amount_weighted_mean_pct": 6.068,
+        "p10_pct": 5.25,
+        "p25_pct": 5.75,
+        "p50_pct": 6.125,
+        "p75_pct": 6.5,
+        "p90_pct": 6.875,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2112,
+        "simple_mean_pct": 6.436,
+        "amount_weighted_mean_pct": 6.431,
+        "p10_pct": 5.75,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "10003",
+      "name": "New Castle",
+      "term_15": {
+        "n_loans": 126,
+        "simple_mean_pct": 6.162,
+        "amount_weighted_mean_pct": 6.069,
+        "p10_pct": 5.375,
+        "p25_pct": 5.625,
+        "p50_pct": 6.0,
+        "p75_pct": 6.5,
+        "p90_pct": 6.99,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 4869,
+        "simple_mean_pct": 6.591,
+        "amount_weighted_mean_pct": 6.621,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "10005",
+      "name": "Sussex",
+      "term_15": {
+        "n_loans": 140,
+        "simple_mean_pct": 6.237,
+        "amount_weighted_mean_pct": 6.136,
+        "p10_pct": 5.125,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.625,
+        "p90_pct": 7.24,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 4486,
+        "simple_mean_pct": 6.665,
+        "amount_weighted_mean_pct": 6.662,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 7.125,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    }
+  ]
+}

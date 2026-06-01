@@ -1,0 +1,9 @@
+{
+  "slug": "new-hampshire",
+  "postal": "NH",
+  "fips": "33",
+  "name": "New Hampshire",
+  "built_at_utc": "2026-06-01T16:04:38+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

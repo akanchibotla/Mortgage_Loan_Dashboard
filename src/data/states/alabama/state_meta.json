@@ -1,0 +1,9 @@
+{
+  "slug": "alabama",
+  "postal": "AL",
+  "fips": "01",
+  "name": "Alabama",
+  "built_at_utc": "2026-06-01T16:03:40+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

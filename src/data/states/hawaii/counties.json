@@ -1,0 +1,114 @@
+{
+  "state_slug": "hawaii",
+  "state_postal": "HI",
+  "state_fips": "15",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:04:08+00:00",
+  "counties": [
+    {
+      "fips": "15001",
+      "name": "Hawaii",
+      "term_15": {
+        "n_loans": 26,
+        "simple_mean_pct": 6.159,
+        "amount_weighted_mean_pct": 5.951,
+        "p10_pct": 5.125,
+        "p25_pct": 5.625,
+        "p50_pct": 6.0,
+        "p75_pct": 6.375,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 1259,
+        "simple_mean_pct": 6.72,
+        "amount_weighted_mean_pct": 6.671,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.125,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "15003",
+      "name": "Honolulu",
+      "term_15": {
+        "n_loans": 120,
+        "simple_mean_pct": 6.426,
+        "amount_weighted_mean_pct": 6.265,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.375,
+        "p75_pct": 6.75,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 5012,
+        "simple_mean_pct": 6.407,
+        "amount_weighted_mean_pct": 6.381,
+        "p10_pct": 5.575,
+        "p25_pct": 5.99,
+        "p50_pct": 6.375,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "15007",
+      "name": "Kauai",
+      "term_15": {
+        "n_loans": 11,
+        "simple_mean_pct": 6.647,
+        "amount_weighted_mean_pct": 6.398,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 276,
+        "simple_mean_pct": 6.849,
+        "amount_weighted_mean_pct": 6.875,
+        "p10_pct": 5.875,
+        "p25_pct": 6.375,
+        "p50_pct": 6.75,
+        "p75_pct": 7.375,
+        "p90_pct": 7.75,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "15009",
+      "name": "Maui",
+      "term_15": {
+        "n_loans": 25,
+        "simple_mean_pct": 6.505,
+        "amount_weighted_mean_pct": 6.514,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.375,
+        "p75_pct": 7.125,
+        "p90_pct": 7.25,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 701,
+        "simple_mean_pct": 6.733,
+        "amount_weighted_mean_pct": 6.726,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.125,
+        "p90_pct": 7.625,
+        "low_n": false
+      }
+    }
+  ]
+}

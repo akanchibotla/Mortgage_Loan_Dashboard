@@ -4,7 +4,7 @@
   "state_fips": "37",
   "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
   "low_n_threshold": 30,
-  "built_at_utc": "2026-06-01T16:00:20+00:00",
+  "built_at_utc": "2026-06-01T16:04:49+00:00",
   "counties": [
     {
       "fips": "37001",

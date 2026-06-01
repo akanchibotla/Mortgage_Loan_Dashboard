@@ -171,6 +171,20 @@ def emit(slug: str, state: dict, result: dict) -> None:
     out_dir = state_data_dir(slug)
     os.makedirs(out_dir, exist_ok=True)
 
+    # Make sure a state_meta.json exists so the dashboard index picks this state up.
+    meta_path = os.path.join(out_dir, "state_meta.json")
+    if not os.path.exists(meta_path):
+        with open(meta_path, "w") as f:
+            json.dump({
+                "slug": state["slug"],
+                "postal": state["postal"],
+                "fips": state["fips"],
+                "name": state["name"],
+                "built_at_utc": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+                "has_hmda_band": True,
+                "live_trailing": False,
+            }, f, indent=2)
+
     with open(os.path.join(out_dir, "hmda_2024_15yr.json"), "w") as f:
         json.dump(result["state_15"], f, indent=2)
     with open(os.path.join(out_dir, "hmda_2024_30yr.json"), "w") as f:
@@ -222,6 +236,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--state", help="single state slug")
     parser.add_argument("--all", action="store_true", help="fetch for every bundled state")
+    parser.add_argument("--all-registry", action="store_true", help="fetch for every state in scripts/states.py")
     parser.add_argument("--keep-csv", action="store_true")
     args = parser.parse_args()
     if args.all:
@@ -231,6 +246,15 @@ def main() -> int:
         for slug in slugs:
             print(f"\n=== {slug} ===")
             r = fetch_one(slug, keep_csv=args.keep_csv)
+            if r != 0:
+                rc = r
+        return rc
+    if args.all_registry:
+        from states import STATES
+        rc = 0
+        for s in STATES:
+            print(f"\n=== {s['slug']} ===")
+            r = fetch_one(s["slug"], keep_csv=args.keep_csv)
             if r != 0:
                 rc = r
         return rc

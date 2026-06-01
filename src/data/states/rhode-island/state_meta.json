@@ -1,0 +1,9 @@
+{
+  "slug": "rhode-island",
+  "postal": "RI",
+  "fips": "44",
+  "name": "Rhode Island",
+  "built_at_utc": "2026-06-01T16:05:01+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

@@ -1,0 +1,140 @@
+{
+  "state_slug": "rhode-island",
+  "state_postal": "RI",
+  "state_fips": "44",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:05:01+00:00",
+  "counties": [
+    {
+      "fips": "44001",
+      "name": "Bristol",
+      "term_15": {
+        "n_loans": 6,
+        "simple_mean_pct": 5.871,
+        "amount_weighted_mean_pct": 5.684,
+        "p10_pct": 4.978,
+        "p25_pct": 5.875,
+        "p50_pct": 5.875,
+        "p75_pct": 6.0,
+        "p90_pct": 6.0,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 346,
+        "simple_mean_pct": 6.656,
+        "amount_weighted_mean_pct": 6.616,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "44003",
+      "name": "Kent",
+      "term_15": {
+        "n_loans": 77,
+        "simple_mean_pct": 6.536,
+        "amount_weighted_mean_pct": 6.088,
+        "p10_pct": 5.625,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 7.125,
+        "p90_pct": 7.5,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 1631,
+        "simple_mean_pct": 6.621,
+        "amount_weighted_mean_pct": 6.637,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "44005",
+      "name": "Newport",
+      "term_15": {
+        "n_loans": 12,
+        "simple_mean_pct": 6.344,
+        "amount_weighted_mean_pct": 5.91,
+        "p10_pct": 5.375,
+        "p25_pct": 5.5,
+        "p50_pct": 5.875,
+        "p75_pct": 6.375,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 581,
+        "simple_mean_pct": 6.655,
+        "amount_weighted_mean_pct": 6.605,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "44007",
+      "name": "Providence",
+      "term_15": {
+        "n_loans": 168,
+        "simple_mean_pct": 6.628,
+        "amount_weighted_mean_pct": 6.288,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 7.125,
+        "p90_pct": 7.375,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 4651,
+        "simple_mean_pct": 6.601,
+        "amount_weighted_mean_pct": 6.624,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.999,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "44009",
+      "name": "Washington",
+      "term_15": {
+        "n_loans": 27,
+        "simple_mean_pct": 6.406,
+        "amount_weighted_mean_pct": 5.98,
+        "p10_pct": 5.25,
+        "p25_pct": 5.75,
+        "p50_pct": 6.375,
+        "p75_pct": 7.25,
+        "p90_pct": 7.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 927,
+        "simple_mean_pct": 6.638,
+        "amount_weighted_mean_pct": 6.615,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    }
+  ]
+}

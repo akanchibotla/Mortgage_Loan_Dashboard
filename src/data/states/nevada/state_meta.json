@@ -1,0 +1,9 @@
+{
+  "slug": "nevada",
+  "postal": "NV",
+  "fips": "32",
+  "name": "Nevada",
+  "built_at_utc": "2026-06-01T16:04:37+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

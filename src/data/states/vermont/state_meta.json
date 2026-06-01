@@ -1,0 +1,9 @@
+{
+  "slug": "vermont",
+  "postal": "VT",
+  "fips": "50",
+  "name": "Vermont",
+  "built_at_utc": "2026-06-01T16:05:21+00:00",
+  "has_hmda_band": true,
+  "live_trailing": false
+}

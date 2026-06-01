@@ -505,3 +505,12 @@ code {
   width: 2px;
   background: #1a1a1a;
 }
+
+.dist-market {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: #1f5fa8;
+  box-shadow: 0 0 4px rgba(31, 95, 168, 0.4);
+}

@@ -1,0 +1,36 @@
+{
+  "state_slug": "district-of-columbia",
+  "state_postal": "DC",
+  "state_fips": "11",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:03:55+00:00",
+  "counties": [
+    {
+      "fips": "11001",
+      "name": "District of Columbia",
+      "term_15": {
+        "n_loans": 97,
+        "simple_mean_pct": 6.029,
+        "amount_weighted_mean_pct": 5.874,
+        "p10_pct": 5.125,
+        "p25_pct": 5.75,
+        "p50_pct": 5.99,
+        "p75_pct": 6.375,
+        "p90_pct": 6.875,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 4751,
+        "simple_mean_pct": 6.551,
+        "amount_weighted_mean_pct": 6.508,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.589,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    }
+  ]
+}

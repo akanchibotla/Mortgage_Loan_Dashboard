@@ -1,0 +1,244 @@
+{
+  "state_slug": "connecticut",
+  "state_postal": "CT",
+  "state_fips": "09",
+  "source": "FFIEC HMDA 2024 LAR public, action_taken=1, loan_purpose=1, term in {180, 360}",
+  "low_n_threshold": 30,
+  "built_at_utc": "2026-06-01T16:03:54+00:00",
+  "counties": [
+    {
+      "fips": "09110",
+      "name": "FIPS 09110",
+      "term_15": {
+        "n_loans": 173,
+        "simple_mean_pct": 6.094,
+        "amount_weighted_mean_pct": 6.008,
+        "p10_pct": 5.375,
+        "p25_pct": 5.75,
+        "p50_pct": 6.0,
+        "p75_pct": 6.375,
+        "p90_pct": 6.75,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 7810,
+        "simple_mean_pct": 6.479,
+        "amount_weighted_mean_pct": 6.621,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09120",
+      "name": "FIPS 09120",
+      "term_15": {
+        "n_loans": 37,
+        "simple_mean_pct": 6.11,
+        "amount_weighted_mean_pct": 5.591,
+        "p10_pct": 5.125,
+        "p25_pct": 5.375,
+        "p50_pct": 5.99,
+        "p75_pct": 6.5,
+        "p90_pct": 6.875,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2122,
+        "simple_mean_pct": 6.67,
+        "amount_weighted_mean_pct": 6.645,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09130",
+      "name": "FIPS 09130",
+      "term_15": {
+        "n_loans": 28,
+        "simple_mean_pct": 5.963,
+        "amount_weighted_mean_pct": 6.071,
+        "p10_pct": 5.49,
+        "p25_pct": 5.5,
+        "p50_pct": 5.875,
+        "p75_pct": 6.0,
+        "p90_pct": 6.49,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 1437,
+        "simple_mean_pct": 6.638,
+        "amount_weighted_mean_pct": 6.688,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.999,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09140",
+      "name": "FIPS 09140",
+      "term_15": {
+        "n_loans": 38,
+        "simple_mean_pct": 6.404,
+        "amount_weighted_mean_pct": 6.316,
+        "p10_pct": 5.5,
+        "p25_pct": 5.875,
+        "p50_pct": 6.0,
+        "p75_pct": 6.5,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 3878,
+        "simple_mean_pct": 6.543,
+        "amount_weighted_mean_pct": 6.671,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09150",
+      "name": "FIPS 09150",
+      "term_15": {
+        "n_loans": 12,
+        "simple_mean_pct": 6.655,
+        "amount_weighted_mean_pct": 6.367,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.375,
+        "p75_pct": 6.5,
+        "p90_pct": 7.5,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 965,
+        "simple_mean_pct": 6.602,
+        "amount_weighted_mean_pct": 6.66,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.374,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09160",
+      "name": "FIPS 09160",
+      "term_15": {
+        "n_loans": 20,
+        "simple_mean_pct": 6.443,
+        "amount_weighted_mean_pct": 6.09,
+        "p10_pct": 5.5,
+        "p25_pct": 5.875,
+        "p50_pct": 6.25,
+        "p75_pct": 6.625,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 1014,
+        "simple_mean_pct": 6.482,
+        "amount_weighted_mean_pct": 6.577,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.98,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09170",
+      "name": "FIPS 09170",
+      "term_15": {
+        "n_loans": 71,
+        "simple_mean_pct": 6.073,
+        "amount_weighted_mean_pct": 6.004,
+        "p10_pct": 5.125,
+        "p25_pct": 5.5,
+        "p50_pct": 5.99,
+        "p75_pct": 6.375,
+        "p90_pct": 6.99,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 4059,
+        "simple_mean_pct": 6.641,
+        "amount_weighted_mean_pct": 6.713,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.499,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09180",
+      "name": "FIPS 09180",
+      "term_15": {
+        "n_loans": 55,
+        "simple_mean_pct": 6.145,
+        "amount_weighted_mean_pct": 6.067,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.5,
+        "p90_pct": 6.625,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 2300,
+        "simple_mean_pct": 6.491,
+        "amount_weighted_mean_pct": 6.602,
+        "p10_pct": 5.749,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "09190",
+      "name": "FIPS 09190",
+      "term_15": {
+        "n_loans": 94,
+        "simple_mean_pct": 5.812,
+        "amount_weighted_mean_pct": 5.58,
+        "p10_pct": 5.25,
+        "p25_pct": 5.5,
+        "p50_pct": 5.75,
+        "p75_pct": 6.0,
+        "p90_pct": 6.375,
+        "low_n": false
+      },
+      "term_30": {
+        "n_loans": 4354,
+        "simple_mean_pct": 6.598,
+        "amount_weighted_mean_pct": 6.449,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.99,
+        "p90_pct": 7.375,
+        "low_n": false
+      }
+    }
+  ]
+}
