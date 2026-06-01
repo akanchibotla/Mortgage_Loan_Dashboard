@@ -1,6 +1,6 @@
 {
-  "built_at_utc": "2026-06-01T15:40:59+00:00",
-  "n_states": 9,
+  "built_at_utc": "2026-06-01T15:43:36+00:00",
+  "n_states": 11,
   "states": [
     {
       "slug": "california",
@@ -48,6 +48,18 @@
       "latest_15": 5.99,
       "latest_15_month": "2026-06",
       "latest_30": 6.63,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "michigan",
+      "postal": "MI",
+      "fips": "26",
+      "name": "Michigan",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.93,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.46,
       "latest_30_month": "2026-06"
     },
     {
@@ -108,6 +120,18 @@
       "latest_15": 5.99,
       "latest_15_month": "2026-06",
       "latest_30": 6.58,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "washington",
+      "postal": "WA",
+      "fips": "53",
+      "name": "Washington",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 6.13,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.83,
       "latest_30_month": "2026-06"
     }
   ]

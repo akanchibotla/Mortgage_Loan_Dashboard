@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  ACTIVE_STATES: "north-carolina california florida texas new-york illinois georgia pennsylvania ohio"
+  ACTIVE_STATES: "north-carolina california florida texas new-york illinois georgia pennsylvania ohio michigan"
 
 jobs:
   refresh:

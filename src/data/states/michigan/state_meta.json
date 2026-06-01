@@ -1,0 +1,9 @@
+{
+  "slug": "michigan",
+  "postal": "MI",
+  "fips": "26",
+  "name": "Michigan",
+  "built_at_utc": "2026-06-01T15:42:24+00:00",
+  "has_hmda_band": false,
+  "live_trailing": true
+}

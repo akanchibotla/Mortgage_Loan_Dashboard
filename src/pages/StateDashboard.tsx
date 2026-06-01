@@ -1,4 +1,4 @@
-import { lazy, Suspense, use } from "react";
+import { lazy, Suspense, useState, use } from "react";
 import { Link, useParams } from "react-router-dom";
 import { loadPmms, loadStateData, type StateData } from "../lib/loadStateData";
 
@@ -7,6 +7,9 @@ const RateChart = lazy(() =>
 );
 const RateTable = lazy(() =>
   import("../components/RateTable").then((m) => ({ default: m.RateTable })),
+);
+const CountyChoropleth = lazy(() =>
+  import("../components/CountyChoropleth").then((m) => ({ default: m.CountyChoropleth })),
 );
 
 const cache = new Map<string, Promise<StateData | null>>();
@@ -32,6 +35,7 @@ export default function StateDashboard() {
 function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
   const { pmms15, pmms30 } = loadPmms();
+  const [countyMapTerm, setCountyMapTerm] = useState<15 | 30>(30);
 
   if (!data) {
     return (
@@ -109,11 +113,37 @@ function StateBody({ slug }: { slug: string }) {
 
       {counties.length > 0 && (
         <section className="section">
-          <h2>Drill into counties</h2>
+          <div className="map-controls">
+            <h2>Drill into counties</h2>
+            <div className="term-toggle">
+              <button
+                type="button"
+                className={countyMapTerm === 15 ? "active" : ""}
+                onClick={() => setCountyMapTerm(15)}
+              >
+                15-year
+              </button>
+              <button
+                type="button"
+                className={countyMapTerm === 30 ? "active" : ""}
+                onClick={() => setCountyMapTerm(30)}
+              >
+                30-year
+              </button>
+            </div>
+          </div>
           <p className="sub">
-            {counties.length} {name} counties have HMDA 2024 origination distributions. Click any to
-            compare local closed-loan rates against state aggregates and today's market.
+            {counties.length} {name} counties have HMDA 2024 origination distributions. Click any
+            county on the map (or in the list below) to see its closed-loan distribution.
           </p>
+          <Suspense fallback={<p className="loading">Loading county map…</p>}>
+            <CountyChoropleth
+              stateSlug={slug}
+              stateFips={data.meta.fips}
+              counties={counties}
+              term={countyMapTerm}
+            />
+          </Suspense>
           <h3 className="county-h3">Largest by 2024 30-yr origination volume</h3>
           <div className="kv-grid">
             {topCounties.map((c) => (
