@@ -39,7 +39,8 @@ export default function StateDashboard() {
 function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
   const { pmms15, pmms30 } = loadPmms();
-  const [countyMapTerm, setCountyMapTerm] = useState<15 | 30>(30);
+  const [term, setTerm] = useState<15 | 30>(30);
+  const [tablePanelOpen, setTablePanelOpen] = useState(false);
   usePageMeta({
     title: data ? `${data.meta.name} mortgage rates` : `${slug} mortgage rates`,
     description: data
@@ -67,8 +68,61 @@ function StateBody({ slug }: { slug: string }) {
   const sortedCounties = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
   const topCounties = sortedCounties.slice(0, 6);
 
+  const usData = term === 15 ? pmms15 : pmms30;
+  const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
+  const mndData = (term === 15 ? data.mnd15 : data.mnd30) ?? undefined;
+  const hmdaBand = term === 15 ? data.hmda15 : data.hmda30;
+  const yMin = term === 15 ? 4.5 : 5.5;
+
   return (
     <>
+      <button
+        type="button"
+        className={`side-panel-toggle ${tablePanelOpen ? "open rate-table-toggle-open" : ""}`}
+        onClick={() => setTablePanelOpen((v) => !v)}
+        aria-label={tablePanelOpen ? "Close monthly table" : "Open monthly comparison table"}
+        title={tablePanelOpen ? "Hide monthly table" : "Show monthly comparison table"}
+      >
+        <span className="hamburger">{tablePanelOpen ? "✕" : "☰"}</span>
+        <span className="toggle-label">{tablePanelOpen ? "Hide table" : "Monthly table"}</span>
+      </button>
+
+      {tablePanelOpen && (
+        <div
+          className="side-panel-backdrop"
+          onClick={() => setTablePanelOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`side-panel rate-table-panel ${tablePanelOpen ? "open" : ""}`}
+        aria-hidden={!tablePanelOpen}
+      >
+        <div className="side-panel-header">
+          <div>
+            <h3>
+              {name} {term}-yr · monthly comparison
+            </h3>
+            <p className="side-panel-sub">U.S. PMMS vs {name} Bankrate, by month</p>
+          </div>
+          <button
+            type="button"
+            className="side-panel-close"
+            onClick={() => setTablePanelOpen(false)}
+            aria-label="Close panel"
+          >
+            ✕
+          </button>
+        </div>
+        {ncData.length > 0 ? (
+          <Suspense fallback={<p className="loading">Loading table…</p>}>
+            <RateTable usData={usData} ncData={ncData} />
+          </Suspense>
+        ) : (
+          <p className="side-panel-empty">No Bankrate series available for this term.</p>
+        )}
+      </aside>
+
       <p className="breadcrumb">
         <Link to="/">&larr; All states</Link>
       </p>
@@ -81,34 +135,37 @@ function StateBody({ slug }: { slug: string }) {
             <span className="badge">{data.meta.postal} MND</span> Mortgage News Daily.{" "}
           </>
         )}
-        {data.hmda15 && (
+        {hmdaBand && (
           <>
-            <span className="badge">HMDA 2024 ref</span> 15-yr origination band.
+            <span className="badge">HMDA 2024 ref</span> {term}-yr origination band.
           </>
         )}
       </p>
 
+      <div className="page-term-toggle" role="tablist" aria-label="Loan term">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={term === 15}
+          className={`pt-btn ${term === 15 ? "active" : ""}`}
+          onClick={() => setTerm(15)}
+        >
+          15-year fixed
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={term === 30}
+          className={`pt-btn ${term === 30 ? "active" : ""}`}
+          onClick={() => setTerm(30)}
+        >
+          30-year fixed
+        </button>
+      </div>
+
       {counties.length > 0 && (
         <section className="section">
-          <div className="map-controls">
-            <h2>Drill into counties</h2>
-            <div className="term-toggle">
-              <button
-                type="button"
-                className={countyMapTerm === 15 ? "active" : ""}
-                onClick={() => setCountyMapTerm(15)}
-              >
-                15-year
-              </button>
-              <button
-                type="button"
-                className={countyMapTerm === 30 ? "active" : ""}
-                onClick={() => setCountyMapTerm(30)}
-              >
-                30-year
-              </button>
-            </div>
-          </div>
+          <h2>Drill into counties</h2>
           <p className="sub">
             {counties.length} {name} counties have HMDA 2024 origination distributions. Click any
             county on the map (or in the list below) to see its closed-loan distribution.
@@ -118,7 +175,7 @@ function StateBody({ slug }: { slug: string }) {
               stateSlug={slug}
               stateFips={data.meta.fips}
               counties={counties}
-              term={countyMapTerm}
+              term={term}
             />
           </Suspense>
           <h3 className="county-h3">Largest by 2024 30-yr origination volume</h3>
@@ -155,42 +212,35 @@ function StateBody({ slug }: { slug: string }) {
       )}
 
       <section className="section">
-        <h2>15-year fixed</h2>
+        <h2>{term}-year fixed</h2>
         <RateChart
-          usData={pmms15}
-          ncData={data.bankrate15 ?? []}
-          mndData={data.mnd15 ?? undefined}
-          hmdaBand={data.hmda15}
-          title={`15-year fixed mortgage rate — ${name} vs U.S.`}
-          usLabel="U.S. 15-yr FRM (FRED MORTGAGE15US, monthly mean)"
-          ncLabel={`${name} 15-yr fixed (Bankrate, monthly)`}
-          mndLabel={`${name} 15-yr fixed (Mortgage News Daily, monthly)`}
-          yMin={4.5}
+          usData={usData}
+          ncData={ncData}
+          mndData={mndData}
+          hmdaBand={hmdaBand}
+          title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}
+          usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
+          ncLabel={`${name} ${term}-yr fixed (Bankrate, monthly)`}
+          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, monthly)`}
+          yMin={yMin}
           yMax={7.5}
         />
-        {data.bankrate15 && <RateTable usData={pmms15} ncData={data.bankrate15} />}
-      </section>
-
-      <section className="section">
-        <h2>30-year fixed</h2>
-        <RateChart
-          usData={pmms30}
-          ncData={data.bankrate30 ?? []}
-          mndData={data.mnd30 ?? undefined}
-          hmdaBand={data.hmda30}
-          title={`30-year fixed mortgage rate — ${name} vs U.S.`}
-          usLabel="U.S. 30-yr FRM (FRED MORTGAGE30US, monthly mean)"
-          ncLabel={`${name} 30-yr fixed (Bankrate, monthly)`}
-          mndLabel={`${name} 30-yr fixed (Mortgage News Daily, monthly)`}
-          yMin={5.5}
-          yMax={7.5}
-        />
-        {data.bankrate30 && <RateTable usData={pmms30} ncData={data.bankrate30} />}
+        {ncData.length > 0 && (
+          <p className="table-link-row">
+            <button
+              type="button"
+              className="table-link-btn"
+              onClick={() => setTablePanelOpen(true)}
+            >
+              View monthly comparison table →
+            </button>
+          </p>
+        )}
       </section>
 
       {data.demographics && (
         <Suspense fallback={<p className="loading">Loading demographic breakdowns…</p>}>
-          <DemographicsPanel data={data.demographics} stateName={name} />
+          <DemographicsPanel data={data.demographics} stateName={name} term={term} />
         </Suspense>
       )}
 
@@ -215,13 +265,14 @@ function StateBody({ slug }: { slug: string }) {
               Wayback historical (sparse) + forward daily collection.
             </li>
           )}
-          {data.hmda15 && (
+          {hmdaBand && (
             <li>
-              <b>HMDA 2024 reference band</b> (15-yr only) —{" "}
+              <b>HMDA 2024 reference band</b> ({term}-yr) —{" "}
               <a href="https://ffiec.cfpb.gov/data-browser/">FFIEC HMDA 2024 LAR</a>, filtered to{" "}
-              {data.meta.postal} + home purchase + originated + loan_term=180 (n=
-              {data.hmda15.n_loans.toLocaleString()}). Outer band p10–p90 (
-              {data.hmda15.p10_pct.toFixed(2)}%–{data.hmda15.p90_pct.toFixed(2)}%); inner box p25–p75; dashed
+              {data.meta.postal} + home purchase + originated + loan_term=
+              {term === 15 ? "180" : "360"} (n=
+              {hmdaBand.n_loans.toLocaleString()}). Outer band p10–p90 (
+              {hmdaBand.p10_pct.toFixed(2)}%–{hmdaBand.p90_pct.toFixed(2)}%); inner box p25–p75; dashed
               lines mark simple and amount-weighted mean. HMDA has no month field, so this is one annual
               figure.
             </li>

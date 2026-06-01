@@ -4,6 +4,7 @@ import type { DemographicBucket, HmdaDemographicsFile } from "../types";
 interface Props {
   data: HmdaDemographicsFile;
   stateName: string;
+  term: 15 | 30;
 }
 
 type Dim = "race" | "ethnicity" | "sex" | "loan_amount";
@@ -15,8 +16,7 @@ const DIM_LABELS: Record<Dim, string> = {
   loan_amount: "Loan amount",
 };
 
-export function DemographicsPanel({ data, stateName }: Props) {
-  const [term, setTerm] = useState<15 | 30>(30);
+export function DemographicsPanel({ data, stateName, term }: Props) {
   const [dim, setDim] = useState<Dim>("race");
 
   const buckets = (term === 15 ? data.term_15 : data.term_30)[dim] ?? [];
@@ -34,17 +34,7 @@ export function DemographicsPanel({ data, stateName }: Props) {
 
   return (
     <section className="section">
-      <div className="map-controls">
-        <h2>{stateName} HMDA breakdowns — who got which rate?</h2>
-        <div className="term-toggle">
-          <button type="button" className={term === 15 ? "active" : ""} onClick={() => setTerm(15)}>
-            15-year
-          </button>
-          <button type="button" className={term === 30 ? "active" : ""} onClick={() => setTerm(30)}>
-            30-year
-          </button>
-        </div>
-      </div>
+      <h2>{stateName} HMDA breakdowns — who got which rate?</h2>
       <p className="sub">
         2024 closed-loan distributions sliced by demographic dimensions (FFIEC HMDA public LAR).
         Bucket counts &lt;30 are hidden. Differences reflect a mix of credit profile, loan size,
