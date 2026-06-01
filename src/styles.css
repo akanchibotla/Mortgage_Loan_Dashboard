@@ -398,3 +398,110 @@ code {
   font-variant-numeric: tabular-nums;
   color: #1a1a1a;
 }
+
+.kv-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.kv-link:hover {
+  border-color: #1f5fa8;
+  background: #f5f7fb;
+}
+
+.muted {
+  color: #888;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.county-h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  margin: 12px 0 6px 0;
+}
+
+.county-all {
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.county-all summary {
+  cursor: pointer;
+  color: #1f5fa8;
+}
+
+.county-list {
+  list-style: none;
+  padding: 12px 0 0 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px;
+}
+
+.county-list a {
+  color: #1a1a1a;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.county-list a:hover {
+  background: #f5f7fb;
+  color: #1f5fa8;
+}
+
+.dist-bar {
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 18px;
+}
+
+.dist-axis {
+  position: relative;
+  height: 16px;
+  font-size: 10.5px;
+  color: #777;
+  font-variant-numeric: tabular-nums;
+}
+
+.dist-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.dist-track {
+  position: relative;
+  height: 20px;
+  background: #f4f5f7;
+  border-radius: 4px;
+  border: 1px solid #e2e4e8;
+}
+
+.dist-band-outer {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  background: rgba(46, 139, 87, 0.18);
+  border-radius: 2px;
+}
+
+.dist-band-inner {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  background: rgba(46, 139, 87, 0.45);
+  border-radius: 2px;
+}
+
+.dist-median {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: #1a1a1a;
+}

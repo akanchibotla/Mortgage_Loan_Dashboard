@@ -49,6 +49,9 @@ function StateBody({ slug }: { slug: string }) {
 
   const name = data.meta.name;
   const hasMnd = data.mnd15?.some((p) => p.rate != null) || data.mnd30?.some((p) => p.rate != null);
+  const counties = data.counties?.counties ?? [];
+  const sortedCounties = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
+  const topCounties = sortedCounties.slice(0, 6);
 
   return (
     <>
@@ -103,6 +106,46 @@ function StateBody({ slug }: { slug: string }) {
         />
         {data.bankrate30 && <RateTable usData={pmms30} ncData={data.bankrate30} />}
       </section>
+
+      {counties.length > 0 && (
+        <section className="section">
+          <h2>Drill into counties</h2>
+          <p className="sub">
+            {counties.length} {name} counties have HMDA 2024 origination distributions. Click any to
+            compare local closed-loan rates against state aggregates and today's market.
+          </p>
+          <h3 className="county-h3">Largest by 2024 30-yr origination volume</h3>
+          <div className="kv-grid">
+            {topCounties.map((c) => (
+              <Link
+                key={c.fips}
+                to={`/state/${data.meta.slug}/county/${c.fips}`}
+                className="kv kv-link"
+              >
+                <span className="k">{c.name} (n={c.term_30.n_loans.toLocaleString()})</span>
+                <span className="v">
+                  {c.term_30.simple_mean_pct?.toFixed(2)}%
+                </span>
+              </Link>
+            ))}
+          </div>
+          <details className="county-all">
+            <summary>All {counties.length} counties (alphabetical)</summary>
+            <ul className="county-list">
+              {[...counties].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
+                <li key={c.fips}>
+                  <Link to={`/state/${data.meta.slug}/county/${c.fips}`}>
+                    {c.name}
+                    {c.term_30.n_loans > 0 && (
+                      <span className="muted"> · n={c.term_30.n_loans.toLocaleString()}</span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
 
       <div className="notes">
         <b>Sources &amp; method</b>

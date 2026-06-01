@@ -4,6 +4,7 @@ import { Link, Route, Routes } from "react-router-dom";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StateDashboard = lazy(() => import("./pages/StateDashboard"));
 const CalculatorPage = lazy(() => import("./pages/CalculatorPage"));
+const CountyDashboard = lazy(() => import("./pages/CountyDashboard"));
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/state/:slug" element={<StateDashboard />} />
+          <Route path="/state/:slug/county/:countyFips" element={<CountyDashboard />} />
           <Route path="/calculator" element={<CalculatorPage />} />
           <Route
             path="*"

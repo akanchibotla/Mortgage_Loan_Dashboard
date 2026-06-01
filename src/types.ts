@@ -29,6 +29,34 @@ export interface ChartPoint {
   src?: string;
 }
 
+export interface CountyDistribution {
+  n_loans: number;
+  simple_mean_pct?: number;
+  amount_weighted_mean_pct?: number;
+  p10_pct?: number;
+  p25_pct?: number;
+  p50_pct?: number;
+  p75_pct?: number;
+  p90_pct?: number;
+  low_n?: boolean;
+}
+
+export interface CountyEntry {
+  fips: string;
+  name: string;
+  term_15: CountyDistribution;
+  term_30: CountyDistribution;
+}
+
+export interface CountiesFile {
+  state_slug: string;
+  state_postal: string;
+  state_fips: string;
+  source: string;
+  low_n_threshold: number;
+  counties: CountyEntry[];
+}
+
 export interface MndTodayPoint {
   rate_pct: number;
   as_of_iso: string | null;

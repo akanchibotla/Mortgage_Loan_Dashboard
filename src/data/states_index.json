@@ -1,6 +1,6 @@
 {
-  "built_at_utc": "2026-06-01T05:54:27+00:00",
-  "n_states": 7,
+  "built_at_utc": "2026-06-01T15:40:59+00:00",
+  "n_states": 9,
   "states": [
     {
       "slug": "california",
@@ -72,6 +72,30 @@
       "latest_15": 5.79,
       "latest_15_month": "2026-06",
       "latest_30": 6.41,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "ohio",
+      "postal": "OH",
+      "fips": "39",
+      "name": "Ohio",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.93,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.46,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "pennsylvania",
+      "postal": "PA",
+      "fips": "42",
+      "name": "Pennsylvania",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 6.13,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.83,
       "latest_30_month": "2026-06"
     },
     {
