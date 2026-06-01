@@ -1,7 +1,19 @@
 {
-  "built_at_utc": "2026-06-01T15:43:36+00:00",
-  "n_states": 11,
+  "built_at_utc": "2026-06-01T15:45:31+00:00",
+  "n_states": 12,
   "states": [
+    {
+      "slug": "arizona",
+      "postal": "AZ",
+      "fips": "04",
+      "name": "Arizona",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.92,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
+    },
     {
       "slug": "california",
       "postal": "CA",
