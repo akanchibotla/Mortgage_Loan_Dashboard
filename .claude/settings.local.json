@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\GitHub\\\\Mortgage_Loan_Dashboard\" -Force)",
+      "Bash(Select-Object -Property Name, FullName, Length)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\GitHub\\\\Mortgage_Loan_Dashboard\" -Force -ErrorAction SilentlyContinue | Select-Object Name, FullName, @{Name=\"Size\";Expression={$_.Length}})",
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "WebSearch",
+      "WebFetch(domain:www.bankrate.com)",
+      "WebFetch(domain:fred.stlouisfed.org)",
+      "WebFetch(domain:fredblog.stlouisfed.org)"
+    ]
+  }
+}

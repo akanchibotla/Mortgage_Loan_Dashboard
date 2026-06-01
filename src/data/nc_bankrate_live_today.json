@@ -1,0 +1,13 @@
+{
+  "fetched_at_utc": "2026-06-01T04:36:53+00:00",
+  "as_of": "Monday, June 01, 2026",
+  "term_15": {
+    "table_pct": null,
+    "intro_pct": null
+  },
+  "term_30": {
+    "table_pct": null,
+    "intro_pct": null
+  },
+  "needs_manual_refresh": true
+}
