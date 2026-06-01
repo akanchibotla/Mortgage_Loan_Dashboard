@@ -65,7 +65,8 @@ function StateBody({ slug }: { slug: string }) {
   const name = data.meta.name;
   const hasMnd = data.mnd15?.some((p) => p.rate != null) || data.mnd30?.some((p) => p.rate != null);
   const counties = data.counties?.counties ?? [];
-  const sortedCounties = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
+  const distFor = (c: (typeof counties)[number]) => (term === 15 ? c.term_15 : c.term_30);
+  const sortedCounties = [...counties].sort((a, b) => distFor(b).n_loans - distFor(a).n_loans);
   const topCounties = sortedCounties.slice(0, 6);
 
   const usData = term === 15 ? pmms15 : pmms30;
@@ -184,34 +185,52 @@ function StateBody({ slug }: { slug: string }) {
               term={term}
             />
           </Suspense>
-          <h3 className="county-h3">Largest by 2024 30-yr origination volume</h3>
-          <div className="kv-grid">
-            {topCounties.map((c) => (
-              <Link
-                key={c.fips}
-                to={`/state/${data.meta.slug}/county/${c.fips}`}
-                className="kv kv-link"
-              >
-                <span className="k">{c.name} (n={c.term_30.n_loans.toLocaleString()})</span>
-                <span className="v">
-                  {c.term_30.simple_mean_pct?.toFixed(2)}%
-                </span>
-              </Link>
-            ))}
+          <div className="county-top">
+            <h3 className="county-top-h3">
+              Top counties by volume
+              <span className="county-top-meta">2024 {term}-yr originations</span>
+            </h3>
+            <div className="county-top-grid">
+              {topCounties.map((c) => {
+                const dist = distFor(c);
+                return (
+                  <Link
+                    key={c.fips}
+                    to={`/state/${data.meta.slug}/county/${c.fips}`}
+                    className="county-top-card"
+                  >
+                    <div className="county-top-card-head">
+                      <span className="county-top-name">{c.name}</span>
+                      <span className="county-top-rate">
+                        {dist.simple_mean_pct != null
+                          ? `${dist.simple_mean_pct.toFixed(2)}%`
+                          : "—"}
+                      </span>
+                    </div>
+                    <span className="county-top-volume">
+                      {dist.n_loans.toLocaleString()} closings
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
           <details className="county-all">
             <summary>All {counties.length} counties (alphabetical)</summary>
             <ul className="county-list">
-              {[...counties].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
-                <li key={c.fips}>
-                  <Link to={`/state/${data.meta.slug}/county/${c.fips}`}>
-                    {c.name}
-                    {c.term_30.n_loans > 0 && (
-                      <span className="muted"> · n={c.term_30.n_loans.toLocaleString()}</span>
-                    )}
-                  </Link>
-                </li>
-              ))}
+              {[...counties].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
+                const dist = distFor(c);
+                return (
+                  <li key={c.fips}>
+                    <Link to={`/state/${data.meta.slug}/county/${c.fips}`}>
+                      {c.name}
+                      {dist.n_loans > 0 && (
+                        <span className="muted"> · {dist.n_loans.toLocaleString()} {term}-yr closings</span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </details>
         </section>
