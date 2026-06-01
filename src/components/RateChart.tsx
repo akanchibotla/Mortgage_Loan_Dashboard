@@ -20,6 +20,8 @@ interface Props {
   mndLabel?: string;
   yMin: number;
   yMax: number;
+  stateLabel?: string;
+  term?: 15 | 30;
 }
 
 const NC_RED = "#c8392c";
@@ -72,6 +74,8 @@ export function RateChart({
   mndLabel,
   yMin,
   yMax,
+  stateLabel,
+  term,
 }: Props) {
   const usPoints: ChartPoint[] = usData.map((p) => ({ x: `${p.month}-15`, y: p.rate }));
   const ncPoints: ChartPoint[] = ncData.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
@@ -134,6 +138,13 @@ export function RateChart({
       <div className="chartwrap">
         <Line data={data} options={buildOptions({ title, yMin, yMax, hmdaBand })} />
       </div>
+      {hmdaBand && (
+        <HmdaBandExplainer
+          band={hmdaBand}
+          stateLabel={stateLabel ?? "this state"}
+          term={term ?? 15}
+        />
+      )}
       <ul className="marker-legend">
         <li>
           <span className="m m-diamond" /> Bankrate Wayback (archived month)
@@ -151,5 +162,73 @@ export function RateChart({
         )}
       </ul>
     </>
+  );
+}
+
+function HmdaBandExplainer({
+  band,
+  stateLabel,
+  term,
+}: {
+  band: HmdaSummary;
+  stateLabel: string;
+  term: 15 | 30;
+}) {
+  return (
+    <details className="hmda-explainer">
+      <summary>
+        <span className="hmda-explainer-swatch" aria-hidden="true" />
+        What's the green band?
+      </summary>
+      <div className="hmda-explainer-body">
+        <p>
+          The green region shows the actual rates closed loans got in {stateLabel} during 2024
+          ({band.n_loans.toLocaleString()} {term}-yr home-purchase originations, from{" "}
+          <a href="https://ffiec.cfpb.gov/data-browser/" target="_blank" rel="noopener noreferrer">
+            FFIEC HMDA
+          </a>
+          ). It anchors today's quoted rates against last year's real-world distribution. HMDA has no
+          monthly resolution, so the band is positioned over the 2024 calendar year only.
+        </p>
+        <ul className="hmda-explainer-list">
+          <li>
+            <span className="hmda-sw hmda-sw-outer" aria-hidden="true" />
+            <span>
+              <b>Outer pale box</b> — middle 80% of rates (p10–p90):{" "}
+              <span className="mono">
+                {band.p10_pct.toFixed(2)}%–{band.p90_pct.toFixed(2)}%
+              </span>
+            </span>
+          </li>
+          <li>
+            <span className="hmda-sw hmda-sw-inner" aria-hidden="true" />
+            <span>
+              <b>Inner darker box</b> — middle 50% of rates (p25–p75):{" "}
+              <span className="mono">
+                {band.p25_pct.toFixed(2)}%–{band.p75_pct.toFixed(2)}%
+              </span>
+            </span>
+          </li>
+          <li>
+            <span className="hmda-sw hmda-sw-line-long" aria-hidden="true" />
+            <span>
+              <b>Long-dash line</b> — simple mean rate:{" "}
+              <span className="mono">{band.simple_mean_pct.toFixed(2)}%</span>
+            </span>
+          </li>
+          <li>
+            <span className="hmda-sw hmda-sw-line-short" aria-hidden="true" />
+            <span>
+              <b>Short-dash line</b> — amount-weighted mean (weighted by loan size):{" "}
+              <span className="mono">{band.amount_weighted_mean_pct.toFixed(2)}%</span>
+            </span>
+          </li>
+        </ul>
+        <p className="hmda-explainer-foot">
+          If today's quoted line sits near the bottom of the band, you're in the better-than-typical
+          half of 2024 closings; near the top, the worse-than-typical half.
+        </p>
+      </div>
+    </details>
   );
 }

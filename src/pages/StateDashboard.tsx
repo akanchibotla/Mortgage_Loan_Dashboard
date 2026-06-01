@@ -224,6 +224,8 @@ function StateBody({ slug }: { slug: string }) {
           mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, monthly)`}
           yMin={yMin}
           yMax={7.5}
+          stateLabel={name}
+          term={term}
         />
         {ncData.length > 0 && (
           <p className="table-link-row">

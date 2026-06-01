@@ -63,16 +63,6 @@ export function buildOptions({ title, yMin, yMax, hmdaBand }: BuildOptionsArgs):
           backgroundColor: "rgba(46, 139, 87, 0.07)",
           borderColor: "rgba(46, 139, 87, 0.35)",
           borderWidth: 1,
-          label: {
-            display: true,
-            content: [
-              `HMDA 2024 NC 15-yr (n=${hmdaBand.n_loans.toLocaleString()})`,
-              `p10–p90 ${hmdaBand.p10_pct.toFixed(2)}%–${hmdaBand.p90_pct.toFixed(2)}% · mean ${hmdaBand.simple_mean_pct.toFixed(2)}%`,
-            ],
-            position: { x: "start", y: "start" },
-            color: "#2e8b57",
-            font: { size: 11 },
-          },
         },
         hmdaP25P75: {
           type: "box",

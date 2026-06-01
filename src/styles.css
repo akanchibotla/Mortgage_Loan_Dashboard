@@ -1110,6 +1110,138 @@ code {
   border-bottom: 11px solid #0d7a6e;
 }
 
+/* "What's the green band?" explainer pill under the rate chart */
+.hmda-explainer {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: #3d4a5c;
+}
+.hmda-explainer > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid rgba(46, 139, 87, 0.4);
+  border-radius: 999px;
+  background: rgba(46, 139, 87, 0.06);
+  color: #1f5d3a;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.hmda-explainer > summary::-webkit-details-marker {
+  display: none;
+}
+.hmda-explainer > summary::after {
+  content: "▾";
+  font-size: 10px;
+  margin-left: 2px;
+  color: #4a7c5d;
+}
+.hmda-explainer[open] > summary::after {
+  content: "▴";
+}
+.hmda-explainer > summary:hover {
+  background: rgba(46, 139, 87, 0.12);
+  border-color: rgba(46, 139, 87, 0.6);
+}
+.hmda-explainer-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border: 1px solid rgba(46, 139, 87, 0.5);
+  background:
+    linear-gradient(rgba(46, 139, 87, 0.18), rgba(46, 139, 87, 0.18)) center/60% 60% no-repeat,
+    rgba(46, 139, 87, 0.08);
+  border-radius: 2px;
+}
+.hmda-explainer-body {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--c-border-soft, #e3e7ee);
+  border-left: 3px solid rgba(46, 139, 87, 0.55);
+  border-radius: 8px;
+  background: #fafcfb;
+  max-width: 760px;
+  line-height: 1.5;
+}
+.hmda-explainer-body p {
+  margin: 0 0 10px;
+}
+.hmda-explainer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: grid;
+  gap: 8px;
+}
+.hmda-explainer-list li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.hmda-explainer-list .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #1f5d3a;
+}
+.hmda-explainer-foot {
+  margin: 0;
+  font-size: 11.5px;
+  color: #6b7280;
+  font-style: italic;
+}
+/* Swatches matching the chart's annotations exactly */
+.hmda-sw {
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+}
+.hmda-sw-outer {
+  background: rgba(46, 139, 87, 0.07);
+  border: 1px solid rgba(46, 139, 87, 0.35);
+  border-radius: 2px;
+}
+.hmda-sw-inner {
+  background: rgba(46, 139, 87, 0.14);
+  border: 1px solid rgba(46, 139, 87, 0.5);
+  border-radius: 2px;
+}
+.hmda-sw-line-long {
+  position: relative;
+  background: transparent;
+}
+.hmda-sw-line-long::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0;
+  border-top: 2px dashed rgba(46, 139, 87, 0.85);
+}
+.hmda-sw-line-short {
+  position: relative;
+  background: transparent;
+}
+.hmda-sw-line-short::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0;
+  border-top: 2px dotted rgba(46, 139, 87, 0.85);
+}
+@media (max-width: 720px) {
+  .hmda-explainer-list li {
+    grid-template-columns: 32px 1fr;
+  }
+}
+
 .breadcrumb {
   margin: 0 0 12px 0;
   font-size: 13px;
