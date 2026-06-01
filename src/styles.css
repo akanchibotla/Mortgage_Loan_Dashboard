@@ -1695,6 +1695,83 @@ code {
   }
 }
 
+/* State page hero card (title + term toggle on a soft card) */
+.state-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 0 0 26px;
+  padding: 22px 26px;
+  background: linear-gradient(135deg, #f6f9fd 0%, #eef3fa 100%);
+  border: 1px solid var(--c-border-soft, #e3e7ee);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+.state-hero-titles {
+  flex: 1 1 auto;
+  min-width: 260px;
+}
+.state-hero-eyebrow {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--c-brand);
+}
+.state-hero-h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  color: var(--c-ink);
+}
+.state-hero-postal {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--c-brand);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 6px;
+}
+.state-hero-sub {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--c-ink-soft);
+  max-width: 520px;
+  line-height: 1.5;
+}
+.state-hero-toggle {
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin: 0 !important;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+.state-hero-toggle .pt-btn {
+  padding: 9px 18px;
+  font-size: 13px;
+}
+@media (max-width: 720px) {
+  .state-hero {
+    padding: 20px 18px;
+    gap: 16px;
+  }
+  .state-hero-h1 {
+    font-size: 24px;
+  }
+}
+
 /* Page-level 15/30 term toggle on state pages */
 .page-term-toggle {
   display: inline-flex;
@@ -1896,6 +1973,45 @@ code {
   font-weight: 600;
   color: #555;
   margin: 12px 0 6px 0;
+}
+
+/* Consolidated "Drill into counties" section header */
+.county-section-head {
+  margin-bottom: 16px;
+}
+.county-section-head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 4px;
+}
+.county-count-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: #eef3fa;
+  color: var(--c-brand);
+  border: 1px solid #d4e0ef;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+.county-section-sub {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--c-ink-soft);
+  line-height: 1.5;
+}
+
+/* Data-source badge strip inside the bottom Sources & method notes */
+.data-source-badges {
+  margin: 8px 0 12px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.7;
 }
 
 .county-all {

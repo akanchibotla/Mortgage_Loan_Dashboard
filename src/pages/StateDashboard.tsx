@@ -126,50 +126,56 @@ function StateBody({ slug }: { slug: string }) {
       <p className="breadcrumb">
         <Link to="/">&larr; All states</Link>
       </p>
-      <h1>{name} mortgage rates — vs U.S.</h1>
-      <p className="sub">
-        <span className="badge">U.S.</span> Freddie Mac PMMS via FRED, monthly mean.{" "}
-        <span className="badge">{data.meta.postal}</span> Bankrate (Wayback + live).{" "}
-        {hasMnd && (
-          <>
-            <span className="badge">{data.meta.postal} MND</span> Mortgage News Daily.{" "}
-          </>
-        )}
-        {hmdaBand && (
-          <>
-            <span className="badge">HMDA 2024 ref</span> {term}-yr origination band.
-          </>
-        )}
-      </p>
 
-      <div className="page-term-toggle" role="tablist" aria-label="Loan term">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={term === 15}
-          className={`pt-btn ${term === 15 ? "active" : ""}`}
-          onClick={() => setTerm(15)}
+      <header className="state-hero">
+        <div className="state-hero-titles">
+          <p className="state-hero-eyebrow">State mortgage dashboard</p>
+          <h1 className="state-hero-h1">
+            {name} mortgage rates
+            <span className="state-hero-postal">{data.meta.postal}</span>
+          </h1>
+          <p className="state-hero-sub">
+            Today's quotes against the U.S. average and last year's HMDA closing distribution
+            {counties.length > 0 ? ", county by county." : "."}
+          </p>
+        </div>
+        <div
+          className="page-term-toggle state-hero-toggle"
+          role="tablist"
+          aria-label="Loan term"
         >
-          15-year fixed
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={term === 30}
-          className={`pt-btn ${term === 30 ? "active" : ""}`}
-          onClick={() => setTerm(30)}
-        >
-          30-year fixed
-        </button>
-      </div>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={term === 15}
+            className={`pt-btn ${term === 15 ? "active" : ""}`}
+            onClick={() => setTerm(15)}
+          >
+            15-year
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={term === 30}
+            className={`pt-btn ${term === 30 ? "active" : ""}`}
+            onClick={() => setTerm(30)}
+          >
+            30-year
+          </button>
+        </div>
+      </header>
 
       {counties.length > 0 && (
         <section className="section">
-          <h2>Drill into counties</h2>
-          <p className="sub">
-            {counties.length} {name} counties have HMDA 2024 origination distributions. Click any
-            county on the map (or in the list below) to see its closed-loan distribution.
-          </p>
+          <div className="county-section-head">
+            <h2>
+              Drill into counties
+              <span className="county-count-tag">{counties.length} with data</span>
+            </h2>
+            <p className="county-section-sub">
+              Click any county on the map or list below to see its 2024 closed-loan distribution.
+            </p>
+          </div>
           <Suspense fallback={<p className="loading">Loading county map…</p>}>
             <CountyChoropleth
               stateSlug={slug}
@@ -248,6 +254,20 @@ function StateBody({ slug }: { slug: string }) {
 
       <div className="notes">
         <b>Sources &amp; method</b>
+        <p className="data-source-badges">
+          <span className="badge">U.S.</span> Freddie Mac PMMS via FRED, monthly mean.{" "}
+          <span className="badge">{data.meta.postal}</span> Bankrate (Wayback + live).{" "}
+          {hasMnd && (
+            <>
+              <span className="badge">{data.meta.postal} MND</span> Mortgage News Daily.{" "}
+            </>
+          )}
+          {hmdaBand && (
+            <>
+              <span className="badge">HMDA 2024 ref</span> {term}-yr origination band.
+            </>
+          )}
+        </p>
         <ul>
           <li>
             <b>U.S. line</b> —{" "}
