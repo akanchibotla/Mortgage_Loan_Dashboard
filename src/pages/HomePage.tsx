@@ -39,7 +39,8 @@ export default function HomePage() {
   const latestUs30 = pmms30.at(-1);
   const [term, setTerm] = useState<15 | 30>(30);
   const [loanAmount, setLoanAmount] = useState(DEFAULT_LOAN);
-  const [rateText, setRateText] = useState<string>(""); // "" = follow FRED PMMS
+  const [rateText, setRateText] = useState<string>(""); // "" = follow anchor (state or national)
+  const [selectedStateSlug, setSelectedStateSlug] = useState<string>(""); // "" = national
   const [amortOpen, setAmortOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -60,12 +61,28 @@ export default function HomePage() {
 
   const pmmsRate = (term === 15 ? latestUs15?.rate : latestUs30?.rate) ?? null;
   const usMonth = term === 15 ? latestUs15?.month : latestUs30?.month;
+  const selectedState = useMemo(
+    () => (selectedStateSlug ? states.find((s) => s.slug === selectedStateSlug) ?? null : null),
+    [selectedStateSlug, states],
+  );
+  const anchorRate = useMemo<number | null>(() => {
+    if (selectedState) {
+      const v = term === 15 ? selectedState.latest_15 : selectedState.latest_30;
+      return v ?? pmmsRate ?? null;
+    }
+    return pmmsRate;
+  }, [selectedState, term, pmmsRate]);
+  const stateAnchorMissing =
+    selectedState != null && (term === 15 ? selectedState.latest_15 : selectedState.latest_30) == null;
+  const anchorMonth = selectedState
+    ? selectedState.latest_30_month ?? selectedState.latest_15_month ?? null
+    : usMonth ?? null;
   const customRate = useMemo<number | null>(() => {
     if (rateText === "") return null;
     const v = parseFloat(rateText);
     return Number.isFinite(v) ? v : null;
   }, [rateText]);
-  const effectiveRate = customRate ?? pmmsRate;
+  const effectiveRate = customRate ?? anchorRate;
   const effectivePI =
     effectiveRate != null ? monthlyPayment(loanAmount, effectiveRate, term) : null;
   const totalPaid = effectivePI != null && term > 0 ? effectivePI * term * 12 : null;
@@ -76,8 +93,12 @@ export default function HomePage() {
       : 0;
   const interestPct = 100 - principalPct;
   const rateInputValue =
-    rateText === "" && pmmsRate != null ? pmmsRate.toFixed(2) : rateText;
-  const isCustomRate = customRate != null && pmmsRate != null && customRate !== pmmsRate;
+    rateText === "" && anchorRate != null ? anchorRate.toFixed(2) : rateText;
+  const isCustomRate = customRate != null && anchorRate != null && customRate !== anchorRate;
+  const sortedStates = useMemo(
+    () => [...states].sort((a, b) => a.name.localeCompare(b.name)),
+    [states],
+  );
 
   function bumpRate(dir: -1 | 1, e: React.MouseEvent) {
     const step = e.shiftKey ? RATE_SHIFT_STEP : RATE_STEP;
@@ -198,7 +219,31 @@ export default function HomePage() {
           </label>
 
           <div className="calc-output-card">
-            <div className="calc-out-label">Your rate</div>
+            <div className="calc-out-header">
+              <div className="calc-out-label">Your rate</div>
+              <select
+                className="rate-source-select"
+                value={selectedStateSlug}
+                onChange={(e) => {
+                  setSelectedStateSlug(e.target.value);
+                  setRateText(""); // clear override so new anchor shows
+                }}
+                aria-label="Rate source"
+                title="Use today's Bankrate rate from this state instead of the national average"
+              >
+                <option value="">
+                  U.S. National{pmmsRate != null ? ` · ${pmmsRate.toFixed(2)}%` : ""}
+                </option>
+                {sortedStates.map((s) => {
+                  const r = term === 30 ? s.latest_30 : s.latest_15;
+                  return (
+                    <option key={s.slug} value={s.slug}>
+                      {s.name} · {r != null ? `${r.toFixed(2)}%` : "—"}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
             <div className="calc-out-row">
               <div className="rate-stepper">
                 <button
@@ -271,24 +316,42 @@ export default function HomePage() {
               </div>
             )}
             <div className="calc-out-hint">
-              {pmmsRate == null ? (
-                <span>FRED PMMS unavailable</span>
+              {anchorRate == null ? (
+                <span>no rate data bundled for {selectedState?.name ?? "this term"}</span>
               ) : isCustomRate ? (
                 <button
                   type="button"
                   className="link-button"
                   onClick={() => setRateText("")}
-                  title={`Reset to FRED PMMS ${term}-yr ${pmmsRate.toFixed(2)}%`}
+                  title={
+                    selectedState
+                      ? `Reset to Bankrate ${selectedState.postal} ${term}-yr ${anchorRate.toFixed(2)}%`
+                      : `Reset to FRED PMMS ${term}-yr ${anchorRate.toFixed(2)}%`
+                  }
                 >
-                  ↺ Reset to FRED PMMS {pmmsRate.toFixed(2)}%
+                  ↺ Reset to{" "}
+                  {selectedState
+                    ? `Bankrate ${selectedState.postal} ${anchorRate.toFixed(2)}%`
+                    : `FRED PMMS ${anchorRate.toFixed(2)}%`}
                 </button>
+              ) : selectedState ? (
+                <span>
+                  Bankrate {selectedState.postal} {term}-yr {anchorRate.toFixed(2)}% today
+                  {stateAnchorMissing && (
+                    <span className="hint-note">
+                      {" "}
+                      (term not bundled · using national fallback)
+                    </span>
+                  )}
+                </span>
               ) : (
                 <span>
-                  matches FRED PMMS {term}-yr {pmmsRate.toFixed(2)}% ({usMonth})
+                  matches FRED PMMS {term}-yr {anchorRate.toFixed(2)}%
+                  {anchorMonth ? ` (${anchorMonth})` : ""}
                 </span>
               )}
             </div>
-            <div className="calc-out-hint">↓ Hover a state below for state-specific numbers</div>
+            <div className="calc-out-hint">↓ Hover any state below for state-specific numbers</div>
           </div>
         </div>
       </section>
