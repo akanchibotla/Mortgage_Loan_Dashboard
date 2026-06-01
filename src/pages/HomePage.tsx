@@ -100,29 +100,6 @@ export default function HomePage() {
     [states],
   );
 
-  // Term comparison: market rate for each term at the chosen source (state or PMMS)
-  const rate15ForCompare =
-    (selectedState ? selectedState.latest_15 : latestUs15?.rate) ?? null;
-  const rate30ForCompare =
-    (selectedState ? selectedState.latest_30 : latestUs30?.rate) ?? null;
-  const pi15Compare =
-    rate15ForCompare != null ? monthlyPayment(loanAmount, rate15ForCompare, 15) : null;
-  const pi30Compare =
-    rate30ForCompare != null ? monthlyPayment(loanAmount, rate30ForCompare, 30) : null;
-  const interest15Compare =
-    pi15Compare != null ? pi15Compare * 15 * 12 - loanAmount : null;
-  const interest30Compare =
-    pi30Compare != null ? pi30Compare * 30 * 12 - loanAmount : null;
-  const monthlyDiff =
-    pi15Compare != null && pi30Compare != null && pi15Compare > pi30Compare
-      ? pi15Compare - pi30Compare
-      : null;
-  const interestSaved =
-    interest15Compare != null && interest30Compare != null && interest30Compare > interest15Compare
-      ? interest30Compare - interest15Compare
-      : null;
-  const homeValueEstimate = loanAmount > 0 ? Math.round((loanAmount / 0.8) / 1000) * 1000 : 0;
-
   function bumpRate(dir: -1 | 1, e: React.MouseEvent) {
     const step = e.shiftKey ? RATE_SHIFT_STEP : RATE_STEP;
     const base = effectiveRate ?? 6;
@@ -164,8 +141,8 @@ export default function HomePage() {
         </p>
 
         <div className="calc-inputs">
-          <label className="calc-input">
-            <div className="calc-input-content">
+          <div className="calc-input">
+            <div className="calc-input-section">
               <span className="calc-input-label">Loan amount</span>
               <div className="amount-wrap">
                 <button
@@ -221,15 +198,7 @@ export default function HomePage() {
                 <span>$2M</span>
               </div>
             </div>
-            <div className="calc-input-bottom">
-              <span className="hint-eyebrow">Implies a home value of</span>
-              <span className="hint-val">{fmtMoney(homeValueEstimate)}</span>
-              <span className="hint-aux">at 20% down · {fmtMoney(homeValueEstimate * 0.2)} cash</span>
-            </div>
-          </label>
-
-          <label className="calc-input">
-            <div className="calc-input-content">
+            <div className="calc-input-section">
               <span className="calc-input-label">Loan term</span>
               <div className="term-toggle term-toggle-lg">
                 <button
@@ -248,44 +217,7 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-            {(pi15Compare != null || pi30Compare != null) && (
-              <div className="calc-input-bottom term-compare">
-                <div className="term-compare-row">
-                  <span className="term-compare-label">15-yr</span>
-                  <span className="term-compare-val">
-                    {pi15Compare != null ? `${fmtMoney(pi15Compare)}/mo` : "—"}
-                  </span>
-                  <span className="term-compare-aux">
-                    {interest15Compare != null ? `${fmtMoney(interest15Compare)} int.` : ""}
-                  </span>
-                </div>
-                <div className="term-compare-row">
-                  <span className="term-compare-label">30-yr</span>
-                  <span className="term-compare-val">
-                    {pi30Compare != null ? `${fmtMoney(pi30Compare)}/mo` : "—"}
-                  </span>
-                  <span className="term-compare-aux">
-                    {interest30Compare != null ? `${fmtMoney(interest30Compare)} int.` : ""}
-                  </span>
-                </div>
-                {(monthlyDiff != null || interestSaved != null) && (
-                  <div className="term-compare-note">
-                    {monthlyDiff != null && (
-                      <>
-                        30-yr saves <b>{fmtMoney(monthlyDiff)}/mo</b>
-                      </>
-                    )}
-                    {monthlyDiff != null && interestSaved != null && " · "}
-                    {interestSaved != null && (
-                      <>
-                        15-yr saves <b>{fmtMoney(interestSaved)}</b> in interest
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </label>
+          </div>
 
           <div className="calc-output-card">
             <div className="calc-out-header">
