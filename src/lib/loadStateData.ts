@@ -113,6 +113,9 @@ export interface StatesIndexEntry {
   fips: string;
   name: string;
   has_hmda_band: boolean;
+  has_counties?: boolean;
+  n_counties?: number;
+  n_loans_hmda?: number;
   live_trailing: boolean;
   latest_15: number | null;
   latest_15_month: string | null;

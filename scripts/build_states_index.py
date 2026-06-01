@@ -37,7 +37,21 @@ def main() -> int:
         r15, m15 = latest_rate(os.path.join(state_dir, "bankrate_15yr.json"))
         r30, m30 = latest_rate(os.path.join(state_dir, "bankrate_30yr.json"))
         has_hmda = os.path.exists(os.path.join(state_dir, "hmda_2024_15yr.json"))
-        has_counties = os.path.exists(os.path.join(state_dir, "counties.json"))
+        counties_path = os.path.join(state_dir, "counties.json")
+        n_counties = 0
+        n_loans = 0
+        if os.path.exists(counties_path):
+            try:
+                with open(counties_path) as f:
+                    cf = json.load(f)
+                n_counties = len(cf.get("counties", []))
+                n_loans = sum(
+                    (c.get("term_30", {}).get("n_loans", 0) or 0)
+                    + (c.get("term_15", {}).get("n_loans", 0) or 0)
+                    for c in cf.get("counties", [])
+                )
+            except (OSError, json.JSONDecodeError):
+                pass
         # Only include states with some real data (rates or HMDA), not just metadata stubs.
         if r15 is None and r30 is None and not has_hmda:
             continue
@@ -47,7 +61,9 @@ def main() -> int:
             "fips": meta["fips"],
             "name": meta["name"],
             "has_hmda_band": has_hmda,
-            "has_counties": has_counties,
+            "has_counties": n_counties > 0,
+            "n_counties": n_counties,
+            "n_loans_hmda": n_loans,
             "live_trailing": meta.get("live_trailing", False),
             "latest_15": r15,
             "latest_15_month": m15,

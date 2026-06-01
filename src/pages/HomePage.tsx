@@ -82,7 +82,13 @@ export default function HomePage() {
                   : s.latest_15 != null && (
                       <span className="state-tag tag-rate">{s.latest_15.toFixed(2)}%</span>
                     )}
-                {s.has_hmda_band && <span className="state-tag">HMDA</span>}
+                {s.n_counties ? (
+                  <span className="state-tag" title={`${s.n_loans_hmda?.toLocaleString() ?? ""} HMDA originations`}>
+                    {s.n_counties} counties
+                  </span>
+                ) : (
+                  s.has_hmda_band && <span className="state-tag">HMDA</span>
+                )}
                 {s.live_trailing && <span className="state-tag tag-live">live</span>}
               </Link>
             </li>
