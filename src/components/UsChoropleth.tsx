@@ -5,32 +5,19 @@ import { feature } from "topojson-client";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import statesTopo from "us-atlas/states-10m.json";
 import type { Topology, GeometryCollection } from "topojson-specification";
-
-interface IndexEntry {
-  slug: string;
-  postal: string;
-  fips: string;
-  name: string;
-  latest_15: number | null;
-  latest_15_month: string | null;
-  latest_30: number | null;
-  latest_30_month: string | null;
-  has_hmda_band: boolean;
-  has_counties?: boolean;
-  n_counties?: number;
-  n_loans_hmda?: number;
-  live_trailing: boolean;
-}
+import type { HmdaQuickStats, StatesIndexEntry } from "../lib/loadStateData";
+import { fmtMoney, fmtRate, monthlyPayment } from "../lib/payment";
 
 interface Props {
-  index: IndexEntry[];
+  index: StatesIndexEntry[];
   term: 15 | 30;
+  loanAmount: number;
 }
 
 const WIDTH = 975;
 const HEIGHT = 610;
-const TIP_W = 250;
-const TIP_H = 200;
+const TIP_W = 290;
+const TIP_H = 280;
 
 function colorFor(rate: number | null, minR: number, maxR: number): string {
   if (rate == null) return "#e8e8e8";
@@ -40,17 +27,17 @@ function colorFor(rate: number | null, minR: number, maxR: number): string {
 }
 
 interface Hovered {
-  entry: IndexEntry;
+  entry: StatesIndexEntry;
   x: number;
   y: number;
 }
 
-export function UsChoropleth({ index, term }: Props) {
+export function UsChoropleth({ index, term, loanAmount }: Props) {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState<Hovered | null>(null);
 
   const byFips = useMemo(() => {
-    const m = new Map<string, IndexEntry>();
+    const m = new Map<string, StatesIndexEntry>();
     for (const s of index) m.set(s.fips, s);
     return m;
   }, [index]);
@@ -105,49 +92,73 @@ export function UsChoropleth({ index, term }: Props) {
         })}
       </svg>
       <ColorLegend minR={minR} maxR={maxR} term={term} />
-      {hovered && <StateTooltip hovered={hovered} term={term} />}
+      {hovered && <StateTooltip hovered={hovered} term={term} loanAmount={loanAmount} />}
     </div>
   );
 }
 
-function StateTooltip({ hovered, term }: { hovered: Hovered; term: 15 | 30 }) {
+function StateTooltip({
+  hovered,
+  term,
+  loanAmount,
+}: {
+  hovered: Hovered;
+  term: 15 | 30;
+  loanAmount: number;
+}) {
   const { entry, x, y } = hovered;
   const left = Math.min(x + 14, window.innerWidth - TIP_W - 8);
   const top = Math.min(y + 14, window.innerHeight - TIP_H - 8);
-  const r30 = entry.latest_30;
-  const r15 = entry.latest_15;
+  const live = term === 30 ? entry.latest_30 : entry.latest_15;
+  const hmda: HmdaQuickStats | null | undefined = term === 30 ? entry.hmda_30 : entry.hmda_15;
+  const livePI = live != null ? monthlyPayment(loanAmount, live, term) : null;
   return (
     <div className="map-tooltip" style={{ left, top }}>
       <div className="tt-header">
         <span className="tt-name">{entry.name}</span>
         <span className="tt-postal">{entry.postal}</span>
       </div>
-      <div className="tt-body">
-        <div className={`tt-row ${term === 30 ? "tt-row-focus" : ""}`}>
-          <span className="tt-k">30-yr (today)</span>
-          <span className="tt-val">{r30 != null ? `${r30.toFixed(2)}%` : "—"}</span>
+      <div className="tt-section">
+        <div className="tt-section-label">Today's market</div>
+        <div className="tt-row tt-row-focus">
+          <span className="tt-k">{term}-yr quoted</span>
+          <span className="tt-val">{fmtRate(live)}</span>
         </div>
-        <div className={`tt-row ${term === 15 ? "tt-row-focus" : ""}`}>
-          <span className="tt-k">15-yr (today)</span>
-          <span className="tt-val">{r15 != null ? `${r15.toFixed(2)}%` : "—"}</span>
+        <div className="tt-row tt-row-focus">
+          <span className="tt-k">Est. monthly P&amp;I</span>
+          <span className="tt-val tt-money">{livePI != null ? fmtMoney(livePI) : "—"}</span>
         </div>
-        {entry.has_hmda_band && (
-          <div className="tt-row tt-row-divider">
-            <span className="tt-k">HMDA 2024</span>
+      </div>
+      {hmda?.p50 != null && (
+        <div className="tt-section">
+          <div className="tt-section-label">
+            HMDA 2024 actuals <span className="tt-section-n">n={hmda.n?.toLocaleString()}</span>
+          </div>
+          <div className="tt-row">
+            <span className="tt-k">Median (p50)</span>
             <span className="tt-val">
-              {entry.n_counties ?? "—"} counties · {(entry.n_loans_hmda ?? 0).toLocaleString()}{" "}
-              loans
+              {fmtRate(hmda.p50)} · {fmtMoney(monthlyPayment(loanAmount, hmda.p50, term))}
             </span>
           </div>
-        )}
-        {entry.live_trailing && (
-          <div className="tt-row tt-muted">
-            <span className="tt-k">Status</span>
-            <span className="tt-val">live refresh</span>
-          </div>
-        )}
-      </div>
-      <div className="tt-hint">click to drill in →</div>
+          {hmda.p10 != null && (
+            <div className="tt-row tt-row-low">
+              <span className="tt-k">Best 10% (p10)</span>
+              <span className="tt-val">
+                {fmtRate(hmda.p10)} · {fmtMoney(monthlyPayment(loanAmount, hmda.p10, term))}
+              </span>
+            </div>
+          )}
+          {hmda.p90 != null && (
+            <div className="tt-row tt-row-high">
+              <span className="tt-k">Worst 10% (p90)</span>
+              <span className="tt-val">
+                {fmtRate(hmda.p90)} · {fmtMoney(monthlyPayment(loanAmount, hmda.p90, term))}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="tt-hint">click to drill into {entry.name} →</div>
     </div>
   );
 }

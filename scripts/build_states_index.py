@@ -52,6 +52,28 @@ def main() -> int:
                 )
             except (OSError, json.JSONDecodeError):
                 pass
+
+        def load_hmda_pcts(path: str) -> dict | None:
+            if not os.path.exists(path):
+                return None
+            try:
+                with open(path) as f:
+                    h = json.load(f)
+            except (OSError, json.JSONDecodeError):
+                return None
+            return {
+                "n": h.get("n_loans"),
+                "p10": h.get("p10_pct"),
+                "p25": h.get("p25_pct"),
+                "p50": h.get("p50_pct"),
+                "p75": h.get("p75_pct"),
+                "p90": h.get("p90_pct"),
+                "mean": h.get("simple_mean_pct"),
+            }
+
+        hmda_15 = load_hmda_pcts(os.path.join(state_dir, "hmda_2024_15yr.json"))
+        hmda_30 = load_hmda_pcts(os.path.join(state_dir, "hmda_2024_30yr.json"))
+
         # Only include states with some real data (rates or HMDA), not just metadata stubs.
         if r15 is None and r30 is None and not has_hmda:
             continue
@@ -69,6 +91,8 @@ def main() -> int:
             "latest_15_month": m15,
             "latest_30": r30,
             "latest_30_month": m30,
+            "hmda_15": hmda_15,
+            "hmda_30": hmda_30,
         })
 
     out = {

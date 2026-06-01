@@ -265,6 +265,303 @@ h1 {
   color: #cbd2dc;
 }
 
+/* Calculator hero variant — interactive controls */
+.hero-calc {
+  padding: 38px 42px 30px;
+}
+
+.hero-calc .hero-title {
+  font-size: 34px;
+  margin-bottom: 14px;
+}
+
+.hero-calc .hero-sub {
+  margin-bottom: 24px;
+}
+
+.calc-inputs {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(260px, 1.4fr) minmax(180px, 1fr) minmax(220px, 1.2fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.calc-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  padding: 12px 14px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
+}
+
+.calc-input-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--c-ink-mute);
+}
+
+.amount-wrap {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+}
+
+.amount-prefix {
+  position: absolute;
+  left: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--c-ink);
+  pointer-events: none;
+}
+
+.amount-wrap input[type="number"] {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--c-ink);
+  padding: 0 0 0 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-family: inherit;
+  -moz-appearance: textfield;
+}
+
+.amount-wrap input[type="number"]:focus {
+  outline: none;
+}
+
+.amount-wrap input[type="number"]::-webkit-outer-spin-button,
+.amount-wrap input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.amount-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, var(--c-brand), var(--c-accent));
+  border-radius: 3px;
+  outline: none;
+  margin: 2px 0;
+}
+
+.amount-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--c-brand);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(31, 95, 168, 0.25);
+}
+
+.amount-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--c-brand);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(31, 95, 168, 0.25);
+}
+
+.amount-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--c-ink-mute);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.term-toggle-lg button {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.calc-output-card {
+  background: linear-gradient(135deg, rgba(31, 95, 168, 0.08), rgba(46, 139, 87, 0.06));
+  border: 1px solid rgba(31, 95, 168, 0.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+.calc-out-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--c-brand);
+}
+
+.calc-out-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-out-rate {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-ink);
+  letter-spacing: -0.02em;
+}
+
+.calc-out-arrow {
+  color: var(--c-ink-mute);
+  font-size: 14px;
+}
+
+.calc-out-payment {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(95deg, var(--c-brand), var(--c-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.calc-out-hint {
+  font-size: 11px;
+  color: var(--c-ink-mute);
+  font-style: italic;
+}
+
+/* Soft hero variant — the "about" block below the map */
+.hero-soft {
+  background: #fff;
+  border: 1px solid var(--c-border-soft);
+}
+
+.hero-soft::before,
+.hero-soft::after {
+  display: none;
+}
+
+.hero-soft .hero-subtitle {
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+  margin: 0 0 12px;
+  max-width: 720px;
+}
+
+.hero-eyebrow-soft {
+  color: var(--c-ink-mute);
+}
+
+.hero-eyebrow-soft::before {
+  background: var(--c-ink-mute);
+}
+
+.hero-soft .stat-card {
+  background: #fafbfd;
+  border-color: var(--c-border);
+}
+
+/* Flatter map header without the term toggle */
+.map-controls-flat {
+  align-items: baseline;
+  gap: 10px;
+}
+
+.map-controls-hint {
+  font-size: 12px;
+  color: var(--c-ink-mute);
+  font-weight: 500;
+}
+
+/* Tooltip — calculator-aware extras */
+.tt-section {
+  margin-top: 6px;
+}
+
+.tt-section + .tt-section {
+  border-top: 1px dashed #e5e7ed;
+  padding-top: 6px;
+}
+
+.tt-section-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--c-ink-mute);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.tt-section-n {
+  font-size: 9.5px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--c-ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-money {
+  font-feature-settings: "tnum";
+}
+
+.tt-row-low .tt-val {
+  color: var(--c-accent);
+}
+
+.tt-row-high .tt-val {
+  color: #c8392c;
+}
+
+@media (max-width: 720px) {
+  .hero-calc {
+    padding: 28px 22px 22px;
+  }
+  .calc-inputs {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .calc-input {
+    padding: 10px 12px;
+  }
+  .amount-wrap input[type="number"] {
+    font-size: 22px;
+  }
+  .calc-out-rate,
+  .calc-out-payment {
+    font-size: 18px;
+  }
+  .hero-soft .hero-subtitle {
+    font-size: 18px;
+  }
+}
+
 .section {
   margin-top: 32px;
 }

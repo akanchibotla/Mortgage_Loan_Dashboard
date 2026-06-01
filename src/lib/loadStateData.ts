@@ -117,6 +117,16 @@ export function loadPmms() {
   };
 }
 
+export interface HmdaQuickStats {
+  n?: number;
+  p10?: number;
+  p25?: number;
+  p50?: number;
+  p75?: number;
+  p90?: number;
+  mean?: number;
+}
+
 export interface StatesIndexEntry {
   slug: string;
   postal: string;
@@ -131,6 +141,8 @@ export interface StatesIndexEntry {
   latest_15_month: string | null;
   latest_30: number | null;
   latest_30_month: string | null;
+  hmda_15?: HmdaQuickStats | null;
+  hmda_30?: HmdaQuickStats | null;
 }
 
 import statesIndex from "../data/states_index.json";
