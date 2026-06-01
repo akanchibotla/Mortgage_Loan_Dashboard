@@ -62,6 +62,34 @@ export interface MndTodayPoint {
   as_of_iso: string | null;
 }
 
+export interface DemographicBucket {
+  bucket: string;
+  n_loans: number;
+  simple_mean_pct?: number;
+  amount_weighted_mean_pct?: number;
+  p10_pct?: number;
+  p25_pct?: number;
+  p50_pct?: number;
+  p75_pct?: number;
+  p90_pct?: number;
+  low_n?: boolean;
+}
+
+export interface DemographicsByTerm {
+  race: DemographicBucket[];
+  ethnicity: DemographicBucket[];
+  sex: DemographicBucket[];
+  loan_amount: DemographicBucket[];
+}
+
+export interface HmdaDemographicsFile {
+  state_slug: string;
+  state_postal: string;
+  built_at_utc: string;
+  term_15: DemographicsByTerm;
+  term_30: DemographicsByTerm;
+}
+
 export interface MndTodayFile {
   fetched_at_utc: string;
   as_of_raw: string | null;

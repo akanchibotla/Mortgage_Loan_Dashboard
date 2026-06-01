@@ -104,6 +104,48 @@ def summarize(rates: list[float], amounts: list[float]) -> dict:
     }
 
 
+# Race buckets per HMDA "derived_race" coding (LAR public file).
+RACE_BUCKETS = {
+    "White": "White",
+    "Black or African American": "Black",
+    "Asian": "Asian",
+    "American Indian or Alaska Native": "Native",
+    "Native Hawaiian or Other Pacific Islander": "Pacific Islander",
+    "Joint": "Joint",
+    "2 or more minority races": "Multiple",
+    "Race Not Available": "Not Available",
+    "Free Form Text Only": "Other",
+}
+
+# Ethnicity buckets (separate axis from race).
+ETHNICITY_BUCKETS = {
+    "Hispanic or Latino": "Hispanic or Latino",
+    "Not Hispanic or Latino": "Not Hispanic or Latino",
+    "Joint": "Joint",
+    "Ethnicity Not Available": "Not Available",
+    "Free Form Text Only": "Other",
+}
+
+# Loan-amount brackets ($000).
+LOAN_AMT_BRACKETS = [
+    (0, 200, "<$200K"),
+    (200, 350, "$200–350K"),
+    (350, 500, "$350–500K"),
+    (500, 750, "$500–750K"),
+    (750, 1_000, "$750K–1M"),
+    (1_000, 5_000, ">$1M"),
+]
+
+
+def amount_bracket(amount: float) -> str | None:
+    """Map a raw loan amount to a bracket label. Amounts are in dollars."""
+    k = amount / 1000.0
+    for lo, hi, label in LOAN_AMT_BRACKETS:
+        if lo <= k < hi:
+            return label
+    return None
+
+
 def state_summary(rates: list[float], amounts: list[float], state: dict, term: int) -> dict:
     s = summarize(rates, amounts)
     s["source"] = (
@@ -115,12 +157,23 @@ def state_summary(rates: list[float], amounts: list[float], state: dict, term: i
 
 
 def process_csv(csv_path: str, state: dict) -> dict:
-    """Stream-process the CSV and return aggregated per-county and per-term data."""
-    # state-level accumulators
+    """Stream-process the CSV and aggregate per-county/term + demographic breakdowns."""
     state_15: dict[str, list[float]] = {"rates": [], "amounts": []}
     state_30: dict[str, list[float]] = {"rates": [], "amounts": []}
-    # per-county (per term): {fips: {15: {rates, amounts}, 30: {rates, amounts}}}
     counties: dict[str, dict[int, dict[str, list[float]]]] = {}
+
+    # Demographic accumulators per term: term -> {dim -> {bucket -> {rates, amounts}}}
+    demos: dict[int, dict[str, dict[str, dict[str, list[float]]]]] = {
+        15: {"race": {}, "ethnicity": {}, "sex": {}, "loan_amount": {}},
+        30: {"race": {}, "ethnicity": {}, "sex": {}, "loan_amount": {}},
+    }
+
+    def push_dim(term: int, dim: str, bucket: str | None, rate: float, amt: float):
+        if not bucket:
+            return
+        b = demos[term][dim].setdefault(bucket, {"rates": [], "amounts": []})
+        b["rates"].append(rate)
+        b["amounts"].append(amt)
 
     total = 0
     kept = 0
@@ -155,6 +208,15 @@ def process_csv(csv_path: str, state: dict) -> dict:
                 bucket = counties.setdefault(county, {15: {"rates": [], "amounts": []}, 30: {"rates": [], "amounts": []}})
                 bucket[term]["rates"].append(rate)
                 bucket[term]["amounts"].append(amt)
+            # Demographic breakdowns (state-level only — county-level n's too thin per cell).
+            race = RACE_BUCKETS.get((row.get("derived_race") or "").strip())
+            push_dim(term, "race", race, rate, amt)
+            eth = ETHNICITY_BUCKETS.get((row.get("derived_ethnicity") or "").strip())
+            push_dim(term, "ethnicity", eth, rate, amt)
+            sex = (row.get("derived_sex") or "").strip()
+            if sex:
+                push_dim(term, "sex", sex, rate, amt)
+            push_dim(term, "loan_amount", amount_bracket(amt), rate, amt)
             kept += 1
 
     print(f"Processed {total:,} rows; kept {kept:,} clean originations; {len(counties)} counties.")
@@ -162,6 +224,7 @@ def process_csv(csv_path: str, state: dict) -> dict:
         "state_15": state_summary(state_15["rates"], state_15["amounts"], state, 15),
         "state_30": state_summary(state_30["rates"], state_30["amounts"], state, 30),
         "counties": counties,
+        "demographics": demos,
         "n_state_15": len(state_15["rates"]),
         "n_state_30": len(state_30["rates"]),
     }
@@ -213,23 +276,64 @@ def emit(slug: str, state: dict, result: dict) -> None:
     with open(os.path.join(out_dir, "counties.json"), "w") as f:
         json.dump(counties_file, f, indent=2)
 
-    print(f"  Wrote: hmda_2024_15yr.json (n={result['n_state_15']:,}) + hmda_2024_30yr.json (n={result['n_state_30']:,}) + counties.json ({len(county_rows)} counties)")
+    # Demographics file: per term, per dimension, per bucket.
+    demos = result.get("demographics", {})
+    demo_out: dict = {
+        "state_slug": state["slug"],
+        "state_postal": state["postal"],
+        "built_at_utc": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+        "term_15": {},
+        "term_30": {},
+    }
+    for term in (15, 30):
+        for dim, buckets in demos.get(term, {}).items():
+            rows = []
+            for label, payload in buckets.items():
+                s = summarize(payload["rates"], payload["amounts"])
+                rows.append({"bucket": label, **s})
+            rows.sort(key=lambda r: -r.get("n_loans", 0))
+            demo_out[f"term_{term}"][dim] = rows
+    with open(os.path.join(out_dir, "hmda_2024_demographics.json"), "w") as f:
+        json.dump(demo_out, f, indent=2)
+
+    print(
+        f"  Wrote: hmda_2024_15yr.json (n={result['n_state_15']:,})"
+        f" + hmda_2024_30yr.json (n={result['n_state_30']:,})"
+        f" + counties.json ({len(county_rows)} counties)"
+        f" + hmda_2024_demographics.json"
+    )
 
 
-def fetch_one(slug: str, keep_csv: bool = False) -> int:
+def fetch_one(slug: str, keep_csv: bool = False, cache_dir: str | None = None) -> int:
     state = by_slug(slug)
-    tmp = tempfile.NamedTemporaryFile(prefix=f"hmda_{slug}_", suffix=".csv", delete=False)
-    tmp.close()
-    try:
-        size = download(state["postal"], tmp.name)
+    csv_path = None
+    cleanup = False
+    if cache_dir:
+        os.makedirs(cache_dir, exist_ok=True)
+        csv_path = os.path.join(cache_dir, f"hmda_{slug}_2024.csv")
+        if os.path.exists(csv_path) and os.path.getsize(csv_path) > 1_000_000:
+            print(f"Using cached {csv_path}")
+        else:
+            size = download(state["postal"], csv_path)
+            if size <= 0:
+                return 1
+    else:
+        tmp = tempfile.NamedTemporaryFile(prefix=f"hmda_{slug}_", suffix=".csv", delete=False)
+        tmp.close()
+        csv_path = tmp.name
+        cleanup = not keep_csv
+        size = download(state["postal"], csv_path)
         if size <= 0:
+            if cleanup and os.path.exists(csv_path):
+                os.unlink(csv_path)
             return 1
-        result = process_csv(tmp.name, state)
+    try:
+        result = process_csv(csv_path, state)
         emit(slug, state, result)
         return 0
     finally:
-        if not keep_csv and os.path.exists(tmp.name):
-            os.unlink(tmp.name)
+        if cleanup and csv_path and os.path.exists(csv_path):
+            os.unlink(csv_path)
 
 
 def main() -> int:
@@ -238,6 +342,7 @@ def main() -> int:
     parser.add_argument("--all", action="store_true", help="fetch for every bundled state")
     parser.add_argument("--all-registry", action="store_true", help="fetch for every state in scripts/states.py")
     parser.add_argument("--keep-csv", action="store_true")
+    parser.add_argument("--cache-dir", help="persistent download cache directory")
     args = parser.parse_args()
     if args.all:
         from _paths import STATES_DIR
@@ -245,7 +350,7 @@ def main() -> int:
         rc = 0
         for slug in slugs:
             print(f"\n=== {slug} ===")
-            r = fetch_one(slug, keep_csv=args.keep_csv)
+            r = fetch_one(slug, keep_csv=args.keep_csv, cache_dir=args.cache_dir)
             if r != 0:
                 rc = r
         return rc
@@ -254,13 +359,13 @@ def main() -> int:
         rc = 0
         for s in STATES:
             print(f"\n=== {s['slug']} ===")
-            r = fetch_one(s["slug"], keep_csv=args.keep_csv)
+            r = fetch_one(s["slug"], keep_csv=args.keep_csv, cache_dir=args.cache_dir)
             if r != 0:
                 rc = r
         return rc
     if not args.state:
         parser.error("--state or --all required")
-    return fetch_one(args.state, keep_csv=args.keep_csv)
+    return fetch_one(args.state, keep_csv=args.keep_csv, cache_dir=args.cache_dir)
 
 
 if __name__ == "__main__":

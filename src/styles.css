@@ -515,6 +515,85 @@ code {
   box-shadow: 0 0 4px rgba(31, 95, 168, 0.4);
 }
 
+.dim-toggle {
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 6px 0 16px 0;
+  flex-wrap: wrap;
+}
+
+.dim-toggle button {
+  background: #fff;
+  border: 0;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: #555;
+  border-right: 1px solid #ddd;
+}
+
+.dim-toggle button:last-child {
+  border-right: 0;
+}
+
+.dim-toggle button.active {
+  background: #2e8b57;
+  color: #fff;
+}
+
+.demo-table {
+  width: 100%;
+  font-size: 12.5px;
+  table-layout: fixed;
+}
+
+.demo-table th,
+.demo-table td {
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+}
+
+.demo-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+  text-align: left;
+}
+
+.demo-table th.num,
+.demo-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  width: 90px;
+}
+
+.demo-table th:nth-child(4) {
+  width: 35%;
+}
+
+.demo-table .delta {
+  color: #1a1a1a;
+}
+
+.demo-table .delta-up {
+  color: #c8392c;
+  font-weight: 600;
+}
+
+.demo-table .delta-down {
+  color: #2e8b57;
+  font-weight: 600;
+}
+
+.inline-dist {
+  margin: 0;
+}
+
+.inline-dist .dist-track {
+  height: 14px;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 720px) {
   body {

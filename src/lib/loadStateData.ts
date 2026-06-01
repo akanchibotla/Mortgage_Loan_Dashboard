@@ -1,4 +1,10 @@
-import type { CountiesFile, HmdaSummary, MonthlyRate, NcMonthlySnapshot } from "../types";
+import type {
+  CountiesFile,
+  HmdaDemographicsFile,
+  HmdaSummary,
+  MonthlyRate,
+  NcMonthlySnapshot,
+} from "../types";
 
 // Eager: state_meta.json files for every bundled state. Tiny (~200B each).
 // Used by the home page to list available states without loading their full
@@ -30,6 +36,7 @@ export interface StateData {
   hmda15?: HmdaSummary;
   hmda30?: HmdaSummary;
   counties?: CountiesFile;
+  demographics?: HmdaDemographicsFile;
 }
 
 export interface StateMeta {
@@ -63,15 +70,17 @@ async function loadOptional<T>(slug: string, leaf: string): Promise<T | null> {
 export async function loadStateData(slug: string): Promise<StateData | null> {
   const meta = metaForSlug(slug);
   if (!meta) return null;
-  const [bankrate15, bankrate30, mnd15, mnd30, hmda15, hmda30, counties] = await Promise.all([
-    loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_15yr.json"),
-    loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
-    loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
-    loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
-    loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
-    loadOptional<HmdaSummary>(slug, "hmda_2024_30yr.json"),
-    loadOptional<CountiesFile>(slug, "counties.json"),
-  ]);
+  const [bankrate15, bankrate30, mnd15, mnd30, hmda15, hmda30, counties, demographics] =
+    await Promise.all([
+      loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_15yr.json"),
+      loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
+      loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
+      loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
+      loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
+      loadOptional<HmdaSummary>(slug, "hmda_2024_30yr.json"),
+      loadOptional<CountiesFile>(slug, "counties.json"),
+      loadOptional<HmdaDemographicsFile>(slug, "hmda_2024_demographics.json"),
+    ]);
   return {
     slug,
     meta,
@@ -82,6 +91,7 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     hmda15: hmda15 ?? undefined,
     hmda30: hmda30 ?? undefined,
     counties: counties ?? undefined,
+    demographics: demographics ?? undefined,
   };
 }
 

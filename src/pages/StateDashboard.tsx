@@ -12,6 +12,9 @@ const RateTable = lazy(() =>
 const CountyChoropleth = lazy(() =>
   import("../components/CountyChoropleth").then((m) => ({ default: m.CountyChoropleth })),
 );
+const DemographicsPanel = lazy(() =>
+  import("../components/DemographicsPanel").then((m) => ({ default: m.DemographicsPanel })),
+);
 
 const cache = new Map<string, Promise<StateData | null>>();
 
@@ -118,6 +121,12 @@ function StateBody({ slug }: { slug: string }) {
         />
         {data.bankrate30 && <RateTable usData={pmms30} ncData={data.bankrate30} />}
       </section>
+
+      {data.demographics && (
+        <Suspense fallback={<p className="loading">Loading demographic breakdowns…</p>}>
+          <DemographicsPanel data={data.demographics} stateName={name} />
+        </Suspense>
+      )}
 
       {counties.length > 0 && (
         <section className="section">

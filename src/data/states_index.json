@@ -1,5 +1,5 @@
 {
-  "built_at_utc": "2026-06-01T16:17:27+00:00",
+  "built_at_utc": "2026-06-01T16:22:04+00:00",
   "n_states": 51,
   "states": [
     {
@@ -56,11 +56,11 @@
       "has_counties": true,
       "n_counties": 75,
       "n_loans_hmda": 25482,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 6.06,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.63,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "california",
@@ -101,11 +101,11 @@
       "has_counties": true,
       "n_counties": 9,
       "n_loans_hmda": 28467,
-      "live_trailing": false,
-      "latest_15": null,
-      "latest_15_month": null,
-      "latest_30": null,
-      "latest_30_month": null
+      "live_trailing": true,
+      "latest_15": 5.93,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.46,
+      "latest_30_month": "2026-06"
     },
     {
       "slug": "delaware",

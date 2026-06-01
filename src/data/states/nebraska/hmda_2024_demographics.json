@@ -1,0 +1,553 @@
+{
+  "state_slug": "nebraska",
+  "state_postal": "NE",
+  "built_at_utc": "2026-06-01T16:21:45+00:00",
+  "term_15": {
+    "race": [
+      {
+        "bucket": "White",
+        "n_loans": 252,
+        "simple_mean_pct": 6.577,
+        "amount_weighted_mean_pct": 6.176,
+        "p10_pct": 5.471,
+        "p25_pct": 5.875,
+        "p50_pct": 6.25,
+        "p75_pct": 6.75,
+        "p90_pct": 7.625,
+        "low_n": false
+      },
+      {
+        "bucket": "Not Available",
+        "n_loans": 38,
+        "simple_mean_pct": 6.906,
+        "amount_weighted_mean_pct": 6.19,
+        "p10_pct": 5.0,
+        "p25_pct": 5.875,
+        "p50_pct": 6.375,
+        "p75_pct": 6.875,
+        "p90_pct": 7.625,
+        "low_n": false
+      },
+      {
+        "bucket": "Asian",
+        "n_loans": 33,
+        "simple_mean_pct": 5.972,
+        "amount_weighted_mean_pct": 5.828,
+        "p10_pct": 5.125,
+        "p25_pct": 5.375,
+        "p50_pct": 5.99,
+        "p75_pct": 6.375,
+        "p90_pct": 6.625,
+        "low_n": false
+      },
+      {
+        "bucket": "Joint",
+        "n_loans": 12,
+        "simple_mean_pct": 6.228,
+        "amount_weighted_mean_pct": 6.163,
+        "p10_pct": 5.5,
+        "p25_pct": 5.5,
+        "p50_pct": 6.25,
+        "p75_pct": 6.49,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      {
+        "bucket": "Black",
+        "n_loans": 5,
+        "simple_mean_pct": 6.625,
+        "amount_weighted_mean_pct": 6.516,
+        "p10_pct": 5.375,
+        "p25_pct": 6.0,
+        "p50_pct": 6.875,
+        "p75_pct": 7.125,
+        "p90_pct": 7.125,
+        "low_n": true
+      },
+      {
+        "bucket": "Native",
+        "n_loans": 1,
+        "simple_mean_pct": 13.97,
+        "amount_weighted_mean_pct": 13.97,
+        "p10_pct": 13.97,
+        "p25_pct": 13.97,
+        "p50_pct": 13.97,
+        "p75_pct": 13.97,
+        "p90_pct": 13.97,
+        "low_n": true
+      }
+    ],
+    "ethnicity": [
+      {
+        "bucket": "Not Hispanic or Latino",
+        "n_loans": 275,
+        "simple_mean_pct": 6.306,
+        "amount_weighted_mean_pct": 6.122,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.625,
+        "p90_pct": 7.0,
+        "low_n": false
+      },
+      {
+        "bucket": "Not Available",
+        "n_loans": 36,
+        "simple_mean_pct": 6.898,
+        "amount_weighted_mean_pct": 6.218,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.375,
+        "p75_pct": 6.875,
+        "p90_pct": 8.0,
+        "low_n": false
+      },
+      {
+        "bucket": "Hispanic or Latino",
+        "n_loans": 23,
+        "simple_mean_pct": 9.314,
+        "amount_weighted_mean_pct": 6.874,
+        "p10_pct": 5.375,
+        "p25_pct": 6.75,
+        "p50_pct": 9.25,
+        "p75_pct": 11.75,
+        "p90_pct": 12.125,
+        "low_n": true
+      },
+      {
+        "bucket": "Joint",
+        "n_loans": 7,
+        "simple_mean_pct": 6.034,
+        "amount_weighted_mean_pct": 5.743,
+        "p10_pct": 4.75,
+        "p25_pct": 4.75,
+        "p50_pct": 5.625,
+        "p75_pct": 5.99,
+        "p90_pct": 6.0,
+        "low_n": true
+      }
+    ],
+    "sex": [
+      {
+        "bucket": "Joint",
+        "n_loans": 178,
+        "simple_mean_pct": 6.473,
+        "amount_weighted_mean_pct": 6.151,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.25,
+        "p75_pct": 6.625,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      {
+        "bucket": "Male",
+        "n_loans": 100,
+        "simple_mean_pct": 6.75,
+        "amount_weighted_mean_pct": 6.147,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.75,
+        "p90_pct": 8.125,
+        "low_n": false
+      },
+      {
+        "bucket": "Female",
+        "n_loans": 36,
+        "simple_mean_pct": 6.576,
+        "amount_weighted_mean_pct": 6.046,
+        "p10_pct": 5.375,
+        "p25_pct": 5.5,
+        "p50_pct": 6.125,
+        "p75_pct": 6.875,
+        "p90_pct": 7.5,
+        "low_n": false
+      },
+      {
+        "bucket": "Sex Not Available",
+        "n_loans": 27,
+        "simple_mean_pct": 6.477,
+        "amount_weighted_mean_pct": 6.155,
+        "p10_pct": 5.0,
+        "p25_pct": 5.875,
+        "p50_pct": 6.375,
+        "p75_pct": 6.625,
+        "p90_pct": 7.0,
+        "low_n": true
+      }
+    ],
+    "loan_amount": [
+      {
+        "bucket": "<$200K",
+        "n_loans": 151,
+        "simple_mean_pct": 7.176,
+        "amount_weighted_mean_pct": 6.592,
+        "p10_pct": 5.625,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 7.125,
+        "p90_pct": 11.68,
+        "low_n": false
+      },
+      {
+        "bucket": "$200\u2013350K",
+        "n_loans": 102,
+        "simple_mean_pct": 6.17,
+        "amount_weighted_mean_pct": 6.162,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.5,
+        "p90_pct": 6.875,
+        "low_n": false
+      },
+      {
+        "bucket": "$350\u2013500K",
+        "n_loans": 45,
+        "simple_mean_pct": 5.938,
+        "amount_weighted_mean_pct": 5.947,
+        "p10_pct": 5.0,
+        "p25_pct": 5.5,
+        "p50_pct": 6.0,
+        "p75_pct": 6.375,
+        "p90_pct": 6.5,
+        "low_n": false
+      },
+      {
+        "bucket": "$500\u2013750K",
+        "n_loans": 33,
+        "simple_mean_pct": 6.008,
+        "amount_weighted_mean_pct": 6.002,
+        "p10_pct": 5.125,
+        "p25_pct": 5.5,
+        "p50_pct": 5.99,
+        "p75_pct": 6.375,
+        "p90_pct": 6.625,
+        "low_n": false
+      },
+      {
+        "bucket": "$750K\u20131M",
+        "n_loans": 9,
+        "simple_mean_pct": 6.104,
+        "amount_weighted_mean_pct": 6.123,
+        "p10_pct": 5.375,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.5,
+        "p90_pct": 6.5,
+        "low_n": true
+      },
+      {
+        "bucket": ">$1M",
+        "n_loans": 1,
+        "simple_mean_pct": 5.375,
+        "amount_weighted_mean_pct": 5.375,
+        "p10_pct": 5.375,
+        "p25_pct": 5.375,
+        "p50_pct": 5.375,
+        "p75_pct": 5.375,
+        "p90_pct": 5.375,
+        "low_n": true
+      }
+    ]
+  },
+  "term_30": {
+    "race": [
+      {
+        "bucket": "White",
+        "n_loans": 13507,
+        "simple_mean_pct": 6.579,
+        "amount_weighted_mean_pct": 6.59,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Not Available",
+        "n_loans": 1473,
+        "simple_mean_pct": 6.599,
+        "amount_weighted_mean_pct": 6.598,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Asian",
+        "n_loans": 670,
+        "simple_mean_pct": 6.502,
+        "amount_weighted_mean_pct": 6.489,
+        "p10_pct": 5.625,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      {
+        "bucket": "Black",
+        "n_loans": 484,
+        "simple_mean_pct": 6.473,
+        "amount_weighted_mean_pct": 6.471,
+        "p10_pct": 5.75,
+        "p25_pct": 6.0,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Joint",
+        "n_loans": 446,
+        "simple_mean_pct": 6.518,
+        "amount_weighted_mean_pct": 6.515,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Native",
+        "n_loans": 97,
+        "simple_mean_pct": 6.419,
+        "amount_weighted_mean_pct": 6.432,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      {
+        "bucket": "Pacific Islander",
+        "n_loans": 16,
+        "simple_mean_pct": 6.437,
+        "amount_weighted_mean_pct": 6.405,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.625,
+        "p75_pct": 6.75,
+        "p90_pct": 6.875,
+        "low_n": true
+      },
+      {
+        "bucket": "Multiple",
+        "n_loans": 14,
+        "simple_mean_pct": 6.401,
+        "amount_weighted_mean_pct": 6.422,
+        "p10_pct": 6.0,
+        "p25_pct": 6.125,
+        "p50_pct": 6.25,
+        "p75_pct": 6.5,
+        "p90_pct": 7.125,
+        "low_n": true
+      },
+      {
+        "bucket": "Other",
+        "n_loans": 3,
+        "simple_mean_pct": 6.208,
+        "amount_weighted_mean_pct": 6.276,
+        "p10_pct": 5.375,
+        "p25_pct": 5.375,
+        "p50_pct": 5.875,
+        "p75_pct": 5.875,
+        "p90_pct": 5.875,
+        "low_n": true
+      }
+    ],
+    "ethnicity": [
+      {
+        "bucket": "Not Hispanic or Latino",
+        "n_loans": 12890,
+        "simple_mean_pct": 6.577,
+        "amount_weighted_mean_pct": 6.585,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Hispanic or Latino",
+        "n_loans": 1856,
+        "simple_mean_pct": 6.52,
+        "amount_weighted_mean_pct": 6.52,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Not Available",
+        "n_loans": 1450,
+        "simple_mean_pct": 6.585,
+        "amount_weighted_mean_pct": 6.593,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Joint",
+        "n_loans": 505,
+        "simple_mean_pct": 6.608,
+        "amount_weighted_mean_pct": 6.592,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.375,
+        "low_n": false
+      },
+      {
+        "bucket": "Other",
+        "n_loans": 9,
+        "simple_mean_pct": 6.291,
+        "amount_weighted_mean_pct": 6.116,
+        "p10_pct": 4.99,
+        "p25_pct": 5.875,
+        "p50_pct": 6.125,
+        "p75_pct": 6.375,
+        "p90_pct": 7.625,
+        "low_n": true
+      }
+    ],
+    "sex": [
+      {
+        "bucket": "Joint",
+        "n_loans": 7608,
+        "simple_mean_pct": 6.628,
+        "amount_weighted_mean_pct": 6.624,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 7.0,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "Male",
+        "n_loans": 5277,
+        "simple_mean_pct": 6.509,
+        "amount_weighted_mean_pct": 6.511,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      {
+        "bucket": "Female",
+        "n_loans": 3114,
+        "simple_mean_pct": 6.533,
+        "amount_weighted_mean_pct": 6.545,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.125,
+        "low_n": false
+      },
+      {
+        "bucket": "Sex Not Available",
+        "n_loans": 711,
+        "simple_mean_pct": 6.613,
+        "amount_weighted_mean_pct": 6.627,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      }
+    ],
+    "loan_amount": [
+      {
+        "bucket": "$200\u2013350K",
+        "n_loans": 8129,
+        "simple_mean_pct": 6.581,
+        "amount_weighted_mean_pct": 6.584,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "<$200K",
+        "n_loans": 4947,
+        "simple_mean_pct": 6.549,
+        "amount_weighted_mean_pct": 6.535,
+        "p10_pct": 5.875,
+        "p25_pct": 6.125,
+        "p50_pct": 6.5,
+        "p75_pct": 6.875,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "$350\u2013500K",
+        "n_loans": 2646,
+        "simple_mean_pct": 6.577,
+        "amount_weighted_mean_pct": 6.579,
+        "p10_pct": 5.75,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "$500\u2013750K",
+        "n_loans": 793,
+        "simple_mean_pct": 6.591,
+        "amount_weighted_mean_pct": 6.589,
+        "p10_pct": 5.875,
+        "p25_pct": 6.25,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": "$750K\u20131M",
+        "n_loans": 145,
+        "simple_mean_pct": 6.629,
+        "amount_weighted_mean_pct": 6.633,
+        "p10_pct": 5.99,
+        "p25_pct": 6.375,
+        "p50_pct": 6.625,
+        "p75_pct": 6.99,
+        "p90_pct": 7.25,
+        "low_n": false
+      },
+      {
+        "bucket": ">$1M",
+        "n_loans": 50,
+        "simple_mean_pct": 6.743,
+        "amount_weighted_mean_pct": 6.769,
+        "p10_pct": 5.75,
+        "p25_pct": 6.125,
+        "p50_pct": 6.75,
+        "p75_pct": 7.125,
+        "p90_pct": 7.5,
+        "low_n": false
+      }
+    ]
+  }
+}
