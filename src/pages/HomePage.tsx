@@ -53,25 +53,63 @@ export default function HomePage() {
         <span className="toggle-label">{panelOpen ? "Hide" : "All states"}</span>
       </button>
 
-      <h1>U.S. mortgage rates — by state, with HMDA-anchored context</h1>
-      <p className="sub">
-        For each U.S. state, compare today's quoted rates with the actual 2024 closed-loan
-        distribution from HMDA. Daily auto-refresh from{" "}
-        <a href="https://fred.stlouisfed.org">FRED</a>,{" "}
-        <a href="https://www.bankrate.com">Bankrate</a>, and{" "}
-        <a href="https://www.mortgagenewsdaily.com">Mortgage News Daily</a>.
-      </p>
+      <section className="hero">
+        <p className="hero-eyebrow">U.S. mortgage rate dashboard</p>
+        <h1 className="hero-title">
+          Quoted rates meet <span className="accent">closed-loan reality</span>.
+        </h1>
+        <p className="hero-sub">
+          Compare today's quoted mortgage rates with the <b>actual HMDA 2024 closed-loan
+          distribution</b> for any U.S. state or county. Daily auto-refresh from{" "}
+          <a href="https://fred.stlouisfed.org">FRED</a>,{" "}
+          <a href="https://www.bankrate.com">Bankrate</a>, and{" "}
+          <a href="https://www.mortgagenewsdaily.com">Mortgage News Daily</a>.
+        </p>
+        <div className="hero-cta-row">
+          <Link to="/calculator" className="btn btn-primary">
+            Open calculator →
+          </Link>
+          <Link to="/methodology" className="btn btn-secondary">
+            Methodology
+          </Link>
+        </div>
+        <div className="hero-stats">
+          <div className="stat-card">
+            <div className="stat-value">{states.length}</div>
+            <div className="stat-label">states + DC bundled</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">3,141</div>
+            <div className="stat-label">counties partitioned</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">
+              ~7<span className="stat-value-sub">M</span>
+            </div>
+            <div className="stat-label">HMDA originations</div>
+          </div>
+          <div className="stat-card accent">
+            <div className="stat-value">
+              {states.filter((s) => s.latest_30 != null).length}
+            </div>
+            <div className="stat-label">daily-refreshing</div>
+          </div>
+        </div>
+      </section>
 
-      <div className="notes">
-        <b>U.S. baseline</b> (Freddie Mac PMMS, latest month):{" "}
-        <b>15-yr FRM {latestUs15?.rate.toFixed(2)}%</b> ({latestUs15?.month}),{" "}
-        <b>30-yr FRM {latestUs30?.rate.toFixed(2)}%</b> ({latestUs30?.month}).
-      </div>
-      <div className="notes">
-        <b>Coverage today:</b> {states.length} of 51 states bundled.{" "}
-        <b>{states.filter((s) => s.has_hmda_band).length}</b> with HMDA 2024 distributions + county
-        drilldowns. <b>{states.filter((s) => s.latest_30 != null).length}</b> with daily-refreshing
-        Bankrate/MND rate quotes.
+      <div className="meta-row">
+        <span>
+          <b>FRED PMMS</b> · 15-yr <b>{latestUs15?.rate.toFixed(2)}%</b> · 30-yr{" "}
+          <b>{latestUs30?.rate.toFixed(2)}%</b> ({latestUs30?.month})
+        </span>
+        <span className="dot">·</span>
+        <span>
+          Updated{" "}
+          {new Date(built_at_utc).toLocaleString(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
+        </span>
       </div>
 
       <section className="section">
@@ -114,19 +152,15 @@ export default function HomePage() {
         <p>
           <b>Why this exists.</b> Bankrate and Zillow show today's quoted rates per state but no
           closed-loan reality. The FFIEC HMDA Data Browser shows actual closings per county but no
-          quote comparison and no time series. The unique value here is combining both.
+          quote comparison and no time series. The unique value here is combining both — see the{" "}
+          <Link to="/methodology">methodology</Link> for source detail and limitations.
         </p>
         <p>
-          Data refreshed{" "}
-          {new Date(built_at_utc).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-          })}
-          . See the <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard">repo</a> and{" "}
+          See the <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard">repo</a> and{" "}
           <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard/blob/main/ROADMAP.md">
             roadmap
-          </a>
-          .
+          </a>{" "}
+          on GitHub.
         </p>
       </div>
     </>
