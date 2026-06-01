@@ -627,6 +627,194 @@ h1 {
   font-weight: 700;
 }
 
+/* Amortization disclosure (between calc strip and map) */
+.amort-details {
+  margin: 0 0 22px;
+}
+
+.amort-details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(31, 95, 168, 0.05);
+  border: 1px solid rgba(31, 95, 168, 0.18);
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-brand);
+  user-select: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.amort-details summary::-webkit-details-marker,
+.amort-details summary::marker {
+  display: none;
+  content: "";
+}
+
+.amort-details summary:hover {
+  background: rgba(31, 95, 168, 0.09);
+  border-color: rgba(31, 95, 168, 0.32);
+}
+
+.amort-summary-chevron {
+  display: inline-block;
+  transition: transform 0.15s ease;
+  font-size: 11px;
+  width: 12px;
+  text-align: center;
+}
+
+.amort-details[open] .amort-summary-chevron {
+  transform: rotate(90deg);
+}
+
+.amort-summary-text {
+  flex: 1;
+}
+
+.amort-summary-meta {
+  font-size: 11.5px;
+  color: var(--c-ink-mute);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.amort-panel {
+  margin-top: 12px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.amort-chart {
+  width: 100%;
+  height: 200px;
+  display: block;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fafbfd;
+}
+
+.amort-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 11.5px;
+  color: var(--c-ink-soft);
+  margin: 10px 0;
+}
+
+.amort-chart-legend .amort-dot {
+  margin-right: 6px;
+}
+
+.amort-legend-note {
+  color: var(--c-ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.amort-legend-cross {
+  color: var(--c-brand-deep);
+  font-weight: 600;
+}
+
+.amort-table-wrap {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.amort-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.amort-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f5f7fb;
+  z-index: 1;
+  font-weight: 700;
+  text-align: right;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-ink-soft);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.amort-table thead th.col-mo {
+  text-align: left;
+}
+
+.amort-table tbody td {
+  text-align: right;
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--c-border-soft);
+}
+
+.amort-table tbody td.col-mo {
+  text-align: left;
+  color: var(--c-ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.amort-table tbody tr:hover {
+  background: #f8fafd;
+}
+
+.amort-table tbody tr.year-end td {
+  border-bottom: 1px solid rgba(31, 95, 168, 0.2);
+  background: rgba(31, 95, 168, 0.025);
+}
+
+.year-tag {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-brand);
+  letter-spacing: 0.4px;
+}
+
+.amort-table .td-interest {
+  color: #6b7280;
+}
+
+.amort-table .td-principal {
+  color: var(--c-brand);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .amort-summary-meta {
+    display: none;
+  }
+  .amort-chart {
+    height: 160px;
+  }
+  .amort-table {
+    font-size: 11px;
+  }
+  .amort-table thead th,
+  .amort-table tbody td {
+    padding: 4px 8px;
+  }
+}
+
 /* Soft hero variant — the "about" block below the map */
 .hero-soft {
   background: #fff;

@@ -7,6 +7,9 @@ import { fmtMoney, fmtRate, monthlyPayment } from "../lib/payment";
 const UsChoropleth = lazy(() =>
   import("../components/UsChoropleth").then((m) => ({ default: m.UsChoropleth })),
 );
+const AmortPanel = lazy(() =>
+  import("../components/AmortPanel").then((m) => ({ default: m.AmortPanel })),
+);
 
 const DEFAULT_LOAN = 350_000;
 const STEP = 5_000;
@@ -37,6 +40,7 @@ export default function HomePage() {
   const [term, setTerm] = useState<15 | 30>(30);
   const [loanAmount, setLoanAmount] = useState(DEFAULT_LOAN);
   const [rateText, setRateText] = useState<string>(""); // "" = follow FRED PMMS
+  const [amortOpen, setAmortOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [filter, setFilter] = useState("");
   usePageMeta({ title: BASE_TITLE });
@@ -288,6 +292,36 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* AMORTIZATION DISCLOSURE — collapsed by default */}
+      {effectiveRate != null && effectivePI != null && (
+        <details
+          className="amort-details"
+          open={amortOpen}
+          onToggle={(e) => setAmortOpen((e.target as HTMLDetailsElement).open)}
+        >
+          <summary>
+            <span className="amort-summary-chevron" aria-hidden="true">
+              ▸
+            </span>
+            <span className="amort-summary-text">
+              {amortOpen ? "Hide" : "Show"} month-by-month amortization schedule
+            </span>
+            <span className="amort-summary-meta">
+              {term * 12} months · {fmtMoney(effectivePI)}/mo
+            </span>
+          </summary>
+          {amortOpen && (
+            <Suspense fallback={<p className="loading">Building schedule…</p>}>
+              <AmortPanel
+                loanAmount={loanAmount}
+                annualRatePct={effectiveRate}
+                termYears={term}
+              />
+            </Suspense>
+          )}
+        </details>
+      )}
 
       {/* MAP */}
       <section className="section">
