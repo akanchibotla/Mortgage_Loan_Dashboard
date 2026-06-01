@@ -9,6 +9,15 @@ const UsChoropleth = lazy(() =>
 );
 
 const DEFAULT_LOAN = 350_000;
+const STEP = 5_000;
+const SHIFT_STEP = 50_000;
+const MIN_AMOUNT = 25_000;
+const MAX_AMOUNT = 5_000_000;
+
+function clampLoan(v: number): number {
+  if (!Number.isFinite(v)) return MIN_AMOUNT;
+  return Math.max(MIN_AMOUNT, Math.min(MAX_AMOUNT, Math.round(v / STEP) * STEP));
+}
 
 export default function HomePage() {
   const { states, built_at_utc } = loadStatesIndex();
@@ -76,15 +85,41 @@ export default function HomePage() {
           <label className="calc-input">
             <span className="calc-input-label">Loan amount</span>
             <div className="amount-wrap">
-              <span className="amount-prefix">$</span>
-              <input
-                type="number"
-                min={25_000}
-                max={5_000_000}
-                step={5_000}
-                value={loanAmount}
-                onChange={(e) => setLoanAmount(Math.max(0, Number(e.target.value) || 0))}
-              />
+              <button
+                type="button"
+                className="step-btn"
+                onClick={(e) =>
+                  setLoanAmount((v) => clampLoan(v - (e.shiftKey ? SHIFT_STEP : STEP)))
+                }
+                disabled={loanAmount <= MIN_AMOUNT}
+                title="Decrease by $5K (Shift+click for $50K)"
+                aria-label="Decrease loan amount"
+              >
+                −
+              </button>
+              <div className="amount-input-wrap">
+                <span className="amount-prefix">$</span>
+                <input
+                  type="number"
+                  min={MIN_AMOUNT}
+                  max={MAX_AMOUNT}
+                  step={STEP}
+                  value={loanAmount}
+                  onChange={(e) => setLoanAmount(clampLoan(Number(e.target.value) || 0))}
+                />
+              </div>
+              <button
+                type="button"
+                className="step-btn"
+                onClick={(e) =>
+                  setLoanAmount((v) => clampLoan(v + (e.shiftKey ? SHIFT_STEP : STEP)))
+                }
+                disabled={loanAmount >= MAX_AMOUNT}
+                title="Increase by $5K (Shift+click for $50K)"
+                aria-label="Increase loan amount"
+              >
+                +
+              </button>
             </div>
             <input
               type="range"
