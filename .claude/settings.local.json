@@ -9,7 +9,11 @@
       "WebSearch",
       "WebFetch(domain:www.bankrate.com)",
       "WebFetch(domain:fred.stlouisfed.org)",
-      "WebFetch(domain:fredblog.stlouisfed.org)"
+      "WebFetch(domain:fredblog.stlouisfed.org)",
+      "Bash(gh repo *)",
+      "Bash(gh run *)",
+      "Bash(gh api *)",
+      "Bash(curl -sI \"https://akanchibotla.github.io/Mortgage_Loan_Dashboard/\")"
     ]
   }
 }

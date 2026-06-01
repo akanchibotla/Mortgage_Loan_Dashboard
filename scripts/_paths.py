@@ -1,20 +1,31 @@
-"""Centralized path constants relative to the repo root.
-
-Scripts that run both locally (Windows) and in CI (Linux) should import from
-here rather than hardcoding absolute paths.
-"""
+"""Centralized paths relative to the repo root, with per-state helpers."""
 import os
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DATA_DIR = os.path.join(REPO_ROOT, "src", "data")
+STATES_DIR = os.path.join(DATA_DIR, "states")
 DAILY_DIR = os.path.join(REPO_ROOT, "data", "daily")
 
-BANKRATE_JSONL = os.path.join(DAILY_DIR, "bankrate_nc.jsonl")
-MND_JSONL = os.path.join(DAILY_DIR, "mnd_nc.jsonl")
-
 WINDOW_JSON = os.path.join(DATA_DIR, "window.json")
-MND_TODAY_VIEW = os.path.join(DATA_DIR, "mnd_nc_today.json")
+STATES_INDEX_JSON = os.path.join(DATA_DIR, "states_index.json")
+
+
+def state_data_dir(slug: str) -> str:
+    return os.path.join(STATES_DIR, slug)
+
+
+def bankrate_jsonl(slug: str) -> str:
+    return os.path.join(DAILY_DIR, f"bankrate_{slug}.jsonl")
+
+
+def mnd_jsonl(slug: str) -> str:
+    return os.path.join(DAILY_DIR, f"mnd_{slug}.jsonl")
+
+
+def mnd_today_view(slug: str) -> str:
+    return os.path.join(state_data_dir(slug), "mnd_today.json")
+
 
 # Raw inputs that live outside the repo (only used by one-shot ingest scripts
 # that aren't part of the CI refresh pipeline).

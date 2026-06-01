@@ -1,0 +1,9 @@
+{
+  "slug": "north-carolina",
+  "postal": "NC",
+  "fips": "37",
+  "name": "North Carolina",
+  "built_at_utc": "2026-06-01T05:36:28+00:00",
+  "has_hmda_band": true,
+  "live_trailing": true
+}

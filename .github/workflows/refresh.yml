@@ -2,13 +2,15 @@ name: Daily refresh
 
 on:
   schedule:
-    # 12:00 UTC daily (~8 AM ET) — after FRED weekly drops on Thursdays and after
-    # MND posts its day-open value.
+    # 12:00 UTC daily (after FRED weekly drops Thursdays and after MND posts).
     - cron: '0 12 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+env:
+  ACTIVE_STATES: "north-carolina california"
 
 jobs:
   refresh:
@@ -23,28 +25,42 @@ jobs:
           python-version: '3.12'
 
       - run: python -m pip install --upgrade pip
-
       - run: pip install -r requirements.txt
-
       - name: Install Playwright Chromium
         run: python -m playwright install --with-deps chromium
 
-      - name: Fetch FRED PMMS
+      - name: Fetch FRED PMMS (national)
         run: python scripts/fetch_fred.py
 
-      - name: Fetch Bankrate NC (headless browser)
-        run: python scripts/fetch_bankrate_nc_browser.py
-        continue-on-error: true
+      - name: Fetch Bankrate live per state
+        run: |
+          set -e
+          for s in $ACTIVE_STATES; do
+            echo "::group::Bankrate $s"
+            python scripts/fetch_bankrate_state.py --state "$s" || echo "Bankrate $s failed (continuing)"
+            sleep 5
+            echo "::endgroup::"
+          done
 
-      - name: Fetch MND NC (today)
-        run: python scripts/fetch_mnd_nc.py
-        continue-on-error: true
+      - name: Fetch MND live per state
+        run: |
+          set -e
+          for s in $ACTIVE_STATES; do
+            echo "::group::MND $s"
+            python scripts/fetch_mnd_state.py --state "$s" || echo "MND $s failed (continuing)"
+            sleep 3
+            echo "::endgroup::"
+          done
 
-      - name: Aggregate MND monthly
-        run: python scripts/aggregate_mnd_monthly.py
-
-      - name: Reconcile NC monthly
-        run: python scripts/reconcile_nc.py
+      - name: Aggregate + reconcile per state
+        run: |
+          set -e
+          for s in $ACTIVE_STATES; do
+            echo "::group::Aggregate/reconcile $s"
+            python scripts/aggregate_mnd_state.py --state "$s"
+            python scripts/reconcile_state.py --state "$s"
+            echo "::endgroup::"
+          done
 
       - name: Commit refreshed data
         env:

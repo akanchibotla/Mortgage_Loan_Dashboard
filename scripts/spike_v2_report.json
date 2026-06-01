@@ -1,0 +1,81 @@
+{
+  "generated_at_utc": "2026-06-01T05:31:28+00:00",
+  "bankrate_live": [
+    {
+      "slug": "california",
+      "url": "https://www.bankrate.com/mortgages/mortgage-rates/california/",
+      "hydrated": true,
+      "table_15": 5.75,
+      "intro_15": null,
+      "table_30": 6.44,
+      "intro_30": 6.44
+    },
+    {
+      "slug": "florida",
+      "url": "https://www.bankrate.com/mortgages/mortgage-rates/florida/",
+      "hydrated": true,
+      "table_15": 5.88,
+      "intro_15": 5.88,
+      "table_30": 6.56,
+      "intro_30": 6.56
+    },
+    {
+      "slug": "wyoming",
+      "url": "https://www.bankrate.com/mortgages/mortgage-rates/wyoming/",
+      "hydrated": true,
+      "table_15": null,
+      "intro_15": 6.0,
+      "table_30": null,
+      "intro_30": 6.63
+    }
+  ],
+  "wayback_cdx": [
+    {
+      "slug": "california",
+      "cdx_url": "http://web.archive.org/cdx/search/cdx?url=bankrate.com/mortgages/mortgage-rates/california/&from=20240601&to=20260601&filter=statuscode:200&output=json&collapse=timestamp:8",
+      "snapshots": 29,
+      "distinct_months": 15,
+      "sample_months": [
+        "202408",
+        "202409",
+        "202411",
+        "202412",
+        "202501",
+        "202503"
+      ]
+    },
+    {
+      "slug": "florida",
+      "cdx_url": "http://web.archive.org/cdx/search/cdx?url=bankrate.com/mortgages/mortgage-rates/florida/&from=20240601&to=20260601&filter=statuscode:200&output=json&collapse=timestamp:8",
+      "snapshots": 28,
+      "distinct_months": 18,
+      "sample_months": [
+        "202406",
+        "202407",
+        "202408",
+        "202409",
+        "202410",
+        "202411"
+      ]
+    },
+    {
+      "slug": "wyoming",
+      "cdx_url": "http://web.archive.org/cdx/search/cdx?url=bankrate.com/mortgages/mortgage-rates/wyoming/&from=20240601&to=20260601&filter=statuscode:200&output=json&collapse=timestamp:8",
+      "snapshots": 13,
+      "distinct_months": 11,
+      "sample_months": [
+        "202408",
+        "202409",
+        "202411",
+        "202412",
+        "202503",
+        "202504"
+      ]
+    }
+  ],
+  "hmda_probe": {
+    "postal": "CA",
+    "url": "https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?states=CA&years=2024&actions_taken=1&loan_purposes=1&loan_terms=180",
+    "error": "HTTP Error 403: Forbidden"
+  }
+}

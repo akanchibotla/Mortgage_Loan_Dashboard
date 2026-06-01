@@ -147,3 +147,64 @@ code {
   border-right: 6px solid transparent;
   border-bottom: 11px solid #0d7a6e;
 }
+
+.breadcrumb {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+}
+
+.breadcrumb a {
+  color: #1f5fa8;
+  text-decoration: none;
+}
+
+.state-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0 0;
+}
+
+.state-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #1a1a1a;
+  background: #fff;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.state-list a:hover {
+  background: #f5f7fb;
+  border-color: #1f5fa8;
+}
+
+.state-name {
+  flex: 1;
+}
+
+.state-postal {
+  font-size: 11px;
+  color: #777;
+  font-weight: 600;
+}
+
+.state-tag {
+  display: inline-block;
+  font-size: 10px;
+  background: #eef;
+  color: #224;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.state-tag.tag-live {
+  background: #e8f5e8;
+  color: #2e8b57;
+}

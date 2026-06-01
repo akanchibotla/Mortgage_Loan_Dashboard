@@ -2,68 +2,68 @@
   {
     "m": "2024-06",
     "date": "2024-06-12",
-    "rate": 7.09,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.61,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2024-07",
     "date": "2024-07-17",
-    "rate": 6.86,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.38,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2024-08",
     "date": "2024-08-10",
-    "rate": 6.51,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.91,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2024-09",
     "date": "2024-09-19",
-    "rate": 6.17,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.42,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2024-10",
     "date": "2024-10-31",
-    "rate": 6.88,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.14,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2024-11",
     "date": "2024-11-08",
-    "rate": 6.92,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.18,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2024-12",
     "date": "2024-12-17",
-    "rate": 6.79,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.11,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-01",
     "date": "2025-01-26",
-    "rate": 7.04,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.32,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-02",
     "date": "2025-02-11",
-    "rate": 6.94,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.23,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-03",
     "date": "2025-03-14",
-    "rate": 6.68,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.94,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-04",
     "date": "2025-04-13",
-    "rate": 6.86,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 6.08,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-05",
@@ -80,14 +80,14 @@
   {
     "m": "2025-07",
     "date": "2025-07-28",
-    "rate": 6.77,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.96,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-08",
     "date": "2025-08-08",
-    "rate": 6.58,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.76,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-09",
@@ -104,14 +104,14 @@
   {
     "m": "2025-11",
     "date": "2025-11-17",
-    "rate": 6.28,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.63,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2025-12",
     "date": "2025-12-16",
-    "rate": 6.34,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.72,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2026-01",
@@ -128,8 +128,8 @@
   {
     "m": "2026-03",
     "date": "2026-03-02",
-    "rate": 6.04,
-    "src": "Bankrate NC (Wayback)"
+    "rate": 5.46,
+    "src": "Bankrate (Wayback)"
   },
   {
     "m": "2026-04",
@@ -139,14 +139,14 @@
   },
   {
     "m": "2026-05",
-    "date": "2026-05-31",
-    "rate": 6.63,
-    "src": "Bankrate NC (fallback constant)"
+    "date": "2026-05-15",
+    "rate": null,
+    "src": "no archive"
   },
   {
     "m": "2026-06",
     "date": "2026-06-01",
-    "rate": 6.41,
-    "src": "Bankrate NC (live, today)"
+    "rate": 5.79,
+    "src": "Bankrate (live)"
   }
 ]
