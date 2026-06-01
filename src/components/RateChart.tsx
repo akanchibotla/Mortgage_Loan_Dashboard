@@ -7,6 +7,7 @@ import type {
   NcMonthlySnapshot,
 } from "../types";
 import { buildOptions } from "../chart/buildOptions";
+import "../chart/registerChart";
 
 interface Props {
   usData: MonthlyRate[];

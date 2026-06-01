@@ -1,0 +1,9 @@
+{
+  "slug": "texas",
+  "postal": "TX",
+  "fips": "48",
+  "name": "Texas",
+  "built_at_utc": "2026-06-01T05:50:38+00:00",
+  "has_hmda_band": false,
+  "live_trailing": true
+}

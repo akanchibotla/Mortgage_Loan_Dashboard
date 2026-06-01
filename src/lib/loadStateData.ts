@@ -1,15 +1,28 @@
 import type { HmdaSummary, MonthlyRate, NcMonthlySnapshot } from "../types";
 
-// Eager glob: every JSON file under src/data/states/<slug>/ is included at build time.
-// At v2 scale this is small (50 states × ~5 files × ~3KB = ~750KB).
-const allFiles = import.meta.glob("../data/states/*/*.json", {
+// Eager: state_meta.json files for every bundled state. Tiny (~200B each).
+// Used by the home page to list available states without loading their full
+// time-series JSON.
+const metaFiles = import.meta.glob("../data/states/*/state_meta.json", {
   eager: true,
   import: "default",
-}) as Record<string, unknown>;
+}) as Record<string, StateMeta>;
+
+// Eager: national PMMS series shared across all state pages.
+const pmmsFiles = import.meta.glob("../data/pmms_*_monthly.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, MonthlyRate[]>;
+
+// Lazy: per-state time-series + HMDA JSON. Each route loader fetches just
+// its own state's files via dynamic import — Vite chunks them per state.
+const stateLoaders = import.meta.glob("../data/states/*/*.json", {
+  import: "default",
+}) as Record<string, () => Promise<unknown>>;
 
 export interface StateData {
   slug: string;
-  meta?: StateMeta;
+  meta: StateMeta;
   bankrate15: NcMonthlySnapshot[] | null;
   bankrate30: NcMonthlySnapshot[] | null;
   mnd15: NcMonthlySnapshot[] | null;
@@ -35,28 +48,41 @@ export interface StateRegistryEntry {
   meta: StateMeta;
 }
 
-function fileFor(slug: string, leaf: string): unknown | undefined {
-  const key = `../data/states/${slug}/${leaf}`;
-  return allFiles[key];
+function metaForSlug(slug: string): StateMeta | undefined {
+  return metaFiles[`../data/states/${slug}/state_meta.json`];
 }
 
-export function loadStateData(slug: string): StateData {
+async function loadOptional<T>(slug: string, leaf: string): Promise<T | null> {
+  const loader = stateLoaders[`../data/states/${slug}/${leaf}`];
+  if (!loader) return null;
+  return (await loader()) as T;
+}
+
+export async function loadStateData(slug: string): Promise<StateData | null> {
+  const meta = metaForSlug(slug);
+  if (!meta) return null;
+  const [bankrate15, bankrate30, mnd15, mnd30, hmda15] = await Promise.all([
+    loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_15yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
+    loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
+  ]);
   return {
     slug,
-    meta: fileFor(slug, "state_meta.json") as StateMeta | undefined,
-    bankrate15: (fileFor(slug, "bankrate_15yr.json") as NcMonthlySnapshot[]) ?? null,
-    bankrate30: (fileFor(slug, "bankrate_30yr.json") as NcMonthlySnapshot[]) ?? null,
-    mnd15: (fileFor(slug, "mnd_15yr.json") as NcMonthlySnapshot[]) ?? null,
-    mnd30: (fileFor(slug, "mnd_30yr.json") as NcMonthlySnapshot[]) ?? null,
-    hmda15: fileFor(slug, "hmda_2024_15yr.json") as HmdaSummary | undefined,
+    meta,
+    bankrate15,
+    bankrate30,
+    mnd15,
+    mnd30,
+    hmda15: hmda15 ?? undefined,
   };
 }
 
 export function loadStateRegistry(): StateRegistryEntry[] {
   const entries: StateRegistryEntry[] = [];
-  for (const [path, value] of Object.entries(allFiles)) {
+  for (const [path, meta] of Object.entries(metaFiles)) {
     if (!path.endsWith("/state_meta.json")) continue;
-    const meta = value as StateMeta;
     entries.push({
       slug: meta.slug,
       postal: meta.postal,
@@ -70,7 +96,26 @@ export function loadStateRegistry(): StateRegistryEntry[] {
 
 export function loadPmms() {
   return {
-    pmms15: allFiles["../data/pmms_15yr_monthly.json"] as MonthlyRate[],
-    pmms30: allFiles["../data/pmms_30yr_monthly.json"] as MonthlyRate[],
+    pmms15: pmmsFiles["../data/pmms_15yr_monthly.json"],
+    pmms30: pmmsFiles["../data/pmms_30yr_monthly.json"],
   };
+}
+
+export interface StatesIndexEntry {
+  slug: string;
+  postal: string;
+  fips: string;
+  name: string;
+  has_hmda_band: boolean;
+  live_trailing: boolean;
+  latest_15: number | null;
+  latest_15_month: string | null;
+  latest_30: number | null;
+  latest_30_month: string | null;
+}
+
+import statesIndex from "../data/states_index.json";
+
+export function loadStatesIndex(): { built_at_utc: string; states: StatesIndexEntry[] } {
+  return statesIndex as { built_at_utc: string; states: StatesIndexEntry[] };
 }

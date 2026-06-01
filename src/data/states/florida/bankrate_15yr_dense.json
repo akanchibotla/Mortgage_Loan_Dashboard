@@ -1,0 +1,128 @@
+[
+  {
+    "month": "2024-06",
+    "as_of": "Friday, June 14, 2024",
+    "wayback_timestamp": "20240614062210",
+    "bankrate_table_pct": 6.43,
+    "bankrate_intro_pct": 6.31
+  },
+  {
+    "month": "2024-07",
+    "as_of": "Wednesday, July 17, 2024",
+    "wayback_timestamp": "20240718011734",
+    "bankrate_table_pct": 6.38,
+    "bankrate_intro_pct": 6.81
+  },
+  {
+    "month": "2024-08",
+    "as_of": "Saturday, August 24, 2024",
+    "wayback_timestamp": "20240824191237",
+    "bankrate_table_pct": 5.91,
+    "bankrate_intro_pct": 5.7
+  },
+  {
+    "month": "2024-09",
+    "as_of": "Tuesday, September 17, 2024",
+    "wayback_timestamp": "20240917194038",
+    "bankrate_table_pct": 5.66,
+    "bankrate_intro_pct": 5.52
+  },
+  {
+    "month": "2024-10",
+    "as_of": "Tuesday, October 15, 2024",
+    "wayback_timestamp": "20241015054428",
+    "bankrate_table_pct": 5.92,
+    "bankrate_intro_pct": 6.09
+  },
+  {
+    "month": "2024-11",
+    "as_of": "Tuesday, November 26, 2024",
+    "wayback_timestamp": "20241126180724",
+    "bankrate_table_pct": 6.3,
+    "bankrate_intro_pct": 6.28
+  },
+  {
+    "month": "2024-12",
+    "as_of": "Monday, December 16, 2024",
+    "wayback_timestamp": "20241216060747",
+    "bankrate_table_pct": 6.04,
+    "bankrate_intro_pct": 5.98
+  },
+  {
+    "month": "2025-01",
+    "as_of": "Thursday, January 2, 2025",
+    "wayback_timestamp": "20250102203528",
+    "bankrate_table_pct": 6.29,
+    "bankrate_intro_pct": 6.51
+  },
+  {
+    "month": "2025-03",
+    "as_of": "Friday, March 7, 2025",
+    "wayback_timestamp": "20250307182230",
+    "bankrate_table_pct": 5.94,
+    "bankrate_intro_pct": 5.78
+  },
+  {
+    "month": "2025-04",
+    "as_of": "Sunday, April 13, 2025",
+    "wayback_timestamp": "20250413223209",
+    "bankrate_table_pct": 6.08,
+    "bankrate_intro_pct": 6.19
+  },
+  {
+    "month": "2025-07",
+    "as_of": "Monday, July 28, 2025",
+    "wayback_timestamp": "20250728222809",
+    "bankrate_table_pct": 5.96,
+    "bankrate_intro_pct": 6.5
+  },
+  {
+    "month": "2025-08",
+    "as_of": "Thursday, August 14, 2025",
+    "wayback_timestamp": "20250814062708",
+    "bankrate_table_pct": 5.83,
+    "bankrate_intro_pct": 6.38
+  },
+  {
+    "month": "2025-10",
+    "as_of": "Monday, October 13, 2025",
+    "wayback_timestamp": "20251014043825",
+    "bankrate_table_pct": 5.6,
+    "bankrate_intro_pct": 5.44
+  },
+  {
+    "month": "2025-11",
+    "as_of": "Tuesday, November 18, 2025",
+    "wayback_timestamp": "20251118140141",
+    "bankrate_table_pct": 5.69,
+    "bankrate_intro_pct": 5.65
+  },
+  {
+    "month": "2025-12",
+    "as_of": "Wednesday, December 31, 2025",
+    "wayback_timestamp": "20251231115644",
+    "bankrate_table_pct": 5.49,
+    "bankrate_intro_pct": 5.58
+  },
+  {
+    "month": "2026-01",
+    "as_of": "Monday, January 12, 2026",
+    "wayback_timestamp": "20260112085901",
+    "bankrate_table_pct": 5.52,
+    "bankrate_intro_pct": 5.54
+  },
+  {
+    "month": "2026-02",
+    "as_of": "Sunday, February 15, 2026",
+    "wayback_timestamp": "20260215175044",
+    "bankrate_table_pct": 5.51,
+    "bankrate_intro_pct": 4.91
+  },
+  {
+    "month": "2026-03",
+    "as_of": "Thursday, March 05, 2026",
+    "wayback_timestamp": "20260305070242",
+    "bankrate_table_pct": 5.47,
+    "bankrate_intro_pct": 5.4
+  }
+]

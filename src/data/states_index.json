@@ -1,0 +1,90 @@
+{
+  "built_at_utc": "2026-06-01T05:54:27+00:00",
+  "n_states": 7,
+  "states": [
+    {
+      "slug": "california",
+      "postal": "CA",
+      "fips": "06",
+      "name": "California",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.75,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.44,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "florida",
+      "postal": "FL",
+      "fips": "12",
+      "name": "Florida",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.88,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.56,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "georgia",
+      "postal": "GA",
+      "fips": "13",
+      "name": "Georgia",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 6.05,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.48,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "illinois",
+      "postal": "IL",
+      "fips": "17",
+      "name": "Illinois",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.99,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.63,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "new-york",
+      "postal": "NY",
+      "fips": "36",
+      "name": "New York",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.99,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.63,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "north-carolina",
+      "postal": "NC",
+      "fips": "37",
+      "name": "North Carolina",
+      "has_hmda_band": true,
+      "live_trailing": true,
+      "latest_15": 5.79,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.41,
+      "latest_30_month": "2026-06"
+    },
+    {
+      "slug": "texas",
+      "postal": "TX",
+      "fips": "48",
+      "name": "Texas",
+      "has_hmda_band": false,
+      "live_trailing": true,
+      "latest_15": 5.99,
+      "latest_15_month": "2026-06",
+      "latest_30": 6.58,
+      "latest_30_month": "2026-06"
+    }
+  ]
+}
