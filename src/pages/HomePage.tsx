@@ -64,6 +64,13 @@ export default function HomePage() {
   const effectiveRate = customRate ?? pmmsRate;
   const effectivePI =
     effectiveRate != null ? monthlyPayment(loanAmount, effectiveRate, term) : null;
+  const totalPaid = effectivePI != null && term > 0 ? effectivePI * term * 12 : null;
+  const totalInterest = totalPaid != null ? Math.max(0, totalPaid - loanAmount) : null;
+  const principalPct =
+    totalPaid != null && totalPaid > 0
+      ? Math.max(0, Math.min(100, (loanAmount / totalPaid) * 100))
+      : 0;
+  const interestPct = 100 - principalPct;
   const rateInputValue =
     rateText === "" && pmmsRate != null ? pmmsRate.toFixed(2) : rateText;
   const isCustomRate = customRate != null && pmmsRate != null && customRate !== pmmsRate;
@@ -228,6 +235,37 @@ export default function HomePage() {
               <span className="calc-out-arrow">→</span>
               <span className="calc-out-payment">{fmtMoney(effectivePI)}/mo</span>
             </div>
+            {totalPaid != null && totalInterest != null && totalPaid > 0 && (
+              <div className="amort" title={`Amortized over ${term} years at the rate shown`}>
+                <div
+                  className="amort-bar"
+                  role="img"
+                  aria-label={`Loan split: ${fmtMoney(loanAmount)} principal, ${fmtMoney(totalInterest)} interest`}
+                >
+                  <div
+                    className="amort-bar-seg amort-principal"
+                    style={{ width: `${principalPct}%` }}
+                  />
+                  <div
+                    className="amort-bar-seg amort-interest"
+                    style={{ width: `${interestPct}%` }}
+                  />
+                </div>
+                <div className="amort-legend">
+                  <span>
+                    <span className="amort-dot amort-dot-p" />
+                    {fmtMoney(loanAmount)} principal
+                  </span>
+                  <span>
+                    <span className="amort-dot amort-dot-i" />
+                    {fmtMoney(totalInterest)} interest
+                  </span>
+                </div>
+                <div className="amort-total">
+                  <b>{fmtMoney(totalPaid)}</b> paid over {term} years
+                </div>
+              </div>
+            )}
             <div className="calc-out-hint">
               {pmmsRate == null ? (
                 <span>FRED PMMS unavailable</span>
