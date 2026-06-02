@@ -35,15 +35,214 @@ function latestNonNull(rows: { rate: number | null }[] | null | undefined): numb
   return null;
 }
 
+type ProductType =
+  | "fixed"
+  | "arm-7-1"
+  | "arm-5-1"
+  | "buydown-2-1"
+  | "buydown-1-0"
+  | "buydown-3-2-1";
+
 interface LoanInstance {
   id: string;
   slug: string;
   countyFips: string;
   term: 15 | 30;
+  productType: ProductType;
   loanAmount: number;
   rateText: string;
   hasCustomRate: boolean;
+  armAdjustedRateText: string;
+  hasCustomArmAdjustedRate: boolean;
 }
+
+interface RatePhase {
+  months: number;
+  rate: number;
+  label: string;
+}
+
+function buildPhases(
+  productType: ProductType,
+  noteRate: number,
+  armAdjustedRate: number,
+  totalMonths: number,
+): RatePhase[] {
+  const clamp = (r: number) => Math.max(0, r);
+  switch (productType) {
+    case "fixed":
+      return [{ months: totalMonths, rate: noteRate, label: "Fixed" }];
+    case "arm-7-1": {
+      const initialMonths = Math.min(84, totalMonths);
+      const remainder = Math.max(0, totalMonths - initialMonths);
+      return [
+        { months: initialMonths, rate: noteRate, label: "Years 1–7" },
+        ...(remainder > 0
+          ? [{ months: remainder, rate: armAdjustedRate, label: "Years 8+" }]
+          : []),
+      ];
+    }
+    case "arm-5-1": {
+      const initialMonths = Math.min(60, totalMonths);
+      const remainder = Math.max(0, totalMonths - initialMonths);
+      return [
+        { months: initialMonths, rate: noteRate, label: "Years 1–5" },
+        ...(remainder > 0
+          ? [{ months: remainder, rate: armAdjustedRate, label: "Years 6+" }]
+          : []),
+      ];
+    }
+    case "buydown-2-1": {
+      const tail = Math.max(0, totalMonths - 24);
+      return [
+        { months: Math.min(12, totalMonths), rate: clamp(noteRate - 2), label: "Year 1" },
+        {
+          months: Math.min(12, Math.max(0, totalMonths - 12)),
+          rate: clamp(noteRate - 1),
+          label: "Year 2",
+        },
+        ...(tail > 0 ? [{ months: tail, rate: noteRate, label: "Year 3+" }] : []),
+      ];
+    }
+    case "buydown-1-0": {
+      const tail = Math.max(0, totalMonths - 12);
+      return [
+        { months: Math.min(12, totalMonths), rate: clamp(noteRate - 1), label: "Year 1" },
+        ...(tail > 0 ? [{ months: tail, rate: noteRate, label: "Year 2+" }] : []),
+      ];
+    }
+    case "buydown-3-2-1": {
+      const tail = Math.max(0, totalMonths - 36);
+      return [
+        { months: Math.min(12, totalMonths), rate: clamp(noteRate - 3), label: "Year 1" },
+        {
+          months: Math.min(12, Math.max(0, totalMonths - 12)),
+          rate: clamp(noteRate - 2),
+          label: "Year 2",
+        },
+        {
+          months: Math.min(12, Math.max(0, totalMonths - 24)),
+          rate: clamp(noteRate - 1),
+          label: "Year 3",
+        },
+        ...(tail > 0 ? [{ months: tail, rate: noteRate, label: "Year 4+" }] : []),
+      ];
+    }
+  }
+}
+
+interface ScheduleRow {
+  month: number;
+  payment: number;
+  interest: number;
+  principal: number;
+  balance: number;
+}
+
+function computeProductSchedule(
+  loanAmount: number,
+  productType: ProductType,
+  noteRate: number,
+  armAdjustedRate: number,
+  termYears: number,
+): ScheduleRow[] {
+  if (!Number.isFinite(loanAmount) || loanAmount <= 0) return [];
+  const totalMonths = Math.round(termYears * 12);
+  if (totalMonths <= 0) return [];
+  const phases = buildPhases(productType, noteRate, armAdjustedRate, totalMonths);
+  const rows: ScheduleRow[] = [];
+  let balance = loanAmount;
+  let monthsRemaining = totalMonths;
+  for (const phase of phases) {
+    if (phase.months <= 0) continue;
+    const phaseRate = phase.rate / 100 / 12;
+    const phasePayment =
+      phaseRate > 0
+        ? (balance * (phaseRate * Math.pow(1 + phaseRate, monthsRemaining))) /
+          (Math.pow(1 + phaseRate, monthsRemaining) - 1)
+        : balance / monthsRemaining;
+    for (let m = 0; m < phase.months; m++) {
+      const interest = balance * phaseRate;
+      const principal = Math.min(phasePayment - interest, balance);
+      balance = Math.max(0, balance - principal);
+      rows.push({
+        month: rows.length + 1,
+        payment: phasePayment,
+        interest,
+        principal,
+        balance,
+      });
+    }
+    monthsRemaining -= phase.months;
+  }
+  return rows;
+}
+
+interface PhasePayment {
+  label: string;
+  rate: number;
+  payment: number;
+}
+
+function computePhasePayments(
+  loanAmount: number,
+  productType: ProductType,
+  noteRate: number,
+  armAdjustedRate: number,
+  termYears: number,
+): PhasePayment[] {
+  const totalMonths = Math.round(termYears * 12);
+  if (!Number.isFinite(loanAmount) || loanAmount <= 0 || totalMonths <= 0) return [];
+  const phases = buildPhases(productType, noteRate, armAdjustedRate, totalMonths);
+  const out: PhasePayment[] = [];
+  let balance = loanAmount;
+  let monthsRemaining = totalMonths;
+  for (const phase of phases) {
+    if (phase.months <= 0) continue;
+    const phaseRate = phase.rate / 100 / 12;
+    const phasePayment =
+      phaseRate > 0
+        ? (balance * (phaseRate * Math.pow(1 + phaseRate, monthsRemaining))) /
+          (Math.pow(1 + phaseRate, monthsRemaining) - 1)
+        : balance / monthsRemaining;
+    out.push({ label: phase.label, rate: phase.rate, payment: phasePayment });
+    // advance balance by amortizing this phase
+    let phaseBalance = balance;
+    for (let m = 0; m < phase.months; m++) {
+      const interest = phaseBalance * phaseRate;
+      const principal = Math.min(phasePayment - interest, phaseBalance);
+      phaseBalance = Math.max(0, phaseBalance - principal);
+    }
+    balance = phaseBalance;
+    monthsRemaining -= phase.months;
+  }
+  return out;
+}
+
+interface LoanTypeOption {
+  value: string;
+  label: string;
+  term: 15 | 30;
+  productType: ProductType;
+  group: "Fixed" | "ARM" | "Buydown";
+}
+
+const LOAN_TYPE_OPTIONS: LoanTypeOption[] = [
+  { value: "fixed-30", label: "30-year Fixed", term: 30, productType: "fixed", group: "Fixed" },
+  { value: "fixed-15", label: "15-year Fixed", term: 15, productType: "fixed", group: "Fixed" },
+  { value: "arm-7-1", label: "7/1 ARM (30-year)", term: 30, productType: "arm-7-1", group: "ARM" },
+  { value: "arm-5-1", label: "5/1 ARM (30-year)", term: 30, productType: "arm-5-1", group: "ARM" },
+  { value: "buydown-2-1", label: "2-1 Buydown (30-year)", term: 30, productType: "buydown-2-1", group: "Buydown" },
+  { value: "buydown-1-0", label: "1-0 Buydown (30-year)", term: 30, productType: "buydown-1-0", group: "Buydown" },
+  { value: "buydown-3-2-1", label: "3-2-1 Buydown (30-year)", term: 30, productType: "buydown-3-2-1", group: "Buydown" },
+];
+
+function loanTypeKey(term: 15 | 30, productType: ProductType): string {
+  if (productType === "fixed") return term === 15 ? "fixed-15" : "fixed-30";
+  return productType;
+}
+
+const ARM_PRODUCTS = new Set<ProductType>(["arm-7-1", "arm-5-1"]);
 
 function newLoanId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -83,9 +282,12 @@ export default function CalculatorPage() {
       slug: "",
       countyFips: "",
       term: 30,
+      productType: "fixed",
       loanAmount: 350_000,
       rateText: "",
       hasCustomRate: false,
+      armAdjustedRateText: "",
+      hasCustomArmAdjustedRate: false,
     },
   ]);
 
@@ -324,44 +526,17 @@ function StateLoanContent({
         </div>
       )}
 
-      <div className="loan-block loan-block-output">
-        <h4 className="loan-block-h">
-          Monthly P&amp;I — ${loan.loanAmount.toLocaleString()}
-        </h4>
-        <ul className="loan-stats loan-stats-output">
-          {centralRate != null && (
-            <li>
-              <span className="k">
-                @ {centralRate.toFixed(2)}% ({centralLabel})
-              </span>
-              <span className="v">
-                ${Math.round(monthlyPayment(loan.loanAmount, centralRate, loan.term)).toLocaleString()}
-              </span>
-            </li>
-          )}
-          {p10 != null && (
-            <li>
-              <span className="k">@ {p10.toFixed(2)}% (best 10%)</span>
-              <span className="v">
-                ${Math.round(monthlyPayment(loan.loanAmount, p10, loan.term)).toLocaleString()}
-              </span>
-            </li>
-          )}
-          {p90 != null && (
-            <li>
-              <span className="k">@ {p90.toFixed(2)}% (worst 10%)</span>
-              <span className="v">
-                ${Math.round(monthlyPayment(loan.loanAmount, p90, loan.term)).toLocaleString()}
-              </span>
-            </li>
-          )}
-        </ul>
-      </div>
+      <PhasePaymentBlock
+        loan={loan}
+        centralRate={centralRate}
+        centralLabel={centralLabel}
+        p10={p10}
+        p90={p90}
+      />
 
       <LoanAmortDisclosure
-        loanAmount={loan.loanAmount}
-        rate={centralRate}
-        term={loan.term}
+        loan={loan}
+        centralRate={centralRate}
       />
 
       <div className="loan-card-footer">
@@ -409,44 +584,114 @@ function NationalLoanContent({
         onChange={onChange}
       />
 
-      <div className="loan-block loan-block-output">
-        <h4 className="loan-block-h">
-          Monthly P&amp;I — ${loan.loanAmount.toLocaleString()}
-        </h4>
-        <ul className="loan-stats loan-stats-output">
-          {centralRate != null && (
-            <li>
-              <span className="k">
-                @ {centralRate.toFixed(2)}% ({centralLabel})
-              </span>
-              <span className="v">
-                ${Math.round(monthlyPayment(loan.loanAmount, centralRate, loan.term)).toLocaleString()}
-              </span>
-            </li>
-          )}
-        </ul>
-      </div>
+      <PhasePaymentBlock
+        loan={loan}
+        centralRate={centralRate}
+        centralLabel={centralLabel}
+      />
 
       <LoanAmortDisclosure
-        loanAmount={loan.loanAmount}
-        rate={centralRate}
-        term={loan.term}
+        loan={loan}
+        centralRate={centralRate}
       />
     </>
   );
 }
 
-function LoanAmortDisclosure({
-  loanAmount,
-  rate,
-  term,
+function PhasePaymentBlock({
+  loan,
+  centralRate,
+  centralLabel,
+  p10,
+  p90,
 }: {
-  loanAmount: number;
-  rate: number | null;
-  term: 15 | 30;
+  loan: LoanInstance;
+  centralRate: number | null;
+  centralLabel: string;
+  p10?: number;
+  p90?: number;
+}) {
+  if (centralRate == null) return null;
+  const armRate =
+    loan.hasCustomArmAdjustedRate &&
+    Number.isFinite(Number.parseFloat(loan.armAdjustedRateText))
+      ? Number.parseFloat(loan.armAdjustedRateText)
+      : centralRate;
+  const phasePayments = computePhasePayments(
+    loan.loanAmount,
+    loan.productType,
+    centralRate,
+    armRate,
+    loan.term,
+  );
+  const isFixed = loan.productType === "fixed";
+  return (
+    <div className="loan-block loan-block-output">
+      <h4 className="loan-block-h">
+        Monthly P&amp;I — ${loan.loanAmount.toLocaleString()}
+      </h4>
+      <ul className="loan-stats loan-stats-output">
+        {isFixed ? (
+          <li>
+            <span className="k">
+              @ {centralRate.toFixed(2)}% ({centralLabel})
+            </span>
+            <span className="v">
+              ${Math.round(phasePayments[0]?.payment ?? 0).toLocaleString()}
+            </span>
+          </li>
+        ) : (
+          phasePayments.map((ph, idx) => (
+            <li key={idx}>
+              <span className="k">
+                {ph.label} @ {ph.rate.toFixed(2)}%
+              </span>
+              <span className="v">${Math.round(ph.payment).toLocaleString()}</span>
+            </li>
+          ))
+        )}
+        {p10 != null && (
+          <li>
+            <span className="k">@ {p10.toFixed(2)}% (best 10%)</span>
+            <span className="v">
+              ${Math.round(monthlyPayment(loan.loanAmount, p10, loan.term)).toLocaleString()}
+            </span>
+          </li>
+        )}
+        {p90 != null && (
+          <li>
+            <span className="k">@ {p90.toFixed(2)}% (worst 10%)</span>
+            <span className="v">
+              ${Math.round(monthlyPayment(loan.loanAmount, p90, loan.term)).toLocaleString()}
+            </span>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function LoanAmortDisclosure({
+  loan,
+  centralRate,
+}: {
+  loan: LoanInstance;
+  centralRate: number | null;
 }) {
   const [open, setOpen] = useState(false);
-  if (rate == null || loanAmount <= 0) return null;
+  if (centralRate == null || loan.loanAmount <= 0) return null;
+  const armRate =
+    loan.hasCustomArmAdjustedRate &&
+    Number.isFinite(Number.parseFloat(loan.armAdjustedRateText))
+      ? Number.parseFloat(loan.armAdjustedRateText)
+      : centralRate;
+  const schedule = computeProductSchedule(
+    loan.loanAmount,
+    loan.productType,
+    centralRate,
+    armRate,
+    loan.term,
+  );
   return (
     <details
       className="loan-amort-details"
@@ -454,11 +699,16 @@ function LoanAmortDisclosure({
     >
       <summary>
         <span className="loan-amort-label">See month-by-month amortization</span>
-        <span className="loan-amort-meta">{term * 12} payments</span>
+        <span className="loan-amort-meta">{loan.term * 12} payments</span>
       </summary>
       {open && (
         <Suspense fallback={<p className="loading">Loading amortization…</p>}>
-          <AmortPanel loanAmount={loanAmount} annualRatePct={rate} termYears={term} />
+          <AmortPanel
+            loanAmount={loan.loanAmount}
+            annualRatePct={centralRate}
+            termYears={loan.term}
+            schedule={schedule}
+          />
         </Suspense>
       )}
     </details>
@@ -550,23 +800,36 @@ function LoanCardForm({
       </label>
 
       <label>
-        <span>Loan term</span>
-        <div className="term-toggle">
-          <button
-            type="button"
-            className={loan.term === 15 ? "active" : ""}
-            onClick={() => onChange({ term: 15 })}
-          >
-            15-year
-          </button>
-          <button
-            type="button"
-            className={loan.term === 30 ? "active" : ""}
-            onClick={() => onChange({ term: 30 })}
-          >
-            30-year
-          </button>
-        </div>
+        <span>Loan type</span>
+        <select
+          value={loanTypeKey(loan.term, loan.productType)}
+          onChange={(e) => {
+            const opt = LOAN_TYPE_OPTIONS.find((o) => o.value === e.target.value);
+            if (opt) onChange({ term: opt.term, productType: opt.productType });
+          }}
+        >
+          <optgroup label="Fixed">
+            {LOAN_TYPE_OPTIONS.filter((o) => o.group === "Fixed").map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Adjustable rate">
+            {LOAN_TYPE_OPTIONS.filter((o) => o.group === "ARM").map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Buydown">
+            {LOAN_TYPE_OPTIONS.filter((o) => o.group === "Buydown").map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </optgroup>
+        </select>
       </label>
 
       <label>
@@ -636,6 +899,26 @@ function LoanCardForm({
           )}
         </div>
       </label>
+
+      {ARM_PRODUCTS.has(loan.productType) && (
+        <label>
+          <span>Rate after adjustment</span>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            step={0.05}
+            placeholder={`auto: ${(parseCustomRate(loan.rateText) ?? anchorRate ?? 0).toFixed(2)}%`}
+            value={loan.hasCustomArmAdjustedRate ? loan.armAdjustedRateText : ""}
+            onChange={(e) =>
+              onChange({
+                armAdjustedRateText: e.target.value,
+                hasCustomArmAdjustedRate: true,
+              })
+            }
+          />
+        </label>
+      )}
     </div>
   );
 }

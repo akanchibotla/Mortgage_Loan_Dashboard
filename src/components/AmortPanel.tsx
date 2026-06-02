@@ -13,7 +13,10 @@ interface Props {
   loanAmount: number;
   annualRatePct: number;
   termYears: number;
+  schedule?: AmortRow[];
 }
+
+export type { AmortRow };
 
 function computeSchedule(P: number, annualRatePct: number, termYears: number): AmortRow[] {
   if (
@@ -41,10 +44,15 @@ function computeSchedule(P: number, annualRatePct: number, termYears: number): A
   return rows;
 }
 
-export function AmortPanel({ loanAmount, annualRatePct, termYears }: Props) {
+export function AmortPanel({
+  loanAmount,
+  annualRatePct,
+  termYears,
+  schedule: providedSchedule,
+}: Props) {
   const schedule = useMemo(
-    () => computeSchedule(loanAmount, annualRatePct, termYears),
-    [loanAmount, annualRatePct, termYears],
+    () => providedSchedule ?? computeSchedule(loanAmount, annualRatePct, termYears),
+    [loanAmount, annualRatePct, termYears, providedSchedule],
   );
   if (schedule.length === 0) {
     return <p className="loading">Enter a valid loan amount and rate to see the schedule.</p>;
