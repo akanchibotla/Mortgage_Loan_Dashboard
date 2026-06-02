@@ -219,7 +219,7 @@ function StateLoanContent({
           counties={[]}
           stateName=""
           anchorRate={null}
-          anchorLabel="central"
+          anchorSourceLabel="no rate data available"
           onChange={onChange}
         />
         <p className="loading">No data bundled for {loan.slug} yet.</p>
@@ -248,8 +248,25 @@ function StateLoanContent({
   const p50 = countyDist?.p50_pct ?? stateHmda?.p50_pct;
   const p75 = countyDist?.p75_pct ?? stateHmda?.p75_pct;
   const p90 = countyDist?.p90_pct ?? stateHmda?.p90_pct;
-  const anchorRate =
-    countyDist?.simple_mean_pct ?? stateHmda?.simple_mean_pct ?? liveBankrate ?? liveMnd ?? null;
+
+  let anchorRate: number | null;
+  let anchorSourceLabel: string;
+  if (countyDist?.simple_mean_pct != null) {
+    anchorRate = countyDist.simple_mean_pct;
+    anchorSourceLabel = `${county!.name} County HMDA (${loan.term}-yr)`;
+  } else if (stateHmda?.simple_mean_pct != null) {
+    anchorRate = stateHmda.simple_mean_pct;
+    anchorSourceLabel = `${data.meta.name} HMDA (${loan.term}-yr mean)`;
+  } else if (liveBankrate != null) {
+    anchorRate = liveBankrate;
+    anchorSourceLabel = `${data.meta.name} Bankrate (${loan.term}-yr)`;
+  } else if (liveMnd != null) {
+    anchorRate = liveMnd;
+    anchorSourceLabel = `${data.meta.name} MND (${loan.term}-yr)`;
+  } else {
+    anchorRate = null;
+    anchorSourceLabel = "no rate data available";
+  }
 
   const customRate = parseCustomRate(loan.rateText);
   const centralRate = customRate ?? anchorRate;
@@ -263,23 +280,9 @@ function StateLoanContent({
         counties={data.counties?.counties ?? []}
         stateName={data.meta.name}
         anchorRate={anchorRate}
-        anchorLabel="central"
+        anchorSourceLabel={anchorSourceLabel}
         onChange={onChange}
       />
-
-      <div className="loan-block">
-        <h4 className="loan-block-h">Today's market</h4>
-        <ul className="loan-stats">
-          <li>
-            <span className="k">Bankrate ({loan.term}-yr)</span>
-            <span className="v">{liveBankrate != null ? `${liveBankrate.toFixed(2)}%` : "—"}</span>
-          </li>
-          <li>
-            <span className="k">MND ({loan.term}-yr)</span>
-            <span className="v">{liveMnd != null ? `${liveMnd.toFixed(2)}%` : "—"}</span>
-          </li>
-        </ul>
-      </div>
 
       {distLabel ? (
         <div className="loan-block">
@@ -390,6 +393,8 @@ function NationalLoanContent({
   const centralRate = customRate ?? usRate;
   const centralLabel = customRate != null ? "your rate" : "U.S. PMMS";
 
+  const anchorSourceLabel = `FRED PMMS (${loan.term}-yr, latest)`;
+
   return (
     <>
       <LoanCardForm
@@ -398,26 +403,9 @@ function NationalLoanContent({
         counties={[]}
         stateName=""
         anchorRate={usRate}
-        anchorLabel="U.S. PMMS"
+        anchorSourceLabel={anchorSourceLabel}
         onChange={onChange}
       />
-
-      <div className="loan-block">
-        <h4 className="loan-block-h">Today's market — U.S.</h4>
-        <ul className="loan-stats">
-          <li>
-            <span className="k">FRED PMMS ({loan.term}-yr, latest)</span>
-            <span className="v">{usRate != null ? `${usRate.toFixed(2)}%` : "—"}</span>
-          </li>
-        </ul>
-      </div>
-
-      <div className="loan-block">
-        <p className="loan-block-empty">
-          HMDA distribution requires a state selection — pick one above to see the actual
-          2024 closed-loan range.
-        </p>
-      </div>
 
       <div className="loan-block loan-block-output">
         <h4 className="loan-block-h">
@@ -450,7 +438,7 @@ function LoanCardForm({
   counties,
   stateName,
   anchorRate,
-  anchorLabel,
+  anchorSourceLabel,
   onChange,
 }: {
   loan: LoanInstance;
@@ -458,16 +446,11 @@ function LoanCardForm({
   counties: CountyEntry[];
   stateName: string;
   anchorRate: number | null;
-  anchorLabel: string;
+  anchorSourceLabel: string;
   onChange: (patch: Partial<LoanInstance>) => void;
 }) {
   const customRate = parseCustomRate(loan.rateText);
   const useCustom = customRate != null;
-  const rateDisplay = useCustom
-    ? loan.rateText
-    : anchorRate != null
-      ? anchorRate.toFixed(2)
-      : "";
 
   const countySorted = useMemo(
     () => [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans),
@@ -551,33 +534,38 @@ function LoanCardForm({
       </label>
 
       <label>
-        <span>
-          Rate{" "}
-          <span className="loan-form-field-meta">
-            ({useCustom ? "your value" : anchorLabel})
-          </span>
-        </span>
-        <div className="rate-field-wrap">
-          <input
-            type="number"
-            min={0}
-            max={30}
-            step={0.05}
-            value={rateDisplay}
-            onChange={(e) => onChange({ rateText: e.target.value })}
-          />
+        <div className="loan-form-rate-header">
+          <span>Rate</span>
           {useCustom && (
             <button
               type="button"
-              className="rate-reset-btn"
+              className="rate-reset-btn-inline"
               onClick={() => onChange({ rateText: "" })}
-              title={`Reset to ${anchorLabel}${anchorRate != null ? ` (${anchorRate.toFixed(2)}%)` : ""}`}
+              title={
+                anchorRate != null
+                  ? `Reset to ${anchorSourceLabel} (${anchorRate.toFixed(2)}%)`
+                  : `Reset to ${anchorSourceLabel}`
+              }
               aria-label="Reset rate to default"
             >
               ↺
             </button>
           )}
         </div>
+        <input
+          type="number"
+          min={0}
+          max={30}
+          step={0.05}
+          value={useCustom ? loan.rateText : ""}
+          placeholder={anchorSourceLabel}
+          title={
+            anchorRate != null
+              ? `Default: ${anchorRate.toFixed(2)}% — edit to override`
+              : "no default rate available"
+          }
+          onChange={(e) => onChange({ rateText: e.target.value })}
+        />
       </label>
     </div>
   );
