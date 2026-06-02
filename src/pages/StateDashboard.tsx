@@ -71,7 +71,7 @@ function StateBody({ slug }: { slug: string }) {
   const counties = data.counties?.counties ?? [];
   const distFor = (c: (typeof counties)[number]) => (term === 15 ? c.term_15 : c.term_30);
   const sortedCounties = [...counties].sort((a, b) => distFor(b).n_loans - distFor(a).n_loans);
-  const topCounties = sortedCounties.slice(0, 6);
+  const topCounties = sortedCounties.slice(0, 5);
 
   const usData = term === 15 ? pmms15 : pmms30;
   const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
