@@ -2023,6 +2023,52 @@ code {
 .sc-reset-btn:hover {
   text-decoration: underline;
 }
+
+.state-calc-amort {
+  margin-top: 14px;
+}
+.state-calc-amort > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 13px 7px 11px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(160, 109, 24, 0.35);
+  border-radius: 999px;
+  color: #6b4a10;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.state-calc-amort > summary::-webkit-details-marker {
+  display: none;
+}
+.state-calc-amort > summary::after {
+  content: "▾";
+  font-size: 10px;
+  margin-left: 4px;
+  color: #a06d18;
+}
+.state-calc-amort[open] > summary::after {
+  content: "▴";
+}
+.state-calc-amort > summary:hover {
+  background: #fff;
+  border-color: rgba(160, 109, 24, 0.55);
+}
+.sca-summary-label {
+  color: var(--c-ink);
+}
+.sca-summary-meta {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #a06d18;
+  text-transform: uppercase;
+}
 @media (max-width: 720px) {
   .state-calc {
     padding: 18px 16px;

@@ -19,6 +19,9 @@ const CountyChoropleth = lazy(() =>
 const DemographicsPanel = lazy(() =>
   import("../components/DemographicsPanel").then((m) => ({ default: m.DemographicsPanel })),
 );
+const AmortPanel = lazy(() =>
+  import("../components/AmortPanel").then((m) => ({ default: m.AmortPanel })),
+);
 
 const cache = new Map<string, Promise<StateData | null>>();
 
@@ -170,6 +173,35 @@ function StateBody({ slug }: { slug: string }) {
         </div>
       </header>
 
+      <section className="section">
+        <h2>{term}-year fixed</h2>
+        <RateChart
+          usData={usData}
+          ncData={ncData}
+          mndData={mndData}
+          hmdaBand={hmdaBand}
+          title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}
+          usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
+          ncLabel={`${name} ${term}-yr fixed (Bankrate, monthly)`}
+          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, monthly)`}
+          yMin={yMin}
+          yMax={7.5}
+          stateLabel={name}
+          term={term}
+          footerRight={
+            ncData.length > 0 ? (
+              <button
+                type="button"
+                className="table-link-btn"
+                onClick={() => setTablePanelOpen(true)}
+              >
+                View monthly comparison table →
+              </button>
+            ) : undefined
+          }
+        />
+      </section>
+
       <StateCalculator
         stateName={name}
         stateRate={(term === 15 ? data.bankrate15?.at(-1)?.rate : data.bankrate30?.at(-1)?.rate) ?? null}
@@ -250,35 +282,6 @@ function StateBody({ slug }: { slug: string }) {
         </section>
       )}
 
-      <section className="section">
-        <h2>{term}-year fixed</h2>
-        <RateChart
-          usData={usData}
-          ncData={ncData}
-          mndData={mndData}
-          hmdaBand={hmdaBand}
-          title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}
-          usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
-          ncLabel={`${name} ${term}-yr fixed (Bankrate, monthly)`}
-          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, monthly)`}
-          yMin={yMin}
-          yMax={7.5}
-          stateLabel={name}
-          term={term}
-          footerRight={
-            ncData.length > 0 ? (
-              <button
-                type="button"
-                className="table-link-btn"
-                onClick={() => setTablePanelOpen(true)}
-              >
-                View monthly comparison table →
-              </button>
-            ) : undefined
-          }
-        />
-      </section>
-
       {data.demographics && (
         <details className="demographics-disclosure">
           <summary>
@@ -311,6 +314,7 @@ function StateCalculator({
   onSelectedCountyChange: (fips: string) => void;
 }) {
   const { loanAmount, setLoanAmount, rateText, setRateText } = useCalculator();
+  const [amortOpen, setAmortOpen] = useState(false);
 
   const sortedCounties = [...counties].sort((a, b) => a.name.localeCompare(b.name));
   const selectedCounty = counties.find((c) => c.fips === selectedCountyFips) ?? null;
@@ -435,6 +439,27 @@ function StateCalculator({
           )}
         </div>
       </div>
+
+      <details
+        className="state-calc-amort"
+        onToggle={(e) => setAmortOpen((e.target as HTMLDetailsElement).open)}
+      >
+        <summary>
+          <span className="sca-summary-label">See month-by-month amortization</span>
+          <span className="sca-summary-meta">
+            {term * 12} payments · chart + table
+          </span>
+        </summary>
+        {amortOpen && (
+          <Suspense fallback={<p className="loading">Loading amortization…</p>}>
+            <AmortPanel
+              loanAmount={loanAmount}
+              annualRatePct={effectiveRate}
+              termYears={term}
+            />
+          </Suspense>
+        )}
+      </details>
     </section>
   );
 }
