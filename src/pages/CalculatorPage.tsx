@@ -1,6 +1,6 @@
 import { Suspense, use, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
+import { loadPmms, loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
 
@@ -182,11 +182,12 @@ function LoanCard({
 
       <div className="loan-card-form">
         <label>
-          <span>State</span>
+          <span>State (optional)</span>
           <select
             value={loan.slug}
             onChange={(e) => onChange({ slug: e.target.value, countyFips: "" })}
           >
+            <option value="">— National (all U.S.) —</option>
             {states.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.name} {s.has_hmda_band ? "(HMDA)" : ""}
@@ -242,14 +243,18 @@ function LoanCard({
         </label>
       </div>
 
-      <Suspense fallback={<p className="loading">Loading {loan.slug}…</p>}>
-        <LoanOutput
-          slug={loan.slug}
-          countyFips={loan.countyFips}
-          term={loan.term}
-          loanAmount={loan.loanAmount}
-        />
-      </Suspense>
+      {loan.slug ? (
+        <Suspense fallback={<p className="loading">Loading {loan.slug}…</p>}>
+          <LoanOutput
+            slug={loan.slug}
+            countyFips={loan.countyFips}
+            term={loan.term}
+            loanAmount={loan.loanAmount}
+          />
+        </Suspense>
+      ) : (
+        <NationalLoanOutput term={loan.term} loanAmount={loan.loanAmount} />
+      )}
     </div>
   );
 }
@@ -263,6 +268,16 @@ function CountyPicker({
   countyFips: string;
   onChange: (fips: string) => void;
 }) {
+  if (!slug) {
+    return (
+      <label>
+        <span>County</span>
+        <select disabled value="" onChange={() => onChange("")}>
+          <option>— pick a state first —</option>
+        </select>
+      </label>
+    );
+  }
   const data = use(getStatePromise(slug));
   const counties = data?.counties?.counties ?? [];
   if (counties.length === 0) {
@@ -432,6 +447,58 @@ function LoanOutput({
             </Link>
           </>
         )}
+      </div>
+    </>
+  );
+}
+
+function NationalLoanOutput({
+  term,
+  loanAmount,
+}: {
+  term: 15 | 30;
+  loanAmount: number;
+}) {
+  const { pmms15, pmms30 } = loadPmms();
+  const usRate = term === 15 ? latestNonNull(pmms15) : latestNonNull(pmms30);
+
+  return (
+    <>
+      <div className="loan-block">
+        <h4 className="loan-block-h">Today's market — U.S.</h4>
+        <ul className="loan-stats">
+          <li>
+            <span className="k">FRED PMMS ({term}-yr, latest)</span>
+            <span className="v">{usRate != null ? `${usRate.toFixed(2)}%` : "—"}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div className="loan-block">
+        <p className="loan-block-empty">
+          HMDA distribution requires a state selection — pick one above to see the actual
+          2024 closed-loan range.
+        </p>
+      </div>
+
+      <div className="loan-block loan-block-output">
+        <h4 className="loan-block-h">
+          Monthly P&amp;I — ${loanAmount.toLocaleString()}
+        </h4>
+        <ul className="loan-stats loan-stats-output">
+          {usRate != null && (
+            <li>
+              <span className="k">@ {usRate.toFixed(2)}% (U.S. PMMS)</span>
+              <span className="v">
+                ${Math.round(monthlyPayment(loanAmount, usRate, term)).toLocaleString()}
+              </span>
+            </li>
+          )}
+        </ul>
+      </div>
+
+      <div className="loan-card-footer">
+        <Link to="/methodology">FRED PMMS methodology &rarr;</Link>
       </div>
     </>
   );
