@@ -175,15 +175,25 @@ function ChartLegend({
   mndHasAny: boolean;
 }) {
   return (
-    <ul className="chart-legend">
-      <li>
-        <span className="cl-swatch cl-line-us" aria-hidden="true" />
-        <span className="cl-label">{usLabel}</span>
-      </li>
-      <li>
-        <span className="cl-swatch cl-line-state" aria-hidden="true" />
-        <span className="cl-label">{ncLabel}</span>
-        <span className="cl-markers">
+    <div className="chart-legend">
+      <ul className="cl-datasets">
+        <li>
+          <span className="cl-swatch cl-line-us" aria-hidden="true" />
+          <span className="cl-label">{usLabel}</span>
+        </li>
+        <li>
+          <span className="cl-swatch cl-line-state" aria-hidden="true" />
+          <span className="cl-label">{ncLabel}</span>
+        </li>
+        {mndHasAny && (
+          <li>
+            <span className="cl-swatch cl-line-mnd" aria-hidden="true" />
+            <span className="cl-label">{mndLabel ?? "Mortgage News Daily"}</span>
+          </li>
+        )}
+      </ul>
+      <div className="cl-markers-section" aria-label="Point style variants">
+        <div className="cl-markers-col">
           <span className="cl-marker-item">
             <span className="cl-m cl-m-diamond" aria-hidden="true" /> Wayback
           </span>
@@ -193,20 +203,16 @@ function ChartLegend({
           <span className="cl-marker-item">
             <span className="cl-m cl-m-cross" aria-hidden="true" /> Experian
           </span>
-        </span>
-      </li>
-      {mndHasAny && (
-        <li>
-          <span className="cl-swatch cl-line-mnd" aria-hidden="true" />
-          <span className="cl-label">{mndLabel ?? "Mortgage News Daily"}</span>
-          <span className="cl-markers">
+        </div>
+        {mndHasAny && (
+          <div className="cl-markers-col">
             <span className="cl-marker-item">
               <span className="cl-m cl-m-triangle" aria-hidden="true" /> daily
             </span>
-          </span>
-        </li>
-      )}
-    </ul>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

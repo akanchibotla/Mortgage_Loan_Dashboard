@@ -1044,9 +1044,13 @@ code {
   margin-right: 6px;
 }
 
-/* Unified rate-chart legend (datasets + nested point-style markers) */
+/* Unified rate-chart legend: datasets on the left, marker columns on the right */
 .chart-legend {
-  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px 28px;
   margin: 12px 0 0;
   padding: 12px 14px;
   background: #fafbfd;
@@ -1054,28 +1058,35 @@ code {
   border-radius: 8px;
   font-size: 12.5px;
   color: var(--c-ink-soft);
-  display: grid;
+}
+.cl-datasets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cl-datasets li {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
-.chart-legend li {
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 10px;
-  row-gap: 4px;
-}
 .cl-swatch {
-  grid-column: 1;
-  grid-row: 1;
+  flex-shrink: 0;
 }
-.cl-label {
-  grid-column: 2;
-  grid-row: 1;
+.cl-markers-section {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  flex-shrink: 0;
 }
-.chart-legend .cl-markers {
-  grid-column: 2;
-  grid-row: 2;
+.cl-markers-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 .cl-swatch {
   width: 28px;
@@ -1098,18 +1109,13 @@ code {
   font-weight: 500;
   line-height: 1.35;
 }
-.cl-markers {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  font-size: 11px;
-  color: var(--c-ink-mute, #6b7280);
-}
 .cl-marker-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--c-ink-mute, #6b7280);
+  white-space: nowrap;
 }
 .cl-m {
   display: inline-block;
