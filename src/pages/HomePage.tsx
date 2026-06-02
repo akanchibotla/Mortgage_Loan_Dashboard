@@ -485,9 +485,15 @@ function StatePanel({
       {open && <div className="side-panel-backdrop" onClick={onClose} aria-hidden="true" />}
       <aside className={`side-panel ${open ? "open" : ""}`} aria-hidden={!open}>
         <div className="side-panel-header">
-          <div>
-            <h3>States ({states.length})</h3>
-            <p className="side-panel-sub">{term}-yr rate · click to drill in</p>
+          <div className="side-panel-titles">
+            <p className="side-panel-eyebrow">Browse</p>
+            <h3 className="side-panel-h3">
+              All states
+              <span className="side-panel-count">{states.length}</span>
+            </h3>
+            <p className="side-panel-sub">
+              Showing <b>{term}-year</b> quoted rate · click any state to drill in
+            </p>
           </div>
           <button
             type="button"
