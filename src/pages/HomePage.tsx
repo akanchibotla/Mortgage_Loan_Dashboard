@@ -4,6 +4,7 @@ import { loadPmms, loadStatesIndex } from "../lib/loadStateData";
 import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
 import { fmtMoney, fmtRate, monthlyPayment } from "../lib/payment";
 import { useTermPreference } from "../lib/useTermPreference";
+import { useCalculator } from "../lib/useCalculator";
 
 const UsChoropleth = lazy(() =>
   import("../components/UsChoropleth").then((m) => ({ default: m.UsChoropleth })),
@@ -12,7 +13,6 @@ const AmortPanel = lazy(() =>
   import("../components/AmortPanel").then((m) => ({ default: m.AmortPanel })),
 );
 
-const DEFAULT_LOAN = 350_000;
 const STEP = 5_000;
 const SHIFT_STEP = 50_000;
 const MIN_AMOUNT = 25_000;
@@ -39,8 +39,7 @@ export default function HomePage() {
   const latestUs15 = pmms15.at(-1);
   const latestUs30 = pmms30.at(-1);
   const [term, setTerm] = useTermPreference();
-  const [loanAmount, setLoanAmount] = useState(DEFAULT_LOAN);
-  const [rateText, setRateText] = useState<string>(""); // "" = follow anchor (state or national)
+  const { loanAmount, setLoanAmount, rateText, setRateText } = useCalculator();
   const [selectedStateSlug, setSelectedStateSlug] = useState<string>(""); // "" = national
   const [amortOpen, setAmortOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);

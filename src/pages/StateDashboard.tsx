@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { loadPmms, loadStateData, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import { useTermPreference } from "../lib/useTermPreference";
+import { useCalculator } from "../lib/useCalculator";
+import { fmtMoney, monthlyPayment } from "../lib/payment";
 
 const RateChart = lazy(() =>
   import("../components/RateChart").then((m) => ({ default: m.RateChart })),
@@ -166,6 +168,12 @@ function StateBody({ slug }: { slug: string }) {
         </div>
       </header>
 
+      <StateCalculator
+        stateName={name}
+        stateRate={(term === 15 ? data.bankrate15?.at(-1)?.rate : data.bankrate30?.at(-1)?.rate) ?? null}
+        term={term}
+      />
+
       {counties.length > 0 && (
         <section className="section">
           <div className="county-section-head">
@@ -278,5 +286,101 @@ function StateBody({ slug }: { slug: string }) {
       )}
 
     </>
+  );
+}
+
+function StateCalculator({
+  stateName,
+  stateRate,
+  term,
+}: {
+  stateName: string;
+  stateRate: number | null;
+  term: 15 | 30;
+}) {
+  const { loanAmount, setLoanAmount, rateText, setRateText } = useCalculator();
+
+  const fallbackRate = stateRate ?? 6.5;
+  const customRate = rateText.trim() === "" ? null : parseFloat(rateText);
+  const effectiveRate =
+    customRate != null && Number.isFinite(customRate) ? customRate : fallbackRate;
+  const monthly = monthlyPayment(loanAmount, effectiveRate, term);
+  const totalPaid = monthly * term * 12;
+  const totalInterest = Math.max(0, totalPaid - loanAmount);
+
+  const rateInputValue =
+    rateText === "" && stateRate != null ? stateRate.toFixed(2) : rateText;
+  const isCustomRate =
+    customRate != null && stateRate != null && Math.abs(customRate - stateRate) > 0.001;
+
+  return (
+    <section className="state-calc">
+      <p className="state-calc-eyebrow">Estimated payment</p>
+      <h2 className="state-calc-h2">Your {stateName} mortgage</h2>
+      <p className="state-calc-sub">
+        Anchored to {stateName}'s latest {term}-yr Bankrate quote
+        {stateRate != null ? ` (${stateRate.toFixed(2)}%)` : ""}. Edit either field to model
+        scenarios.
+      </p>
+
+      <div className="state-calc-grid">
+        <label className="state-calc-field">
+          <span className="sc-field-label">Loan amount</span>
+          <span className="sc-field-prefix">$</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            step={5_000}
+            value={loanAmount}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (Number.isFinite(v) && v >= 0) setLoanAmount(v);
+            }}
+            className="sc-field-input"
+          />
+        </label>
+        <label className="state-calc-field">
+          <span className="sc-field-label">Rate</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={0.05}
+            value={rateInputValue}
+            onChange={(e) => setRateText(e.target.value)}
+            className="sc-field-input"
+          />
+          <span className="sc-field-suffix">%</span>
+        </label>
+        <div className="state-calc-field sc-field-readonly">
+          <span className="sc-field-label">Term</span>
+          <span className="sc-field-readonly-value">{term}-year</span>
+        </div>
+      </div>
+
+      <div className="state-calc-output">
+        <div className="sc-output-row sc-output-main">
+          <span className="sc-output-label">Monthly P&amp;I</span>
+          <span className="sc-output-value">{fmtMoney(monthly)}</span>
+        </div>
+        <div className="sc-output-row sc-output-meta">
+          <span>
+            Over {term} years: <b>{fmtMoney(totalInterest)}</b> interest ·{" "}
+            <b>{fmtMoney(totalPaid)}</b> total paid
+          </span>
+          {isCustomRate && (
+            <button
+              type="button"
+              className="sc-reset-btn"
+              onClick={() => setRateText("")}
+              title={`Reset to ${stateName}'s ${term}-yr quote`}
+            >
+              Reset rate
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
