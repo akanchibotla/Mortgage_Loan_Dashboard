@@ -72,13 +72,11 @@ export default function CalculatorPage() {
       ),
     [states],
   );
-  const defaultSlug =
-    ordered.find((s) => s.has_hmda_band)?.slug ?? ordered[0]?.slug ?? "north-carolina";
 
   const [loans, setLoans] = useState<LoanInstance[]>(() => [
     {
       id: newLoanId(),
-      slug: defaultSlug,
+      slug: "",
       countyFips: "",
       term: 30,
       loanAmount: 350_000,
@@ -425,10 +423,6 @@ function NationalLoanContent({
             </li>
           )}
         </ul>
-      </div>
-
-      <div className="loan-card-footer">
-        <Link to="/methodology">FRED PMMS methodology &rarr;</Link>
       </div>
     </>
   );
