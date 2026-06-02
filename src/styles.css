@@ -1059,9 +1059,23 @@ code {
 }
 .chart-legend li {
   display: grid;
-  grid-template-columns: 30px 1fr auto;
+  grid-template-columns: 30px 1fr;
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 10px;
+  column-gap: 10px;
+  row-gap: 4px;
+}
+.cl-swatch {
+  grid-column: 1;
+  grid-row: 1;
+}
+.cl-label {
+  grid-column: 2;
+  grid-row: 1;
+}
+.chart-legend .cl-markers {
+  grid-column: 2;
+  grid-row: 2;
 }
 .cl-swatch {
   width: 28px;
@@ -1085,12 +1099,12 @@ code {
   line-height: 1.35;
 }
 .cl-markers {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   font-size: 11px;
   color: var(--c-ink-mute, #6b7280);
-  white-space: nowrap;
 }
 .cl-marker-item {
   display: inline-flex;
@@ -1136,17 +1150,6 @@ code {
   border-right: 6px solid transparent;
   border-bottom: 11px solid #0d7a6e;
   background: transparent;
-}
-@media (max-width: 720px) {
-  .chart-legend li {
-    grid-template-columns: 30px 1fr;
-  }
-  .cl-markers {
-    grid-column: 1 / -1;
-    padding-left: 40px;
-    flex-wrap: wrap;
-    white-space: normal;
-  }
 }
 
 /* "What's the green band?" explainer pill under the rate chart */
@@ -1859,10 +1862,20 @@ code {
   }
 }
 
-/* Inline "view monthly table" link below the rate chart */
-.table-link-row {
-  margin: 12px 0 0;
-  text-align: right;
+/* Chart footer row: green-band pill on the left, action slot on the right */
+.chart-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 10px;
+}
+.chart-footer-row .hmda-explainer {
+  margin: 0;
+}
+.chart-footer-action {
+  margin-left: auto;
 }
 .table-link-btn {
   background: transparent;

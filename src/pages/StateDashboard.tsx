@@ -251,18 +251,18 @@ function StateBody({ slug }: { slug: string }) {
           yMax={7.5}
           stateLabel={name}
           term={term}
+          footerRight={
+            ncData.length > 0 ? (
+              <button
+                type="button"
+                className="table-link-btn"
+                onClick={() => setTablePanelOpen(true)}
+              >
+                View monthly comparison table →
+              </button>
+            ) : undefined
+          }
         />
-        {ncData.length > 0 && (
-          <p className="table-link-row">
-            <button
-              type="button"
-              className="table-link-btn"
-              onClick={() => setTablePanelOpen(true)}
-            >
-              View monthly comparison table →
-            </button>
-          </p>
-        )}
       </section>
 
       {data.demographics && (

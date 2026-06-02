@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Line } from "react-chartjs-2";
 import type { ChartData } from "chart.js";
 import type {
@@ -22,6 +23,7 @@ interface Props {
   yMax: number;
   stateLabel?: string;
   term?: 15 | 30;
+  footerRight?: ReactNode;
 }
 
 const NC_RED = "#c8392c";
@@ -76,6 +78,7 @@ export function RateChart({
   yMax,
   stateLabel,
   term,
+  footerRight,
 }: Props) {
   const usPoints: ChartPoint[] = usData.map((p) => ({ x: `${p.month}-15`, y: p.rate }));
   const ncPoints: ChartPoint[] = ncData.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
@@ -144,12 +147,17 @@ export function RateChart({
         mndLabel={mndLabel}
         mndHasAny={!!mndHasAny}
       />
-      {hmdaBand && (
-        <HmdaBandExplainer
-          band={hmdaBand}
-          stateLabel={stateLabel ?? "this state"}
-          term={term ?? 15}
-        />
+      {(hmdaBand || footerRight) && (
+        <div className="chart-footer-row">
+          {hmdaBand && (
+            <HmdaBandExplainer
+              band={hmdaBand}
+              stateLabel={stateLabel ?? "this state"}
+              term={term ?? 15}
+            />
+          )}
+          {footerRight && <div className="chart-footer-action">{footerRight}</div>}
+        </div>
       )}
     </>
   );
