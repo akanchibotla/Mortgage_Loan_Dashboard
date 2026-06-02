@@ -2266,9 +2266,7 @@ code {
   color: var(--c-ink-soft);
   text-decoration: none;
   font-weight: 500;
-  padding-bottom: 2px;
-  border-bottom: 2px solid transparent;
-  transition: color 0.12s, border-color 0.12s;
+  transition: color 0.12s, text-decoration-color 0.12s;
 }
 
 .topnav a:hover {
@@ -2278,7 +2276,10 @@ code {
 .topnav a.active {
   color: var(--c-brand);
   font-weight: 700;
-  border-bottom-color: var(--c-brand);
+  text-decoration: underline;
+  text-decoration-color: var(--c-brand);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 .topnav .brand,
@@ -3255,7 +3256,7 @@ code {
 
 :root.dark .topnav a.active {
   color: #79b2ed;
-  border-bottom-color: #79b2ed;
+  text-decoration-color: #79b2ed;
 }
 
 :root.dark .theme-toggle {
