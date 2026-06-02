@@ -193,6 +193,13 @@ function ChartLegend({
         )}
       </ul>
       <div className="cl-markers-section" aria-label="Point style variants">
+        {mndHasAny && (
+          <div className="cl-markers-col">
+            <span className="cl-marker-item">
+              <span className="cl-m cl-m-triangle" aria-hidden="true" /> daily
+            </span>
+          </div>
+        )}
         <div className="cl-markers-col">
           <span className="cl-marker-item">
             <span className="cl-m cl-m-diamond" aria-hidden="true" /> Wayback
@@ -204,13 +211,6 @@ function ChartLegend({
             <span className="cl-m cl-m-cross" aria-hidden="true" /> Experian
           </span>
         </div>
-        {mndHasAny && (
-          <div className="cl-markers-col">
-            <span className="cl-marker-item">
-              <span className="cl-m cl-m-triangle" aria-hidden="true" /> daily
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
