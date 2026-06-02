@@ -113,11 +113,6 @@ export default function CalculatorPage() {
         <Link to="/">&larr; Home</Link>
       </p>
       <h1>Borrower expectation calculator</h1>
-      <p className="sub">
-        Compare up to {MAX_LOANS} loan scenarios side by side. Each one anchors your{" "}
-        <i>expected rate range</i> in the HMDA 2024 actual closed-loan distribution for the
-        state and county you pick.
-      </p>
 
       <div className="calc-compare-header">
         <div className="calc-compare-title-row">
