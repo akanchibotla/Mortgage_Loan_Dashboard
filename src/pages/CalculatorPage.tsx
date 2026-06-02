@@ -557,15 +557,10 @@ function LoanCardForm({
           min={0}
           max={30}
           step={0.05}
-          value={useCustom ? loan.rateText : ""}
-          placeholder={anchorSourceLabel}
-          title={
-            anchorRate != null
-              ? `Default: ${anchorRate.toFixed(2)}% — edit to override`
-              : "no default rate available"
-          }
+          value={useCustom ? loan.rateText : anchorRate != null ? anchorRate.toFixed(2) : ""}
           onChange={(e) => onChange({ rateText: e.target.value })}
         />
+        <span className="loan-form-rate-source">{anchorSourceLabel}</span>
       </label>
     </div>
   );
