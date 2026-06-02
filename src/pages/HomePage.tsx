@@ -457,21 +457,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="notes">
-        <p>
-          <b>Why this exists.</b> Bankrate and Zillow show today's quoted rates per state but no
-          closed-loan reality. The FFIEC HMDA Data Browser shows actual closings per county but no
-          quote comparison and no time series. The unique value here is combining both — see the{" "}
-          <Link to="/methodology">methodology</Link> for source detail and limitations.
-        </p>
-        <p>
-          See the <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard">repo</a> and{" "}
-          <a href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard/blob/main/ROADMAP.md">
-            roadmap
-          </a>{" "}
-          on GitHub.
-        </p>
-      </div>
     </>
   );
 }

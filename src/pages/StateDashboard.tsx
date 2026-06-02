@@ -63,7 +63,6 @@ function StateBody({ slug }: { slug: string }) {
   }
 
   const name = data.meta.name;
-  const hasMnd = data.mnd15?.some((p) => p.rate != null) || data.mnd30?.some((p) => p.rate != null);
   const counties = data.counties?.counties ?? [];
   const distFor = (c: (typeof counties)[number]) => (term === 15 ? c.term_15 : c.term_30);
   const sortedCounties = [...counties].sort((a, b) => distFor(b).n_loans - distFor(a).n_loans);
@@ -277,59 +276,6 @@ function StateBody({ slug }: { slug: string }) {
         </details>
       )}
 
-      <div className="notes">
-        <b>Sources &amp; method</b>
-        <p className="data-source-badges">
-          <span className="badge">U.S.</span> Freddie Mac PMMS via FRED, monthly mean.{" "}
-          <span className="badge">{data.meta.postal}</span> Bankrate (Wayback + live).{" "}
-          {hasMnd && (
-            <>
-              <span className="badge">{data.meta.postal} MND</span> Mortgage News Daily.{" "}
-            </>
-          )}
-          {hmdaBand && (
-            <>
-              <span className="badge">HMDA 2024 ref</span> {term}-yr origination band.
-            </>
-          )}
-        </p>
-        <ul>
-          <li>
-            <b>U.S. line</b> —{" "}
-            <a href="https://fred.stlouisfed.org/series/MORTGAGE15US">FRED MORTGAGE15US</a> /{" "}
-            <a href="https://fred.stlouisfed.org/series/MORTGAGE30US">MORTGAGE30US</a>; monthly mean of
-            weekly observations.
-          </li>
-          <li>
-            <b>{name} line</b> — Bankrate {name} page; historical from{" "}
-            <a href="https://web.archive.org/">Internet Archive</a> snapshots; trailing month from today's
-            live page via headless Chromium. Months without Wayback or live coverage render as gaps.
-          </li>
-          {hasMnd && (
-            <li>
-              <b>{name} MND</b> — daily NC rate from{" "}
-              <a href={`https://www.mortgagenewsdaily.com/mortgage-rates/${slug}`}>Mortgage News Daily</a>;
-              Wayback historical (sparse) + forward daily collection.
-            </li>
-          )}
-          {hmdaBand && (
-            <li>
-              <b>HMDA 2024 reference band</b> ({term}-yr) —{" "}
-              <a href="https://ffiec.cfpb.gov/data-browser/">FFIEC HMDA 2024 LAR</a>, filtered to{" "}
-              {data.meta.postal} + home purchase + originated + loan_term=
-              {term === 15 ? "180" : "360"} (n=
-              {hmdaBand.n_loans.toLocaleString()}). Outer band p10–p90 (
-              {hmdaBand.p10_pct.toFixed(2)}%–{hmdaBand.p90_pct.toFixed(2)}%); inner box p25–p75; dashed
-              lines mark simple and amount-weighted mean. HMDA has no month field, so this is one annual
-              figure.
-            </li>
-          )}
-          <li>
-            Different methodologies (lender survey vs. lock-flow vs. lender-aggregate quote) explain ~10–30
-            bp gaps even on the same date.
-          </li>
-        </ul>
-      </div>
     </>
   );
 }

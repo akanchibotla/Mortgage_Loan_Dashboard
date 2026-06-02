@@ -14,9 +14,13 @@ export default function MethodologyPage() {
       </p>
       <h1>Methodology &amp; sources</h1>
       <p className="sub">
-        This dashboard combines three things that are typically shown in isolation: today's quoted
-        mortgage rates per state, historical rate trends, and the actual closed-loan distribution
-        from the federally-mandated HMDA filings. The combination is the value.
+        <b>Why this exists.</b>{" "}
+        <a href="https://www.bankrate.com/mortgages/mortgage-rates/">Bankrate</a> and Zillow show
+        today's quoted rates per state but no closed-loan reality. The{" "}
+        <a href="https://ffiec.cfpb.gov/data-browser/">FFIEC HMDA Data Browser</a> shows actual
+        closings per county but no quote comparison and no time series. This dashboard combines
+        both — today's quoted rates against last year's HMDA closing distribution, per state and
+        per county, with monthly history for context.
       </p>
 
       <section className="section">
@@ -151,6 +155,7 @@ export default function MethodologyPage() {
           <li>No ARM, refinance, FHA-specific, or VA-specific breakdowns yet. All views are 15-yr or 30-yr fixed conventional purchase.</li>
           <li>HMDA public LAR strips some fields for privacy (e.g., the exact origination date and credit score). All percentiles are calendar-year-2024 aggregates.</li>
           <li>Bankrate's quoted rates are a panel survey, not actual closed-loan rates. They typically run ~10–30 bp above or below HMDA closings depending on point/credit dynamics.</li>
+          <li>The three rate sources (FRED PMMS lender survey, Bankrate lender-aggregate quote, MND lock-flow) use different methodologies and typically disagree by ~10–30 bp even on the same date. Don't expect the three lines on each state chart to agree.</li>
           <li>The "today" Bankrate value is whatever the rendered page shows at refresh time. Their methodology can shift; we capture what's there.</li>
           <li>State boundaries on the choropleth match the U.S. Census 2024 cartographic file. Some FIPS edge cases (Connecticut planning regions, Virginia independent cities) may render unexpectedly.</li>
         </ul>
