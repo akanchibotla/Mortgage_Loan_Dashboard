@@ -1614,10 +1614,6 @@ code {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.side-panel-toggle.open {
-  left: 332px;
-}
-
 .side-panel-toggle .hamburger {
   font-size: 14px;
   line-height: 1;
@@ -1733,10 +1729,6 @@ code {
   .side-panel {
     width: 100vw;
     max-width: 100vw;
-  }
-  .side-panel-toggle.open {
-    left: auto;
-    right: 12px;
   }
   .side-panel-toggle .toggle-label {
     display: none;

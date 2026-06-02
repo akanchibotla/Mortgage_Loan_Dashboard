@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadPmms, loadStatesIndex } from "../lib/loadStateData";
 import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
@@ -45,11 +45,6 @@ export default function HomePage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [filter, setFilter] = useState("");
   usePageMeta({ title: BASE_TITLE });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setPanelOpen(window.innerWidth >= 1024);
-  }, []);
 
   const filteredStates = useMemo(() => {
     const f = filter.trim().toLowerCase();
@@ -117,16 +112,18 @@ export default function HomePage() {
         filter={filter}
         onFilter={setFilter}
       />
-      <button
-        type="button"
-        className={`side-panel-toggle ${panelOpen ? "open" : ""}`}
-        onClick={() => setPanelOpen((v) => !v)}
-        aria-label={panelOpen ? "Close state list" : "Open state list"}
-        title={panelOpen ? "Hide state list" : "Show all states"}
-      >
-        <span className="hamburger">{panelOpen ? "✕" : "☰"}</span>
-        <span className="toggle-label">{panelOpen ? "Hide" : "All states"}</span>
-      </button>
+      {!panelOpen && (
+        <button
+          type="button"
+          className="side-panel-toggle"
+          onClick={() => setPanelOpen(true)}
+          aria-label="Open state list"
+          title="Show all states"
+        >
+          <span className="hamburger">☰</span>
+          <span className="toggle-label">All states</span>
+        </button>
+      )}
 
       {/* CALCULATOR HERO — interactive controls that drive the map below */}
       <section className="hero hero-calc">
