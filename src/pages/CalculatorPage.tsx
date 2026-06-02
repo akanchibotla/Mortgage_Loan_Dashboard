@@ -1,8 +1,12 @@
-import { Suspense, use, useMemo, useState } from "react";
+import { lazy, Suspense, use, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadPmms, loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
+
+const AmortPanel = lazy(() =>
+  import("../components/AmortPanel").then((m) => ({ default: m.AmortPanel })),
+);
 
 const MAX_LOANS = 4;
 
@@ -362,6 +366,12 @@ function StateLoanContent({
         </ul>
       </div>
 
+      <LoanAmortDisclosure
+        loanAmount={loan.loanAmount}
+        rate={centralRate}
+        term={loan.term}
+      />
+
       <div className="loan-card-footer">
         <Link to={`/state/${loan.slug}`}>{data.meta.name} dashboard &rarr;</Link>
         {loan.countyFips && (
@@ -424,7 +434,42 @@ function NationalLoanContent({
           )}
         </ul>
       </div>
+
+      <LoanAmortDisclosure
+        loanAmount={loan.loanAmount}
+        rate={centralRate}
+        term={loan.term}
+      />
     </>
+  );
+}
+
+function LoanAmortDisclosure({
+  loanAmount,
+  rate,
+  term,
+}: {
+  loanAmount: number;
+  rate: number | null;
+  term: 15 | 30;
+}) {
+  const [open, setOpen] = useState(false);
+  if (rate == null || loanAmount <= 0) return null;
+  return (
+    <details
+      className="loan-amort-details"
+      onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
+    >
+      <summary>
+        <span className="loan-amort-label">See month-by-month amortization</span>
+        <span className="loan-amort-meta">{term * 12} payments</span>
+      </summary>
+      {open && (
+        <Suspense fallback={<p className="loading">Loading amortization…</p>}>
+          <AmortPanel loanAmount={loanAmount} annualRatePct={rate} termYears={term} />
+        </Suspense>
+      )}
+    </details>
   );
 }
 

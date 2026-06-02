@@ -3084,6 +3084,55 @@ code {
   color: var(--c-brand);
   font-size: 14.5px;
 }
+.loan-amort-details {
+  margin-top: 12px;
+}
+.loan-amort-details > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 13px 7px 11px;
+  background: #fff;
+  border: 1px solid var(--c-border, #d4d8e0);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  color: var(--c-ink);
+  transition: background 0.15s, border-color 0.15s;
+}
+.loan-amort-details > summary::-webkit-details-marker {
+  display: none;
+}
+.loan-amort-details > summary::after {
+  content: "▾";
+  font-size: 10px;
+  margin-left: 4px;
+  color: var(--c-ink-mute, #6b7280);
+}
+.loan-amort-details[open] > summary::after {
+  content: "▴";
+}
+.loan-amort-details > summary:hover {
+  background: #f5f7fb;
+  border-color: var(--c-brand);
+}
+.loan-amort-label {
+  color: var(--c-ink);
+}
+.loan-amort-meta {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--c-ink-mute, #6b7280);
+  text-transform: uppercase;
+}
+.loan-amort-details .amort-panel {
+  margin-top: 12px;
+}
+
 .loan-card-footer {
   margin-top: 14px;
   padding-top: 12px;
