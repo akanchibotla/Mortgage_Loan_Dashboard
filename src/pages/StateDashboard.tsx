@@ -5,6 +5,7 @@ import { usePageMeta } from "../lib/usePageMeta";
 import { useTermPreference } from "../lib/useTermPreference";
 import { useCalculator } from "../lib/useCalculator";
 import { fmtMoney, monthlyPayment } from "../lib/payment";
+import type { CountyEntry } from "../types";
 
 const RateChart = lazy(() =>
   import("../components/RateChart").then((m) => ({ default: m.RateChart })),
@@ -171,6 +172,7 @@ function StateBody({ slug }: { slug: string }) {
       <StateCalculator
         stateName={name}
         stateRate={(term === 15 ? data.bankrate15?.at(-1)?.rate : data.bankrate30?.at(-1)?.rate) ?? null}
+        counties={counties}
         term={term}
       />
 
@@ -292,15 +294,28 @@ function StateBody({ slug }: { slug: string }) {
 function StateCalculator({
   stateName,
   stateRate,
+  counties,
   term,
 }: {
   stateName: string;
   stateRate: number | null;
+  counties: CountyEntry[];
   term: 15 | 30;
 }) {
   const { loanAmount, setLoanAmount, rateText, setRateText } = useCalculator();
+  const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
 
-  const fallbackRate = stateRate ?? 6.5;
+  const sortedCounties = [...counties].sort((a, b) => a.name.localeCompare(b.name));
+  const selectedCounty = counties.find((c) => c.fips === selectedCountyFips) ?? null;
+  const countyRate = selectedCounty
+    ? (term === 15 ? selectedCounty.term_15.simple_mean_pct : selectedCounty.term_30.simple_mean_pct) ?? null
+    : null;
+
+  const anchorRate = countyRate ?? stateRate;
+  const anchorSource: "county" | "state" | "none" =
+    countyRate != null ? "county" : stateRate != null ? "state" : "none";
+
+  const fallbackRate = anchorRate ?? 6.5;
   const customRate = rateText.trim() === "" ? null : parseFloat(rateText);
   const effectiveRate =
     customRate != null && Number.isFinite(customRate) ? customRate : fallbackRate;
@@ -309,18 +324,30 @@ function StateCalculator({
   const totalInterest = Math.max(0, totalPaid - loanAmount);
 
   const rateInputValue =
-    rateText === "" && stateRate != null ? stateRate.toFixed(2) : rateText;
+    rateText === "" && anchorRate != null ? anchorRate.toFixed(2) : rateText;
   const isCustomRate =
-    customRate != null && stateRate != null && Math.abs(customRate - stateRate) > 0.001;
+    customRate != null && anchorRate != null && Math.abs(customRate - anchorRate) > 0.001;
 
   return (
     <section className="state-calc">
       <p className="state-calc-eyebrow">Estimated payment</p>
       <h2 className="state-calc-h2">Your {stateName} mortgage</h2>
       <p className="state-calc-sub">
-        Anchored to {stateName}'s latest {term}-yr Bankrate quote
-        {stateRate != null ? ` (${stateRate.toFixed(2)}%)` : ""}. Edit either field to model
-        scenarios.
+        {anchorSource === "county" && selectedCounty ? (
+          <>
+            Anchored to <b>{selectedCounty.name} County</b>'s 2024 {term}-yr HMDA mean
+            {countyRate != null ? ` (${countyRate.toFixed(2)}%)` : ""}. Edit any field to model
+            scenarios.
+          </>
+        ) : anchorSource === "state" ? (
+          <>
+            Anchored to <b>{stateName}</b>'s latest {term}-yr Bankrate quote
+            {stateRate != null ? ` (${stateRate.toFixed(2)}%)` : ""}. Pick a county to switch the
+            anchor to its 2024 HMDA mean.
+          </>
+        ) : (
+          <>No rate available — enter one manually below to estimate your payment.</>
+        )}
       </p>
 
       <div className="state-calc-grid">
@@ -339,6 +366,22 @@ function StateCalculator({
             }}
             className="sc-field-input"
           />
+        </label>
+        <label className="state-calc-field sc-field-select-wrap">
+          <span className="sc-field-label">County (optional)</span>
+          <select
+            className="sc-field-select"
+            value={selectedCountyFips}
+            onChange={(e) => setSelectedCountyFips(e.target.value)}
+            disabled={sortedCounties.length === 0}
+          >
+            <option value="">— Statewide —</option>
+            {sortedCounties.map((c) => (
+              <option key={c.fips} value={c.fips}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="state-calc-field">
           <span className="sc-field-label">Rate</span>
@@ -374,7 +417,11 @@ function StateCalculator({
               type="button"
               className="sc-reset-btn"
               onClick={() => setRateText("")}
-              title={`Reset to ${stateName}'s ${term}-yr quote`}
+              title={
+                anchorSource === "county" && selectedCounty
+                  ? `Reset to ${selectedCounty.name} County's ${term}-yr HMDA mean`
+                  : `Reset to ${stateName}'s ${term}-yr quote`
+              }
             >
               Reset rate
             </button>
