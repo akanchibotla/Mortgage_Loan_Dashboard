@@ -9,9 +9,6 @@ export default function MethodologyPage() {
   });
   return (
     <>
-      <p className="breadcrumb">
-        <Link to="/">&larr; Home</Link>
-      </p>
       <h1>Methodology &amp; sources</h1>
       <p className="sub">
         <b>Why this exists.</b>{" "}

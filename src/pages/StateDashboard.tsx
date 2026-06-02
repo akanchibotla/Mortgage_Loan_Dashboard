@@ -59,9 +59,6 @@ function StateBody({ slug }: { slug: string }) {
   if (!data) {
     return (
       <div>
-        <p className="breadcrumb">
-          <Link to="/">&larr; All states</Link>
-        </p>
         <h1>State not found</h1>
         <p>
           No data is currently bundled for slug <code>{slug}</code>.
@@ -130,10 +127,6 @@ function StateBody({ slug }: { slug: string }) {
           <p className="side-panel-empty">No Bankrate series available for this term.</p>
         )}
       </aside>
-
-      <p className="breadcrumb">
-        <Link to="/">&larr; All states</Link>
-      </p>
 
       <header className="state-hero">
         <div className="state-hero-titles">

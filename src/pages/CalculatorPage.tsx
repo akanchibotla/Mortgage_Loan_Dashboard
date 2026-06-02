@@ -109,9 +109,6 @@ export default function CalculatorPage() {
 
   return (
     <>
-      <p className="breadcrumb">
-        <Link to="/">&larr; Home</Link>
-      </p>
       <h1>Borrower expectation calculator</h1>
 
       <div className="calc-compare-header">

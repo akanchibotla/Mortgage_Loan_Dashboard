@@ -40,9 +40,6 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
   if (!data.counties) {
     return (
       <div>
-        <p className="breadcrumb">
-          <Link to={`/state/${slug}`}>&larr; {data.meta.name}</Link>
-        </p>
         <h1>County data not bundled</h1>
         <p>
           {data.meta.name} doesn't have county-level HMDA bundled yet. (Currently only NC is
@@ -59,9 +56,6 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
 
   return (
     <>
-      <p className="breadcrumb">
-        <Link to={`/state/${slug}`}>&larr; {data.meta.name}</Link>
-      </p>
       <h1>
         {county.name} County, {data.meta.postal}
       </h1>
@@ -260,12 +254,9 @@ function countyAggregateBlurb(c: CountyEntry): string {
   return `n=${n30.toLocaleString()} 30-yr + ${n15.toLocaleString()} 15-yr originations in 2024.`;
 }
 
-function notFound(slug: string, fips?: string) {
+function notFound(_slug: string, fips?: string) {
   return (
     <div>
-      <p className="breadcrumb">
-        <Link to={`/state/${slug}`}>&larr; State</Link>
-      </p>
       <h1>County not found</h1>
       <p>{fips ? `FIPS ${fips} not in this state's HMDA data.` : "Unknown state."}</p>
     </div>

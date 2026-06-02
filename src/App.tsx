@@ -19,13 +19,15 @@ export default function App() {
         </Link>
         <NavLink
           to="/calculator"
-          className={({ isActive }) => (isActive ? "active" : "")}
+          className={({ isActive }) => `topnav-strong${isActive ? " active" : ""}`}
         >
           Calculator
         </NavLink>
         <NavLink
           to="/methodology"
-          className={({ isActive }) => (isActive ? "active" : "")}
+          className={({ isActive }) =>
+            `topnav-right${isActive ? " active" : ""}`
+          }
         >
           Methodology
         </NavLink>

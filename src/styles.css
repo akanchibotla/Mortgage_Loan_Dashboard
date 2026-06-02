@@ -1349,27 +1349,6 @@ code {
   }
 }
 
-.breadcrumb {
-  position: sticky;
-  top: 47px;
-  z-index: 20;
-  margin: 0 -18px 16px;
-  padding: 8px 18px;
-  font-size: 13px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--c-border-soft, #eef1f6);
-}
-
-.breadcrumb a {
-  color: #1f5fa8;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.breadcrumb a:hover {
-  text-decoration: underline;
-}
 
 .state-list {
   display: grid;
@@ -2305,15 +2284,22 @@ code {
   border-bottom-color: var(--c-brand);
 }
 
-.topnav .brand {
+.topnav .brand,
+.topnav .topnav-strong {
   font-weight: 700;
   color: var(--c-ink);
   font-size: 14px;
-  flex: 1;
   letter-spacing: -0.01em;
+}
+
+.topnav .brand {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.topnav .topnav-right {
+  margin-left: auto;
 }
 
 .topnav .brand::before {
@@ -2720,11 +2706,6 @@ code {
   .topnav {
     margin: 0 -14px 18px;
     padding: 10px 14px;
-  }
-  .breadcrumb {
-    top: 78px;
-    margin: 0 -14px 14px;
-    padding: 7px 14px;
   }
   h1 {
     font-size: 18px;
