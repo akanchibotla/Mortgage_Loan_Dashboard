@@ -38,7 +38,7 @@ export function buildOptions({ title, yMin, yMax, hmdaBand }: BuildOptionsArgs):
     },
     plugins: {
       title: { display: true, text: title },
-      legend: { position: "bottom" },
+      legend: { display: false },
       tooltip: {
         callbacks: {
           label: (item: TooltipItem<"line">) => {

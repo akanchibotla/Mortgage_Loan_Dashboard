@@ -1044,70 +1044,109 @@ code {
   margin-right: 6px;
 }
 
-.marker-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
+/* Unified rate-chart legend (datasets + nested point-style markers) */
+.chart-legend {
   list-style: none;
-  padding: 0;
-  margin: 4px 0 0 0;
-  font-size: 11.5px;
-  color: #555;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  background: #fafbfd;
+  border: 1px solid var(--c-border-soft, #e3e7ee);
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: var(--c-ink-soft);
+  display: grid;
+  gap: 10px;
 }
-
-.marker-legend li {
+.chart-legend li {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.cl-swatch {
+  width: 28px;
+  height: 0;
+  border-top-width: 2.5px;
+  border-top-style: solid;
+}
+.cl-line-us {
+  border-top-color: #1f5fa8;
+}
+.cl-line-state {
+  border-top-color: #c8392c;
+}
+.cl-line-mnd {
+  border-top-color: #0d7a6e;
+  border-top-style: dashed;
+}
+.cl-label {
+  color: var(--c-ink);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.cl-markers {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--c-ink-mute, #6b7280);
+  white-space: nowrap;
+}
+.cl-marker-item {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
-
-.marker-legend .m {
+.cl-m {
   display: inline-block;
   width: 11px;
   height: 11px;
-  line-height: 11px;
-  text-align: center;
 }
-
-.marker-legend .m-diamond {
+.cl-m-diamond {
   background: #c8392c;
   transform: rotate(45deg);
 }
-
-.marker-legend .m-circle {
+.cl-m-circle {
   background: #fff;
   border: 2px solid #c8392c;
   border-radius: 50%;
 }
-
-.marker-legend .m-cross {
+.cl-m-cross {
   position: relative;
 }
-
-.marker-legend .m-cross::before,
-.marker-legend .m-cross::after {
+.cl-m-cross::before,
+.cl-m-cross::after {
   content: "";
   position: absolute;
   inset: 0;
   background: #c8392c;
 }
-
-.marker-legend .m-cross::before {
+.cl-m-cross::before {
   height: 2px;
   top: 4px;
 }
-
-.marker-legend .m-cross::after {
+.cl-m-cross::after {
   width: 2px;
   left: 4px;
 }
-
-.marker-legend .m-triangle {
+.cl-m-triangle {
   width: 0;
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-bottom: 11px solid #0d7a6e;
+  background: transparent;
+}
+@media (max-width: 720px) {
+  .chart-legend li {
+    grid-template-columns: 30px 1fr;
+  }
+  .cl-markers {
+    grid-column: 1 / -1;
+    padding-left: 40px;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
 }
 
 /* "What's the green band?" explainer pill under the rate chart */
@@ -2325,10 +2364,6 @@ code {
   }
   .kv-grid {
     grid-template-columns: 1fr;
-  }
-  .marker-legend {
-    flex-direction: column;
-    gap: 6px;
   }
   table {
     font-size: 11.5px;

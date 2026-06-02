@@ -138,6 +138,12 @@ export function RateChart({
       <div className="chartwrap">
         <Line data={data} options={buildOptions({ title, yMin, yMax, hmdaBand })} />
       </div>
+      <ChartLegend
+        usLabel={usLabel}
+        ncLabel={ncLabel}
+        mndLabel={mndLabel}
+        mndHasAny={!!mndHasAny}
+      />
       {hmdaBand && (
         <HmdaBandExplainer
           band={hmdaBand}
@@ -145,23 +151,54 @@ export function RateChart({
           term={term ?? 15}
         />
       )}
-      <ul className="marker-legend">
-        <li>
-          <span className="m m-diamond" /> Bankrate Wayback (archived month)
-        </li>
-        <li>
-          <span className="m m-circle" /> Bankrate live (latest)
-        </li>
-        <li>
-          <span className="m m-cross" /> Experian fallback
-        </li>
-        {mndHasAny && (
-          <li>
-            <span className="m m-triangle" /> Mortgage News Daily (Wayback + live)
-          </li>
-        )}
-      </ul>
     </>
+  );
+}
+
+function ChartLegend({
+  usLabel,
+  ncLabel,
+  mndLabel,
+  mndHasAny,
+}: {
+  usLabel: string;
+  ncLabel: string;
+  mndLabel?: string;
+  mndHasAny: boolean;
+}) {
+  return (
+    <ul className="chart-legend">
+      <li>
+        <span className="cl-swatch cl-line-us" aria-hidden="true" />
+        <span className="cl-label">{usLabel}</span>
+      </li>
+      <li>
+        <span className="cl-swatch cl-line-state" aria-hidden="true" />
+        <span className="cl-label">{ncLabel}</span>
+        <span className="cl-markers">
+          <span className="cl-marker-item">
+            <span className="cl-m cl-m-diamond" aria-hidden="true" /> Wayback
+          </span>
+          <span className="cl-marker-item">
+            <span className="cl-m cl-m-circle" aria-hidden="true" /> live
+          </span>
+          <span className="cl-marker-item">
+            <span className="cl-m cl-m-cross" aria-hidden="true" /> Experian
+          </span>
+        </span>
+      </li>
+      {mndHasAny && (
+        <li>
+          <span className="cl-swatch cl-line-mnd" aria-hidden="true" />
+          <span className="cl-label">{mndLabel ?? "Mortgage News Daily"}</span>
+          <span className="cl-markers">
+            <span className="cl-marker-item">
+              <span className="cl-m cl-m-triangle" aria-hidden="true" /> daily
+            </span>
+          </span>
+        </li>
+      )}
+    </ul>
   );
 }
 
