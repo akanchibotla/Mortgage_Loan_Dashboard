@@ -778,79 +778,134 @@ h1 {
   font-weight: 600;
 }
 
-.amort-table-wrap {
-  max-height: 320px;
-  overflow-y: auto;
+.amort-months-wrap {
+  margin-top: 6px;
   border: 1px solid var(--c-border);
   border-radius: 8px;
   background: #fff;
+  overflow: hidden;
 }
 
-.amort-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  margin: 0;
-}
-
-.amort-table thead th {
-  position: sticky;
-  top: 0;
+.amort-months-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 12px;
   background: #f5f7fb;
-  z-index: 1;
-  font-weight: 700;
-  text-align: right;
-  padding: 7px 12px;
   border-bottom: 1px solid var(--c-border);
-  color: var(--c-ink-soft);
   font-size: 11px;
+  color: var(--c-ink-soft);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
-.amort-table thead th.col-mo {
-  text-align: left;
+.amort-months-header b {
+  color: var(--c-ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-.amort-table tbody td {
-  text-align: right;
-  padding: 4px 12px;
+.amort-months {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 480px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.amort-month {
+  padding: 10px 12px;
   border-bottom: 1px solid var(--c-border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.amort-table tbody td.col-mo {
-  text-align: left;
-  color: var(--c-ink-mute);
+.amort-month:last-child {
+  border-bottom: 0;
+}
+
+.amort-month-year-end {
+  background: rgba(31, 95, 168, 0.03);
+}
+
+.amort-month-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+.amort-month-num {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.amort-month-year-tag {
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--c-brand);
+  text-transform: uppercase;
+}
+
+.amort-month-payment {
   font-variant-numeric: tabular-nums;
 }
 
-.amort-table tbody tr:hover {
-  background: #f8fafd;
+.amort-month-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #eef1f6;
 }
 
-.amort-table tbody tr.year-end td {
-  border-bottom: 1px solid rgba(31, 95, 168, 0.2);
-  background: rgba(31, 95, 168, 0.025);
+.amort-month-bar-cum {
+  height: 4px;
+  margin-top: 2px;
 }
 
-.year-tag {
-  display: inline-block;
-  margin-left: 8px;
-  font-size: 10px;
+.amort-month-seg {
+  height: 100%;
+  transition: width 0.18s ease;
+}
+
+.amort-month-seg-i {
+  background: linear-gradient(90deg, #c4ccd9, #aab6c5);
+}
+
+.amort-month-seg-p {
+  background: linear-gradient(90deg, var(--c-brand), #2c75c2);
+}
+
+.amort-month-cum-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-brand), #2c75c2);
+  transition: width 0.18s ease;
+}
+
+.amort-month-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--c-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.amort-month-meta b {
+  color: var(--c-ink);
   font-weight: 700;
-  color: var(--c-brand);
-  letter-spacing: 0.4px;
-}
-
-.amort-table .td-interest {
-  color: #6b7280;
-}
-
-.amort-table .td-principal {
-  color: var(--c-brand);
-  font-weight: 600;
 }
 
 @media (max-width: 720px) {
@@ -860,12 +915,17 @@ h1 {
   .amort-chart {
     height: 160px;
   }
-  .amort-table {
-    font-size: 11px;
+  .amort-months {
+    max-height: 360px;
   }
-  .amort-table thead th,
-  .amort-table tbody td {
-    padding: 4px 8px;
+  .amort-month {
+    padding: 8px 10px;
+  }
+  .amort-month-head {
+    font-size: 12px;
+  }
+  .amort-month-meta {
+    font-size: 10.5px;
   }
 }
 

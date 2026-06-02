@@ -74,7 +74,7 @@ export function AmortPanel({ loanAmount, annualRatePct, termYears }: Props) {
           </span>
         )}
       </div>
-      <AmortTable schedule={schedule} />
+      <AmortMonthSliders schedule={schedule} loanAmount={loanAmount} />
     </div>
   );
 }
@@ -185,39 +185,104 @@ function AmortChart({
   );
 }
 
-function AmortTable({ schedule }: { schedule: AmortRow[] }) {
+function AmortMonthSliders({
+  schedule,
+  loanAmount,
+}: {
+  schedule: AmortRow[];
+  loanAmount: number;
+}) {
+  const augmented = useMemo(() => {
+    let cumP = 0;
+    let cumI = 0;
+    return schedule.map((row) => {
+      cumP += row.principal;
+      cumI += row.interest;
+      return { ...row, cumPrincipal: cumP, cumInterest: cumI };
+    });
+  }, [schedule]);
+
+  if (augmented.length === 0) return null;
+  const totalRepayment = augmented[0].payment * augmented.length;
+
   return (
-    <div className="amort-table-wrap">
-      <table className="amort-table">
-        <thead>
-          <tr>
-            <th className="col-mo">#</th>
-            <th>Payment</th>
-            <th>Interest</th>
-            <th>Principal</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {schedule.map((row) => {
-            const yearEnd = row.month % 12 === 0;
-            return (
-              <tr key={row.month} className={yearEnd ? "year-end" : ""}>
-                <td className="col-mo">
-                  {row.month}
+    <div className="amort-months-wrap">
+      <div className="amort-months-header">
+        <span>
+          Month-by-month breakdown · <b>{augmented.length}</b> payments
+        </span>
+        <span>
+          Total expected repayment: <b>{fmtMoney(totalRepayment)}</b>
+        </span>
+      </div>
+      <ol className="amort-months">
+        {augmented.map((row) => {
+          const principalPct =
+            row.payment > 0 ? (row.principal / row.payment) * 100 : 0;
+          const interestPct = 100 - principalPct;
+          const cumProgressPct =
+            loanAmount > 0
+              ? Math.max(0, Math.min(100, (row.cumPrincipal / loanAmount) * 100))
+              : 0;
+          const yearEnd = row.month % 12 === 0;
+          return (
+            <li
+              key={row.month}
+              className={`amort-month ${yearEnd ? "amort-month-year-end" : ""}`}
+            >
+              <div className="amort-month-head">
+                <span className="amort-month-num">
+                  Month {row.month}
                   {yearEnd && (
-                    <span className="year-tag">yr {row.month / 12}</span>
+                    <span className="amort-month-year-tag">
+                      {" "}
+                      · YR {row.month / 12}
+                    </span>
                   )}
-                </td>
-                <td>{fmtMoney(row.payment)}</td>
-                <td className="td-interest">{fmtMoney(row.interest)}</td>
-                <td className="td-principal">{fmtMoney(row.principal)}</td>
-                <td>{fmtMoney(row.balance)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </span>
+                <span className="amort-month-payment">{fmtMoney(row.payment)}</span>
+              </div>
+
+              <div className="amort-month-bar amort-month-bar-payment">
+                <div
+                  className="amort-month-seg amort-month-seg-i"
+                  style={{ width: `${interestPct}%` }}
+                />
+                <div
+                  className="amort-month-seg amort-month-seg-p"
+                  style={{ width: `${principalPct}%` }}
+                />
+              </div>
+              <div className="amort-month-meta">
+                <span>
+                  <span className="amort-dot amort-dot-i" /> Interest{" "}
+                  <b>{fmtMoney(row.interest)}</b>
+                </span>
+                <span>
+                  <span className="amort-dot amort-dot-p" /> Principal{" "}
+                  <b>{fmtMoney(row.principal)}</b>
+                </span>
+              </div>
+
+              <div className="amort-month-bar amort-month-bar-cum">
+                <div
+                  className="amort-month-cum-fill"
+                  style={{ width: `${cumProgressPct}%` }}
+                />
+              </div>
+              <div className="amort-month-meta">
+                <span>
+                  Principal paid: <b>{fmtMoney(row.cumPrincipal)}</b> (
+                  {cumProgressPct.toFixed(1)}%)
+                </span>
+                <span>
+                  Balance: <b>{fmtMoney(row.balance)}</b>
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
