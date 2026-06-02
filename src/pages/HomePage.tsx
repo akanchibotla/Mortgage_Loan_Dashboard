@@ -130,11 +130,6 @@ export default function HomePage() {
         <h1 className="hero-title">
           Your loan, <span className="accent">every state</span>.
         </h1>
-        <p className="hero-sub">
-          Enter your loan basics, then hover any state on the map below to see today's quoted rate,
-          your estimated monthly payment, and where you'd land in that state's actual 2024
-          closed-loan distribution.
-        </p>
 
         <div className="calc-inputs">
           <div className="calc-input">
