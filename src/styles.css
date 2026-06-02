@@ -2290,9 +2290,6 @@ code {
   color: var(--c-ink);
   font-size: 14px;
   letter-spacing: -0.01em;
-}
-
-.topnav .brand {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -2302,13 +2299,39 @@ code {
   margin-left: auto;
 }
 
-.topnav .brand::before {
+.topnav .brand::before,
+.topnav .topnav-strong::before {
   content: "";
   display: inline-block;
   width: 8px;
   height: 8px;
   background: linear-gradient(135deg, var(--c-brand), var(--c-accent));
   border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.theme-toggle {
+  margin-left: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--c-ink);
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.theme-toggle:hover {
+  background: rgba(31, 95, 168, 0.08);
+  border-color: var(--c-brand);
+  color: var(--c-brand);
 }
 
 .calc-form {
@@ -2719,10 +2742,6 @@ code {
     gap: 12px;
     padding-bottom: 12px;
     margin-bottom: 12px;
-  }
-  .topnav .brand {
-    flex-basis: 100%;
-    margin-bottom: 4px;
   }
   .chartwrap {
     height: 360px;
@@ -3202,4 +3221,310 @@ code {
 }
 .loan-card .dist-bar {
   margin-bottom: 6px;
+}
+
+/* === Dark mode === */
+:root.dark {
+  --c-surface: #1a1d22;
+  --c-ink: #e8eaed;
+  --c-ink-soft: #b0b3b8;
+  --c-ink-mute: #7a7e85;
+  --c-border: #3a3d44;
+  --c-border-soft: #2a2d34;
+}
+
+:root.dark body {
+  background: #0f1115;
+  color: var(--c-ink);
+}
+
+:root.dark a {
+  color: #6ea4dc;
+}
+
+:root.dark .topnav {
+  background: rgba(15, 17, 21, 0.82);
+  border-bottom-color: var(--c-border);
+}
+
+:root.dark .topnav a {
+  color: var(--c-ink-soft);
+}
+
+:root.dark .topnav .brand,
+:root.dark .topnav .topnav-strong {
+  color: var(--c-ink);
+}
+
+:root.dark .topnav a:not(.brand).active {
+  color: #79b2ed;
+  border-bottom-color: #79b2ed;
+}
+
+:root.dark .theme-toggle {
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .theme-toggle:hover {
+  background: rgba(110, 164, 220, 0.12);
+  border-color: #6ea4dc;
+  color: #79b2ed;
+}
+
+:root.dark .hero {
+  background: linear-gradient(140deg, #1f2128 0%, #1a1c22 55%, #20242a 100%);
+  border-color: var(--c-border);
+}
+
+:root.dark .hero-soft {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
+
+:root.dark .state-hero {
+  background: linear-gradient(135deg, #1f2128 0%, #1a1c22 100%);
+  border-color: var(--c-border-soft);
+}
+
+:root.dark .state-calc {
+  background: linear-gradient(140deg, #2a2620 0%, #1f1c18 100%);
+  border-color: var(--c-border);
+}
+
+:root.dark .state-calc-output {
+  background: #14161b;
+  border-color: var(--c-border);
+}
+
+:root.dark .state-calc-field {
+  background: #14161b;
+  border-color: var(--c-border);
+}
+
+:root.dark .state-calc-field:focus-within {
+  border-color: #79b2ed;
+}
+
+:root.dark .sc-field-input,
+:root.dark .sc-field-readonly-value,
+:root.dark .sc-output-value {
+  color: var(--c-ink);
+}
+
+:root.dark .sc-field-readonly {
+  background: #20242a;
+}
+
+:root.dark .section h2,
+:root.dark .section h3,
+:root.dark .section h4,
+:root.dark h1,
+:root.dark .state-hero-h1 {
+  color: var(--c-ink);
+}
+
+:root.dark .loan-card {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .loan-card-form select,
+:root.dark .loan-card-form input[type="number"],
+:root.dark .rate-field-combo {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .rate-field-input,
+:root.dark .rate-field-suffix {
+  color: var(--c-ink);
+}
+
+:root.dark .rate-field-suffix {
+  color: var(--c-ink-mute);
+}
+
+:root.dark .loan-form-rate-header > span,
+:root.dark .loan-card-form label > span {
+  color: var(--c-ink-mute);
+}
+
+:root.dark .loan-card-form .term-toggle {
+  background: #14161b;
+  border-color: var(--c-border);
+}
+
+:root.dark .loan-card-form .term-toggle button {
+  color: var(--c-ink-soft);
+}
+
+:root.dark .calc-compare-header {
+  background: linear-gradient(135deg, #1f2128 0%, #1a1c22 100%);
+  border-color: var(--c-border-soft);
+}
+
+:root.dark .calc-compare-count {
+  background: rgba(110, 164, 220, 0.12);
+  color: #79b2ed;
+  border-color: rgba(110, 164, 220, 0.3);
+}
+
+:root.dark .chart-legend {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink-soft);
+}
+
+:root.dark .cl-label {
+  color: var(--c-ink);
+}
+
+:root.dark .amort-panel {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
+
+:root.dark .amort-months-wrap {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
+
+:root.dark .amort-months-header {
+  background: #14161b;
+  border-bottom-color: var(--c-border);
+  color: var(--c-ink-soft);
+}
+
+:root.dark .amort-month {
+  border-bottom-color: var(--c-border-soft);
+}
+
+:root.dark .amort-month-year-end {
+  background: rgba(121, 178, 237, 0.05);
+}
+
+:root.dark .amort-month-bar,
+:root.dark .amort-bar {
+  background: #2a2d34;
+}
+
+:root.dark .side-panel {
+  background: var(--c-surface);
+  border-right-color: var(--c-border);
+}
+
+:root.dark .side-panel-toggle {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .side-panel-toggle:hover {
+  background: #20242a;
+}
+
+:root.dark .side-panel-search {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .side-panel-list a {
+  color: var(--c-ink);
+}
+
+:root.dark .side-panel-list a:hover {
+  background: #20242a;
+}
+
+:root.dark .map-tooltip {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .map-legend {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
+
+:root.dark .hmda-explainer > summary,
+:root.dark .demographics-disclosure > summary,
+:root.dark .loan-amort-details > summary,
+:root.dark .state-calc-amort > summary {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .hmda-explainer > summary:hover,
+:root.dark .demographics-disclosure > summary:hover,
+:root.dark .loan-amort-details > summary:hover,
+:root.dark .state-calc-amort > summary:hover {
+  background: #20242a;
+}
+
+:root.dark .hmda-explainer-body {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink-soft);
+}
+
+:root.dark .county-top-card {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+
+:root.dark .county-top-card:hover {
+  border-color: #6ea4dc;
+}
+
+:root.dark .county-top-name,
+:root.dark .county-top-rate {
+  color: var(--c-ink);
+}
+
+:root.dark .county-count-tag {
+  background: rgba(110, 164, 220, 0.12);
+  color: #79b2ed;
+  border-color: rgba(110, 164, 220, 0.3);
+}
+
+:root.dark .stat-card {
+  background: rgba(20, 22, 27, 0.75);
+  border-color: var(--c-border);
+}
+
+:root.dark .page-term-toggle,
+:root.dark .pt-btn {
+  background: var(--c-surface);
+}
+
+:root.dark .pt-btn {
+  color: var(--c-ink-soft);
+}
+
+:root.dark .pt-btn.active {
+  background: #2e6cb8;
+  color: #fff;
+}
+
+:root.dark .notes {
+  color: var(--c-ink-soft);
+}
+
+:root.dark .sub {
+  color: var(--c-ink-soft);
+}
+
+:root.dark .us-choropleth path[fill="#e8e8e8"] {
+  fill: #2a2d34;
+}
+
+:root.dark .breadcrumb {
+  background: rgba(15, 17, 21, 0.82);
 }

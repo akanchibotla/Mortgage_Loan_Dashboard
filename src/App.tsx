@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { useExternalLinks } from "./lib/useExternalLinks";
 import { CalculatorProvider } from "./lib/useCalculator";
+import { ThemeProvider, ThemeToggle } from "./lib/useTheme";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StateDashboard = lazy(() => import("./pages/StateDashboard"));
@@ -12,7 +13,7 @@ const MethodologyPage = lazy(() => import("./pages/MethodologyPage"));
 export default function App() {
   useExternalLinks();
   return (
-    <>
+    <ThemeProvider>
       <nav className="topnav">
         <Link to="/" className="brand">
           Mortgage rates by state
@@ -31,6 +32,7 @@ export default function App() {
         >
           Methodology
         </NavLink>
+        <ThemeToggle />
       </nav>
       <CalculatorProvider>
         <Suspense fallback={<p className="loading">Loading…</p>}>
@@ -54,6 +56,6 @@ export default function App() {
           </Routes>
         </Suspense>
       </CalculatorProvider>
-    </>
+    </ThemeProvider>
   );
 }
