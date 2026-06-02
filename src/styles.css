@@ -1868,6 +1868,56 @@ code {
   }
 }
 
+/* Optional demographics section — collapsed disclosure pill */
+.demographics-disclosure {
+  margin: 32px 0 0;
+}
+.demographics-disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.demographics-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.demographics-disclosure > summary::after {
+  content: "▾";
+  font-size: 10px;
+  margin-left: 4px;
+  color: var(--c-ink-mute, #6b7280);
+}
+.demographics-disclosure[open] > summary::after {
+  content: "▴";
+}
+.demographics-disclosure > summary:hover {
+  background: #f5f7fb;
+  border-color: var(--c-brand);
+}
+.dd-summary-label {
+  color: var(--c-ink);
+}
+.dd-summary-meta {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--c-ink-mute, #6b7280);
+  text-transform: uppercase;
+}
+.demographics-disclosure .section {
+  margin-top: 14px;
+}
+
 /* Chart footer row: green-band pill on the left, action slot on the right */
 .chart-footer-row {
   display: flex;

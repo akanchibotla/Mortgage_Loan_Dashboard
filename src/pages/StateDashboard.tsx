@@ -266,9 +266,15 @@ function StateBody({ slug }: { slug: string }) {
       </section>
 
       {data.demographics && (
-        <Suspense fallback={<p className="loading">Loading demographic breakdowns…</p>}>
-          <DemographicsPanel data={data.demographics} stateName={name} term={term} />
-        </Suspense>
+        <details className="demographics-disclosure">
+          <summary>
+            <span className="dd-summary-label">Show HMDA demographic breakdowns</span>
+            <span className="dd-summary-meta">race · sex · loan size</span>
+          </summary>
+          <Suspense fallback={<p className="loading">Loading demographic breakdowns…</p>}>
+            <DemographicsPanel data={data.demographics} stateName={name} term={term} />
+          </Suspense>
+        </details>
       )}
 
       <div className="notes">
