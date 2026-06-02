@@ -1852,7 +1852,7 @@ code {
 
 /* State-page calculator card (compact, shares context with home calculator) */
 .state-calc {
-  margin: 0 0 26px;
+  margin: 26px 0;
   padding: 22px 26px;
   background: linear-gradient(140deg, #fdfcf6 0%, #faf6e9 100%);
   border: 1px solid var(--c-border-soft, #eef1f6);
