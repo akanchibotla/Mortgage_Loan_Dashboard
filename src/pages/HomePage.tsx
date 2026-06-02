@@ -106,7 +106,6 @@ export default function HomePage() {
       <StatePanel
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
-        states={states}
         filteredStates={filteredStates}
         term={term}
         filter={filter}
@@ -464,7 +463,6 @@ export default function HomePage() {
 interface PanelProps {
   open: boolean;
   onClose: () => void;
-  states: ReturnType<typeof loadStatesIndex>["states"];
   filteredStates: ReturnType<typeof loadStatesIndex>["states"];
   term: 15 | 30;
   filter: string;
@@ -474,7 +472,6 @@ interface PanelProps {
 function StatePanel({
   open,
   onClose,
-  states,
   filteredStates,
   term,
   filter,
@@ -487,10 +484,7 @@ function StatePanel({
         <div className="side-panel-header">
           <div className="side-panel-titles">
             <p className="side-panel-eyebrow">Browse</p>
-            <h3 className="side-panel-h3">
-              All states
-              <span className="side-panel-count">{states.length}</span>
-            </h3>
+            <h3 className="side-panel-h3">All states</h3>
             <p className="side-panel-sub">
               Showing <b>{term}-year</b> quoted rate · click any state to drill in
             </p>
