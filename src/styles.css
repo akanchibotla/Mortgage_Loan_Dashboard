@@ -2878,7 +2878,7 @@ code {
 .calc-compare-grid {
   display: grid;
   gap: 14px;
-  align-items: start;
+  align-items: stretch;
 }
 .calc-compare-grid.cols-1 {
   grid-template-columns: 1fr;
