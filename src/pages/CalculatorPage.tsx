@@ -37,6 +37,7 @@ interface LoanInstance {
   countyFips: string;
   term: 15 | 30;
   loanAmount: number;
+  rateText: string;
 }
 
 function newLoanId(): string {
@@ -73,6 +74,7 @@ export default function CalculatorPage() {
       countyFips: "",
       term: 30,
       loanAmount: 350_000,
+      rateText: "",
     },
   ]);
 
@@ -241,6 +243,18 @@ function LoanCard({
             onChange={(e) => onChange({ loanAmount: Math.max(0, Number(e.target.value)) })}
           />
         </label>
+        <label>
+          <span>Rate (optional)</span>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            step={0.05}
+            placeholder="auto"
+            value={loan.rateText}
+            onChange={(e) => onChange({ rateText: e.target.value })}
+          />
+        </label>
       </div>
 
       {loan.slug ? (
@@ -250,10 +264,15 @@ function LoanCard({
             countyFips={loan.countyFips}
             term={loan.term}
             loanAmount={loan.loanAmount}
+            rateText={loan.rateText}
           />
         </Suspense>
       ) : (
-        <NationalLoanOutput term={loan.term} loanAmount={loan.loanAmount} />
+        <NationalLoanOutput
+          term={loan.term}
+          loanAmount={loan.loanAmount}
+          rateText={loan.rateText}
+        />
       )}
     </div>
   );
@@ -311,11 +330,13 @@ function LoanOutput({
   countyFips,
   term,
   loanAmount,
+  rateText,
 }: {
   slug: string;
   countyFips: string;
   term: 15 | 30;
   loanAmount: number;
+  rateText: string;
 }) {
   const data = use(getStatePromise(slug));
   if (!data) {
@@ -344,6 +365,13 @@ function LoanOutput({
   const p90 = countyDist?.p90_pct ?? stateHmda?.p90_pct;
   const meanRate =
     countyDist?.simple_mean_pct ?? stateHmda?.simple_mean_pct ?? liveBankrate ?? liveMnd ?? null;
+
+  const customRate =
+    rateText.trim() === "" ? null : Number.parseFloat(rateText);
+  const useCustom =
+    customRate != null && Number.isFinite(customRate) && customRate > 0;
+  const centralRate = useCustom ? (customRate as number) : meanRate;
+  const centralLabel = useCustom ? "your rate" : "central";
 
   return (
     <>
@@ -410,11 +438,13 @@ function LoanOutput({
           Monthly P&amp;I — ${loanAmount.toLocaleString()}
         </h4>
         <ul className="loan-stats loan-stats-output">
-          {meanRate != null && (
+          {centralRate != null && (
             <li>
-              <span className="k">@ {meanRate.toFixed(2)}% (central)</span>
+              <span className="k">
+                @ {centralRate.toFixed(2)}% ({centralLabel})
+              </span>
               <span className="v">
-                ${Math.round(monthlyPayment(loanAmount, meanRate, term)).toLocaleString()}
+                ${Math.round(monthlyPayment(loanAmount, centralRate, term)).toLocaleString()}
               </span>
             </li>
           )}
@@ -455,12 +485,21 @@ function LoanOutput({
 function NationalLoanOutput({
   term,
   loanAmount,
+  rateText,
 }: {
   term: 15 | 30;
   loanAmount: number;
+  rateText: string;
 }) {
   const { pmms15, pmms30 } = loadPmms();
   const usRate = term === 15 ? latestNonNull(pmms15) : latestNonNull(pmms30);
+
+  const customRate =
+    rateText.trim() === "" ? null : Number.parseFloat(rateText);
+  const useCustom =
+    customRate != null && Number.isFinite(customRate) && customRate > 0;
+  const centralRate = useCustom ? (customRate as number) : usRate;
+  const centralLabel = useCustom ? "your rate" : "U.S. PMMS";
 
   return (
     <>
@@ -486,11 +525,13 @@ function NationalLoanOutput({
           Monthly P&amp;I — ${loanAmount.toLocaleString()}
         </h4>
         <ul className="loan-stats loan-stats-output">
-          {usRate != null && (
+          {centralRate != null && (
             <li>
-              <span className="k">@ {usRate.toFixed(2)}% (U.S. PMMS)</span>
+              <span className="k">
+                @ {centralRate.toFixed(2)}% ({centralLabel})
+              </span>
               <span className="v">
-                ${Math.round(monthlyPayment(loanAmount, usRate, term)).toLocaleString()}
+                ${Math.round(monthlyPayment(loanAmount, centralRate, term)).toLocaleString()}
               </span>
             </li>
           )}
