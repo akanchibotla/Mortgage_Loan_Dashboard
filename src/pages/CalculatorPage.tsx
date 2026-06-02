@@ -4,6 +4,8 @@ import { loadStateData, loadStatesIndex, type StateData } from "../lib/loadState
 import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
 
+const MAX_LOANS = 4;
+
 const cache = new Map<string, Promise<StateData | null>>();
 function getStatePromise(slug: string): Promise<StateData | null> {
   let p = cache.get(slug);
@@ -29,11 +31,28 @@ function latestNonNull(rows: { rate: number | null }[] | null | undefined): numb
   return null;
 }
 
+interface LoanInstance {
+  id: string;
+  slug: string;
+  countyFips: string;
+  term: 15 | 30;
+  loanAmount: number;
+}
+
+function newLoanId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `loan-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+type StatesIndex = ReturnType<typeof loadStatesIndex>["states"];
+
 export default function CalculatorPage() {
   usePageMeta({
     title: "Borrower expectation calculator",
     description:
-      "Enter your state, county, loan term, and loan amount. See your expected rate range based on the HMDA 2024 actual closed-loan distribution for your county, plus monthly P&I estimates at p10/median/p90 rates.",
+      "Compare up to four loan scenarios side by side. Each anchors your expected rate range in the HMDA 2024 actual closed-loan distribution for the state and county you pick, with monthly P&I estimates at p10 / median / p90.",
   });
   const { states } = loadStatesIndex();
   const ordered = useMemo(
@@ -46,10 +65,34 @@ export default function CalculatorPage() {
   );
   const defaultSlug =
     ordered.find((s) => s.has_hmda_band)?.slug ?? ordered[0]?.slug ?? "north-carolina";
-  const [slug, setSlug] = useState(defaultSlug);
-  const [countyFips, setCountyFips] = useState<string>("");
-  const [term, setTerm] = useState<15 | 30>(30);
-  const [loanAmount, setLoanAmount] = useState(350_000);
+
+  const [loans, setLoans] = useState<LoanInstance[]>(() => [
+    {
+      id: newLoanId(),
+      slug: defaultSlug,
+      countyFips: "",
+      term: 30,
+      loanAmount: 350_000,
+    },
+  ]);
+
+  function updateLoan(id: string, patch: Partial<LoanInstance>) {
+    setLoans((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+  }
+
+  function addLoan() {
+    setLoans((prev) => {
+      if (prev.length >= MAX_LOANS) return prev;
+      const last = prev[prev.length - 1];
+      return [...prev, { ...last, id: newLoanId() }];
+    });
+  }
+
+  function removeLoan(id: string) {
+    setLoans((prev) => (prev.length > 1 ? prev.filter((l) => l.id !== id) : prev));
+  }
+
+  const cols = Math.min(loans.length, MAX_LOANS);
 
   return (
     <>
@@ -58,38 +101,130 @@ export default function CalculatorPage() {
       </p>
       <h1>Borrower expectation calculator</h1>
       <p className="sub">
-        Pick a state, county (when available), loan term, and loan amount. The calculator anchors
-        your <i>expected rate range</i> in the HMDA 2024 actual closed-loan distribution for that
-        area, then estimates monthly P&amp;I at the p10 / median / p90 of that distribution.
+        Compare up to {MAX_LOANS} loan scenarios side by side. Each one anchors your{" "}
+        <i>expected rate range</i> in the HMDA 2024 actual closed-loan distribution for the
+        state and county you pick.
       </p>
 
-      <section className="section calc-form">
+      <div className="calc-compare-header">
+        <div className="calc-compare-title-row">
+          <h2 className="calc-compare-title">Compare loans</h2>
+          <span className="calc-compare-count">
+            {loans.length} of {MAX_LOANS}
+          </span>
+        </div>
+        <button
+          type="button"
+          className="btn-add-loan"
+          onClick={addLoan}
+          disabled={loans.length >= MAX_LOANS}
+          title={
+            loans.length >= MAX_LOANS
+              ? `Maximum ${MAX_LOANS} loans for comparison`
+              : "Add another loan to compare side by side"
+          }
+        >
+          <span className="btn-add-icon" aria-hidden="true">
+            +
+          </span>
+          <span>Add comparison loan</span>
+        </button>
+      </div>
+
+      <div className={`calc-compare-grid cols-${cols}`}>
+        {loans.map((loan, idx) => (
+          <LoanCard
+            key={loan.id}
+            loan={loan}
+            index={idx}
+            states={ordered}
+            canRemove={loans.length > 1}
+            onChange={(patch) => updateLoan(loan.id, patch)}
+            onRemove={() => removeLoan(loan.id)}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function LoanCard({
+  loan,
+  index,
+  states,
+  canRemove,
+  onChange,
+  onRemove,
+}: {
+  loan: LoanInstance;
+  index: number;
+  states: StatesIndex;
+  canRemove: boolean;
+  onChange: (patch: Partial<LoanInstance>) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="loan-card">
+      <div className="loan-card-header">
+        <h3 className="loan-card-title">Loan {index + 1}</h3>
+        {canRemove && (
+          <button
+            type="button"
+            className="loan-card-remove"
+            onClick={onRemove}
+            aria-label={`Remove loan ${index + 1}`}
+            title="Remove this loan"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      <div className="loan-card-form">
         <label>
           <span>State</span>
           <select
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              setCountyFips("");
-            }}
+            value={loan.slug}
+            onChange={(e) => onChange({ slug: e.target.value, countyFips: "" })}
           >
-            {ordered.map((s) => (
+            {states.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.name} {s.has_hmda_band ? "(HMDA)" : ""}
               </option>
             ))}
           </select>
         </label>
-        <Suspense fallback={<label><span>County</span><select disabled><option>loading…</option></select></label>}>
-          <CountyPicker slug={slug} countyFips={countyFips} onChange={setCountyFips} />
+        <Suspense
+          fallback={
+            <label>
+              <span>County</span>
+              <select disabled>
+                <option>loading…</option>
+              </select>
+            </label>
+          }
+        >
+          <CountyPicker
+            slug={loan.slug}
+            countyFips={loan.countyFips}
+            onChange={(f) => onChange({ countyFips: f })}
+          />
         </Suspense>
         <label>
           <span>Loan term</span>
           <div className="term-toggle">
-            <button type="button" className={term === 15 ? "active" : ""} onClick={() => setTerm(15)}>
+            <button
+              type="button"
+              className={loan.term === 15 ? "active" : ""}
+              onClick={() => onChange({ term: 15 })}
+            >
               15-year
             </button>
-            <button type="button" className={term === 30 ? "active" : ""} onClick={() => setTerm(30)}>
+            <button
+              type="button"
+              className={loan.term === 30 ? "active" : ""}
+              onClick={() => onChange({ term: 30 })}
+            >
               30-year
             </button>
           </div>
@@ -101,25 +236,21 @@ export default function CalculatorPage() {
             min={50_000}
             max={3_000_000}
             step={5_000}
-            value={loanAmount}
-            onChange={(e) => setLoanAmount(Math.max(0, Number(e.target.value)))}
-          />
-          <input
-            type="range"
-            min={50_000}
-            max={1_500_000}
-            step={5_000}
-            value={loanAmount}
-            onChange={(e) => setLoanAmount(Number(e.target.value))}
-            className="amount-slider"
+            value={loan.loanAmount}
+            onChange={(e) => onChange({ loanAmount: Math.max(0, Number(e.target.value)) })}
           />
         </label>
-      </section>
+      </div>
 
-      <Suspense fallback={<p className="loading">Loading {slug}…</p>}>
-        <CalculatorOutput slug={slug} countyFips={countyFips} term={term} loanAmount={loanAmount} />
+      <Suspense fallback={<p className="loading">Loading {loan.slug}…</p>}>
+        <LoanOutput
+          slug={loan.slug}
+          countyFips={loan.countyFips}
+          term={loan.term}
+          loanAmount={loan.loanAmount}
+        />
       </Suspense>
-    </>
+    </div>
   );
 }
 
@@ -139,18 +270,18 @@ function CountyPicker({
       <label>
         <span>County</span>
         <select disabled>
-          <option>not bundled for this state</option>
+          <option>not bundled</option>
         </select>
       </label>
     );
   }
-  const ordered = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
+  const sorted = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
   return (
     <label>
       <span>County (optional)</span>
       <select value={countyFips} onChange={(e) => onChange(e.target.value)}>
         <option value="">— all of {data?.meta?.name ?? slug} —</option>
-        {ordered.map((c) => (
+        {sorted.map((c) => (
           <option key={c.fips} value={c.fips}>
             {c.name} (n={c.term_30.n_loans.toLocaleString()})
           </option>
@@ -160,7 +291,7 @@ function CountyPicker({
   );
 }
 
-function CalculatorOutput({
+function LoanOutput({
   slug,
   countyFips,
   term,
@@ -185,8 +316,6 @@ function CalculatorOutput({
   const stateHmda: HmdaSummary | undefined = term === 15 ? data.hmda15 : data.hmda30;
   const countyDist = county ? (term === 15 ? county.term_15 : county.term_30) : undefined;
 
-  // Pick the distribution to anchor on: county if user picked one and it has data,
-  // otherwise the state-level HMDA.
   const distLabel = countyDist?.n_loans
     ? `${county!.name} County (n=${countyDist.n_loans.toLocaleString()})`
     : stateHmda?.n_loans
@@ -203,25 +332,25 @@ function CalculatorOutput({
 
   return (
     <>
-      <section className="section">
-        <h2>Today's market — {data.meta.name}</h2>
-        <div className="kv-grid">
-          <Stat
-            k={`Bankrate (${term}-yr, today)`}
-            v={liveBankrate != null ? `${liveBankrate.toFixed(2)}%` : "—"}
-          />
-          <Stat
-            k={`Mortgage News Daily (${term}-yr, today)`}
-            v={liveMnd != null ? `${liveMnd.toFixed(2)}%` : "—"}
-          />
-        </div>
-      </section>
+      <div className="loan-block">
+        <h4 className="loan-block-h">Today's market</h4>
+        <ul className="loan-stats">
+          <li>
+            <span className="k">Bankrate ({term}-yr)</span>
+            <span className="v">{liveBankrate != null ? `${liveBankrate.toFixed(2)}%` : "—"}</span>
+          </li>
+          <li>
+            <span className="k">MND ({term}-yr)</span>
+            <span className="v">{liveMnd != null ? `${liveMnd.toFixed(2)}%` : "—"}</span>
+          </li>
+        </ul>
+      </div>
 
       {distLabel ? (
-        <section className="section">
-          <h2>
-            What borrowers actually paid in 2024 — {distLabel} {term}-yr
-          </h2>
+        <div className="loan-block">
+          <h4 className="loan-block-h">
+            2024 HMDA — <span className="loan-block-h-sub">{distLabel}</span>
+          </h4>
           {p10 != null && p90 != null && (
             <DistributionBar
               p10={p10}
@@ -232,65 +361,77 @@ function CalculatorOutput({
               market={liveBankrate ?? liveMnd ?? undefined}
             />
           )}
-          <div className="kv-grid">
-            {p10 != null && <Stat k="p10 (low)" v={`${p10.toFixed(2)}%`} />}
-            {p25 != null && <Stat k="p25" v={`${p25.toFixed(2)}%`} />}
-            {p50 != null && <Stat k="median" v={`${p50.toFixed(2)}%`} />}
-            {p75 != null && <Stat k="p75" v={`${p75.toFixed(2)}%`} />}
-            {p90 != null && <Stat k="p90 (high)" v={`${p90.toFixed(2)}%`} />}
-          </div>
-        </section>
+          <ul className="loan-stats">
+            {p10 != null && (
+              <li>
+                <span className="k">p10 (low)</span>
+                <span className="v">{p10.toFixed(2)}%</span>
+              </li>
+            )}
+            {p50 != null && (
+              <li>
+                <span className="k">median</span>
+                <span className="v">{p50.toFixed(2)}%</span>
+              </li>
+            )}
+            {p90 != null && (
+              <li>
+                <span className="k">p90 (high)</span>
+                <span className="v">{p90.toFixed(2)}%</span>
+              </li>
+            )}
+          </ul>
+        </div>
       ) : (
-        <section className="section">
-          <p className="loading">
-            HMDA distribution not bundled for {data.meta.name}{" "}
-            {term}-yr yet. Payment estimates below use today's Bankrate rate as the central anchor.
+        <div className="loan-block">
+          <p className="loan-block-empty">
+            HMDA distribution not bundled for {data.meta.name} {term}-yr yet.
           </p>
-        </section>
+        </div>
       )}
 
-      <section className="section">
-        <h2>
-          Estimated monthly P&amp;I — ${loanAmount.toLocaleString()} / {term} yr
-        </h2>
-        <div className="kv-grid">
+      <div className="loan-block loan-block-output">
+        <h4 className="loan-block-h">
+          Monthly P&amp;I — ${loanAmount.toLocaleString()}
+        </h4>
+        <ul className="loan-stats loan-stats-output">
           {meanRate != null && (
-            <Stat
-              k={`@ ${meanRate.toFixed(2)}% (central)`}
-              v={`$${monthlyPayment(loanAmount, meanRate, term).toFixed(0)}`}
-            />
+            <li>
+              <span className="k">@ {meanRate.toFixed(2)}% (central)</span>
+              <span className="v">
+                ${Math.round(monthlyPayment(loanAmount, meanRate, term)).toLocaleString()}
+              </span>
+            </li>
           )}
           {p10 != null && (
-            <Stat
-              k={`@ ${p10.toFixed(2)}% (best 10%)`}
-              v={`$${monthlyPayment(loanAmount, p10, term).toFixed(0)}`}
-            />
+            <li>
+              <span className="k">@ {p10.toFixed(2)}% (best 10%)</span>
+              <span className="v">
+                ${Math.round(monthlyPayment(loanAmount, p10, term)).toLocaleString()}
+              </span>
+            </li>
           )}
           {p90 != null && (
-            <Stat
-              k={`@ ${p90.toFixed(2)}% (worst 10%)`}
-              v={`$${monthlyPayment(loanAmount, p90, term).toFixed(0)}`}
-            />
+            <li>
+              <span className="k">@ {p90.toFixed(2)}% (worst 10%)</span>
+              <span className="v">
+                ${Math.round(monthlyPayment(loanAmount, p90, term)).toLocaleString()}
+              </span>
+            </li>
           )}
-        </div>
-        <p className="sub">
-          Principal &amp; interest only. Excludes taxes, insurance, PMI, HOA. Lender quotes vary by
-          credit profile, LTV, and program.
-        </p>
-      </section>
+        </ul>
+      </div>
 
-      <div className="notes">
-        <p>
-          <Link to={`/state/${slug}`}>See full {data.meta.name} dashboard &rarr;</Link>
-          {countyFips && (
-            <>
-              {" · "}
-              <Link to={`/state/${slug}/county/${countyFips}`}>
-                See {county?.name ?? "county"} County dashboard &rarr;
-              </Link>
-            </>
-          )}
-        </p>
+      <div className="loan-card-footer">
+        <Link to={`/state/${slug}`}>{data.meta.name} dashboard &rarr;</Link>
+        {countyFips && (
+          <>
+            {" · "}
+            <Link to={`/state/${slug}/county/${countyFips}`}>
+              {county?.name ?? "county"} County &rarr;
+            </Link>
+          </>
+        )}
       </div>
     </>
   );
@@ -329,43 +470,18 @@ function DistributionBar({
         <div
           className="dist-band-outer"
           style={{ left: pct(p10), width: w(p10, p90) }}
-          title={`p10–p90: ${p10.toFixed(2)}%–${p90.toFixed(2)}%`}
         />
         {p25 != null && p75 != null && (
           <div
             className="dist-band-inner"
             style={{ left: pct(p25), width: w(p25, p75) }}
-            title={`p25–p75: ${p25.toFixed(2)}%–${p75.toFixed(2)}%`}
           />
         )}
-        {p50 != null && (
-          <div
-            className="dist-median"
-            style={{ left: pct(p50) }}
-            title={`median: ${p50.toFixed(2)}%`}
-          />
-        )}
+        {p50 != null && <div className="dist-median" style={{ left: pct(p50) }} />}
         {market != null && market >= RANGE_LO && market <= RANGE_HI && (
-          <div
-            className="dist-market"
-            style={{ left: pct(market) }}
-            title={`Today's market: ${market.toFixed(2)}%`}
-          />
+          <div className="dist-market" style={{ left: pct(market) }} />
         )}
       </div>
-      <p className="sub" style={{ marginTop: 8 }}>
-        Light green band: middle 80% of borrowers. Dark green: middle 50%. Black line: median.{" "}
-        {market != null && "Blue line: today's market quote."}
-      </p>
-    </div>
-  );
-}
-
-function Stat({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="kv">
-      <span className="k">{k}</span>
-      <span className="v">{v}</span>
     </div>
   );
 }
