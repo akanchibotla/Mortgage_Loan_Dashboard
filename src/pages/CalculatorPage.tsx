@@ -38,6 +38,7 @@ interface LoanInstance {
   term: 15 | 30;
   loanAmount: number;
   rateText: string;
+  hasCustomRate: boolean;
 }
 
 function newLoanId(): string {
@@ -82,6 +83,7 @@ export default function CalculatorPage() {
       term: 30,
       loanAmount: 350_000,
       rateText: "",
+      hasCustomRate: false,
     },
   ]);
 
@@ -268,9 +270,9 @@ function StateLoanContent({
     anchorSourceLabel = "no rate data available";
   }
 
-  const customRate = parseCustomRate(loan.rateText);
+  const customRate = loan.hasCustomRate ? parseCustomRate(loan.rateText) : null;
   const centralRate = customRate ?? anchorRate;
-  const centralLabel = customRate != null ? "your rate" : "central";
+  const centralLabel = loan.hasCustomRate ? "your rate" : "central";
 
   return (
     <>
@@ -389,9 +391,9 @@ function NationalLoanContent({
   const { pmms15, pmms30 } = loadPmms();
   const usRate = loan.term === 15 ? latestNonNull(pmms15) : latestNonNull(pmms30);
 
-  const customRate = parseCustomRate(loan.rateText);
+  const customRate = loan.hasCustomRate ? parseCustomRate(loan.rateText) : null;
   const centralRate = customRate ?? usRate;
-  const centralLabel = customRate != null ? "your rate" : "U.S. PMMS";
+  const centralLabel = loan.hasCustomRate ? "your rate" : "U.S. PMMS";
 
   const anchorSourceLabel = `FRED PMMS (${loan.term}-yr, latest)`;
 
@@ -449,8 +451,12 @@ function LoanCardForm({
   anchorSourceLabel: string;
   onChange: (patch: Partial<LoanInstance>) => void;
 }) {
-  const customRate = parseCustomRate(loan.rateText);
-  const useCustom = customRate != null;
+  const useCustom = loan.hasCustomRate;
+  const rateDisplay = useCustom
+    ? loan.rateText
+    : anchorRate != null
+      ? anchorRate.toFixed(2)
+      : "";
 
   const countySorted = useMemo(
     () => [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans),
@@ -540,7 +546,7 @@ function LoanCardForm({
             <button
               type="button"
               className="rate-reset-btn-inline"
-              onClick={() => onChange({ rateText: "" })}
+              onClick={() => onChange({ rateText: "", hasCustomRate: false })}
               title={
                 anchorRate != null
                   ? `Reset to ${anchorSourceLabel} (${anchorRate.toFixed(2)}%)`
@@ -552,15 +558,20 @@ function LoanCardForm({
             </button>
           )}
         </div>
-        <input
-          type="number"
-          min={0}
-          max={30}
-          step={0.05}
-          value={useCustom ? loan.rateText : anchorRate != null ? anchorRate.toFixed(2) : ""}
-          onChange={(e) => onChange({ rateText: e.target.value })}
-        />
-        <span className="loan-form-rate-source">{anchorSourceLabel}</span>
+        <div className="rate-field-combo">
+          <input
+            type="number"
+            className="rate-field-input"
+            min={0}
+            max={30}
+            step={0.05}
+            value={rateDisplay}
+            onChange={(e) => onChange({ rateText: e.target.value, hasCustomRate: true })}
+          />
+          {!useCustom && (
+            <span className="rate-field-suffix">{anchorSourceLabel}</span>
+          )}
+        </div>
       </label>
     </div>
   );
