@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { loadPmms, loadStatesIndex } from "../lib/loadStateData";
 import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
 import { fmtMoney, fmtRate, monthlyPayment } from "../lib/payment";
+import { useTermPreference } from "../lib/useTermPreference";
 
 const UsChoropleth = lazy(() =>
   import("../components/UsChoropleth").then((m) => ({ default: m.UsChoropleth })),
@@ -37,7 +38,7 @@ export default function HomePage() {
   const { pmms15, pmms30 } = loadPmms();
   const latestUs15 = pmms15.at(-1);
   const latestUs30 = pmms30.at(-1);
-  const [term, setTerm] = useState<15 | 30>(30);
+  const [term, setTerm] = useTermPreference();
   const [loanAmount, setLoanAmount] = useState(DEFAULT_LOAN);
   const [rateText, setRateText] = useState<string>(""); // "" = follow anchor (state or national)
   const [selectedStateSlug, setSelectedStateSlug] = useState<string>(""); // "" = national

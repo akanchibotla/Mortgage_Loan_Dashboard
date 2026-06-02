@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, use } from "react";
 import { Link, useParams } from "react-router-dom";
 import { loadPmms, loadStateData, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
+import { useTermPreference } from "../lib/useTermPreference";
 
 const RateChart = lazy(() =>
   import("../components/RateChart").then((m) => ({ default: m.RateChart })),
@@ -39,7 +40,7 @@ export default function StateDashboard() {
 function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
   const { pmms15, pmms30 } = loadPmms();
-  const [term, setTerm] = useState<15 | 30>(30);
+  const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
   usePageMeta({
     title: data ? `${data.meta.name} mortgage rates` : `${slug} mortgage rates`,
