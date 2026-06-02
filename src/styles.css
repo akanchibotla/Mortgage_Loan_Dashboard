@@ -3525,3 +3525,524 @@ code {
 :root.dark .breadcrumb {
   background: rgba(15, 17, 21, 0.82);
 }
+
+/* --- Dark mode pass 2: thorough text-readability sweep --- */
+
+/* Map hover tooltip (state choropleth + county choropleth) */
+:root.dark .map-tooltip {
+  background: rgba(26, 29, 34, 0.98);
+  border-color: var(--c-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+:root.dark .tt-name {
+  color: var(--c-ink);
+}
+:root.dark .tt-postal {
+  color: var(--c-ink-mute);
+}
+:root.dark .tt-section + .tt-section,
+:root.dark .tt-row-divider,
+:root.dark .tt-hint {
+  border-color: var(--c-border);
+}
+:root.dark .tt-section-label,
+:root.dark .tt-section-n {
+  color: var(--c-ink-mute);
+}
+:root.dark .tt-k {
+  color: var(--c-ink-soft);
+}
+:root.dark .tt-val {
+  color: var(--c-ink);
+}
+:root.dark .tt-row.tt-row-focus {
+  background: linear-gradient(90deg, rgba(110, 164, 220, 0.15), transparent 70%);
+}
+:root.dark .tt-row.tt-row-focus .tt-val {
+  color: #79b2ed;
+}
+:root.dark .tt-row.tt-muted .tt-k,
+:root.dark .tt-row.tt-muted .tt-val {
+  color: #6cb88a;
+}
+:root.dark .tt-row-low .tt-val {
+  color: #6cb88a;
+}
+:root.dark .tt-row-high .tt-val {
+  color: #e07c70;
+}
+:root.dark .tt-hint {
+  color: var(--c-ink-mute);
+}
+
+/* Side panel toggle button (hamburger pill) */
+:root.dark .side-panel-toggle {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+:root.dark .side-panel-toggle:hover {
+  background: #20242a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+}
+
+/* Side panel close button */
+:root.dark .side-panel-close {
+  color: var(--c-ink-mute);
+}
+:root.dark .side-panel-close:hover {
+  background: #20242a;
+  color: var(--c-ink);
+}
+
+/* Side panel search input */
+:root.dark .side-panel-search {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+:root.dark .side-panel-search::placeholder {
+  color: var(--c-ink-mute);
+}
+
+/* Side panel state list rows */
+:root.dark .side-panel-list a {
+  color: var(--c-ink);
+}
+:root.dark .side-panel-list a:hover {
+  background: #20242a;
+}
+:root.dark .sp-name {
+  color: var(--c-ink);
+}
+:root.dark .sp-postal {
+  color: var(--c-ink-mute);
+}
+:root.dark .sp-rate {
+  color: #79b2ed;
+}
+:root.dark .side-panel-empty {
+  color: var(--c-ink-mute);
+}
+
+/* Map legend stops */
+:root.dark .legend-label {
+  color: var(--c-ink-soft);
+}
+:root.dark .map-caption {
+  color: var(--c-ink-soft);
+}
+
+/* Link buttons (e.g., "state list panel" inline) */
+:root.dark .link-button {
+  color: #79b2ed;
+}
+:root.dark .link-button:hover {
+  color: #a0c8ee;
+}
+
+/* HMDA explainer body */
+:root.dark .hmda-explainer-body {
+  color: var(--c-ink-soft);
+}
+:root.dark .hmda-explainer-body p,
+:root.dark .hmda-explainer-list {
+  color: var(--c-ink-soft);
+}
+:root.dark .hmda-explainer-body b {
+  color: var(--c-ink);
+}
+:root.dark .hmda-explainer-list .mono {
+  color: #6cb88a;
+}
+:root.dark .hmda-explainer-foot {
+  color: var(--c-ink-mute);
+}
+:root.dark .hmda-explainer > summary {
+  background: rgba(108, 184, 138, 0.08);
+  border-color: rgba(108, 184, 138, 0.4);
+  color: #6cb88a;
+}
+:root.dark .hmda-explainer > summary:hover {
+  background: rgba(108, 184, 138, 0.15);
+  border-color: rgba(108, 184, 138, 0.6);
+}
+:root.dark .hmda-explainer > summary::after {
+  color: #a0c8ad;
+}
+
+/* Demographics table */
+:root.dark .demo-table {
+  color: var(--c-ink);
+}
+:root.dark .demo-table th {
+  color: var(--c-ink-soft);
+  border-color: var(--c-border);
+}
+:root.dark .demo-table td {
+  border-color: var(--c-border-soft);
+}
+
+/* HMDA distribution bar */
+:root.dark .dist-track {
+  background: #14161b;
+}
+:root.dark .dist-axis span {
+  color: var(--c-ink-mute);
+}
+
+/* Year tags and amort labels */
+:root.dark .year-tag {
+  color: #79b2ed;
+}
+:root.dark .amort-table td,
+:root.dark .amort-table th {
+  color: var(--c-ink);
+}
+:root.dark .amort-month-num,
+:root.dark .amort-month-payment {
+  color: var(--c-ink);
+}
+:root.dark .amort-month-meta {
+  color: var(--c-ink-soft);
+}
+:root.dark .amort-month-meta b {
+  color: var(--c-ink);
+}
+:root.dark .amort-month-year-tag {
+  color: #79b2ed;
+}
+:root.dark .amort-months-header b {
+  color: var(--c-ink);
+}
+:root.dark .amort-legend-note,
+:root.dark .amort-legend-cross,
+:root.dark .amort-chart-legend,
+:root.dark .amort-total {
+  color: var(--c-ink-soft);
+}
+:root.dark .amort-total b {
+  color: var(--c-ink);
+}
+
+/* Calc output (home page calc card) */
+:root.dark .calc-out-payment,
+:root.dark .calc-out-amount {
+  color: var(--c-ink);
+}
+:root.dark .calc-out-label,
+:root.dark .calc-out-hint,
+:root.dark .calc-out-aside {
+  color: var(--c-ink-soft);
+}
+
+/* Calculator input labels and values */
+:root.dark .calc-input-label {
+  color: var(--c-ink-mute);
+}
+:root.dark .calc-input-value,
+:root.dark .amount-input,
+:root.dark .amount-value {
+  color: var(--c-ink);
+}
+
+/* Notes block (state page bottom) */
+:root.dark .notes,
+:root.dark .notes li {
+  color: var(--c-ink-soft);
+}
+:root.dark .notes b {
+  color: var(--c-ink);
+}
+
+/* Inline kv blocks (key-value list grids) */
+:root.dark .kv {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
+:root.dark .kv .k {
+  color: var(--c-ink-soft);
+}
+:root.dark .kv .v {
+  color: var(--c-ink);
+}
+:root.dark .kv-link:hover {
+  background: #20242a;
+  border-color: #6ea4dc;
+}
+:root.dark .muted {
+  color: var(--c-ink-mute);
+}
+
+/* Top counties strip */
+:root.dark .county-top-volume {
+  color: var(--c-ink-mute);
+}
+:root.dark .county-top-meta {
+  color: var(--c-ink-mute);
+}
+:root.dark .county-top-card-head .county-top-name {
+  color: var(--c-ink);
+}
+:root.dark .county-top-card-head .county-top-rate {
+  color: #79b2ed;
+}
+
+/* County list and details */
+:root.dark .county-h3 {
+  color: var(--c-ink-soft);
+}
+:root.dark .county-section-sub {
+  color: var(--c-ink-soft);
+}
+:root.dark .county-all summary {
+  color: var(--c-ink);
+}
+:root.dark .county-list a {
+  color: var(--c-ink);
+}
+
+/* State hero text */
+:root.dark .state-hero-eyebrow {
+  color: #79b2ed;
+}
+:root.dark .state-hero-sub {
+  color: var(--c-ink-soft);
+}
+
+/* Hero variants — eyebrow + title + sub */
+:root.dark .hero-eyebrow {
+  color: #79b2ed;
+}
+:root.dark .hero-title,
+:root.dark .hero-subtitle {
+  color: var(--c-ink);
+}
+:root.dark .hero-sub {
+  color: var(--c-ink-soft);
+}
+:root.dark .stat-value {
+  color: var(--c-ink);
+}
+:root.dark .stat-label {
+  color: var(--c-ink-soft);
+}
+
+/* Side panel hero header */
+:root.dark .side-panel-eyebrow {
+  color: #79b2ed;
+}
+:root.dark .side-panel-h3 {
+  color: var(--c-ink);
+}
+:root.dark .side-panel-sub {
+  color: var(--c-ink-mute);
+}
+:root.dark .side-panel-sub b {
+  color: var(--c-ink);
+}
+
+/* State calculator labels */
+:root.dark .state-calc-eyebrow {
+  color: #d4a965;
+}
+:root.dark .state-calc-h2 {
+  color: var(--c-ink);
+}
+:root.dark .state-calc-sub {
+  color: var(--c-ink-soft);
+}
+:root.dark .state-calc-sub b {
+  color: var(--c-ink);
+}
+:root.dark .sc-field-label {
+  color: var(--c-ink-mute);
+}
+:root.dark .sc-output-label {
+  color: var(--c-ink-mute);
+}
+:root.dark .state-calc-amort > summary {
+  background: rgba(212, 169, 101, 0.1);
+  border-color: rgba(212, 169, 101, 0.4);
+  color: #d4a965;
+}
+:root.dark .state-calc-amort > summary:hover {
+  background: rgba(212, 169, 101, 0.18);
+  border-color: rgba(212, 169, 101, 0.6);
+}
+:root.dark .sca-summary-label {
+  color: var(--c-ink);
+}
+:root.dark .sca-summary-meta {
+  color: #d4a965;
+}
+:root.dark .state-calc-amort > summary::after {
+  color: #d4a965;
+}
+
+/* Calculator page loan-form labels and helper text */
+:root.dark .loan-card-form label > span {
+  color: var(--c-ink-mute);
+}
+:root.dark .loan-form-rate-source {
+  color: var(--c-ink-mute);
+}
+:root.dark .loan-card-title {
+  color: var(--c-ink);
+}
+:root.dark .loan-card-remove {
+  color: var(--c-ink-mute);
+}
+:root.dark .loan-card-remove:hover {
+  background: rgba(224, 124, 112, 0.15);
+  color: #e07c70;
+}
+:root.dark .loan-block-h {
+  color: var(--c-ink-mute);
+}
+:root.dark .loan-block-h-sub {
+  color: var(--c-ink-soft);
+}
+:root.dark .loan-block-empty {
+  color: var(--c-ink-mute);
+}
+:root.dark .loan-stats .k {
+  color: var(--c-ink-soft);
+}
+:root.dark .loan-stats .v {
+  color: var(--c-ink);
+}
+:root.dark .loan-block-output .loan-block-h {
+  color: #79b2ed;
+}
+:root.dark .loan-stats-output li:first-child .v {
+  color: #79b2ed;
+}
+:root.dark .loan-card-footer {
+  color: var(--c-ink-soft);
+  border-top-color: var(--c-border);
+}
+:root.dark .loan-card-footer a {
+  color: #79b2ed;
+}
+:root.dark .loan-amort-details > summary {
+  color: var(--c-ink);
+}
+:root.dark .loan-amort-label {
+  color: var(--c-ink);
+}
+:root.dark .loan-amort-meta {
+  color: var(--c-ink-mute);
+}
+
+/* Calculator compare header (titlebar above grid) */
+:root.dark .calc-compare-title {
+  color: var(--c-ink);
+}
+
+/* Calculator add-loan button (brand pill) — keep brand blue */
+:root.dark .btn-add-loan {
+  color: #fff;
+}
+
+/* Form select + number inputs */
+:root.dark select,
+:root.dark input[type="number"],
+:root.dark input[type="search"],
+:root.dark input[type="text"] {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+:root.dark option {
+  background: #14161b;
+  color: var(--c-ink);
+}
+
+/* Calculator state-calc-field select arrow */
+:root.dark .sc-field-select {
+  color: var(--c-ink);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23b0b3b8' stroke-width='1.5'><path d='M2 2l4 4 4-4'/></svg>");
+}
+
+/* Demographics disclosure / shared disclosure pill text in dark */
+:root.dark .dd-summary-label {
+  color: var(--c-ink);
+}
+:root.dark .dd-summary-meta {
+  color: var(--c-ink-mute);
+}
+:root.dark .demographics-disclosure > summary::after {
+  color: var(--c-ink-mute);
+}
+
+/* Rate field source/anchor caption inside loan card */
+:root.dark .rate-field-suffix {
+  color: var(--c-ink-mute);
+}
+:root.dark .rate-reset-btn-inline {
+  color: #79b2ed;
+}
+:root.dark .rate-reset-btn-inline:hover {
+  background: rgba(110, 164, 220, 0.15);
+}
+:root.dark .rate-spin-button {
+  color: var(--c-ink-mute);
+}
+:root.dark .rate-spin-button:hover {
+  color: #79b2ed;
+  background: rgba(110, 164, 220, 0.12);
+}
+
+/* Misc badges / tags */
+:root.dark .badge {
+  background: rgba(110, 164, 220, 0.15);
+  color: #a0c8ee;
+}
+
+/* Loading text */
+:root.dark .loading {
+  color: var(--c-ink-mute);
+}
+
+/* H2/H3/H4 headings within sections */
+:root.dark .section h2,
+:root.dark .section h3,
+:root.dark .section h4,
+:root.dark h2,
+:root.dark h3,
+:root.dark h4 {
+  color: var(--c-ink);
+}
+
+/* Methodology page links + body text */
+:root.dark .notes a,
+:root.dark .sub a {
+  color: #79b2ed;
+}
+
+/* Table base */
+:root.dark table {
+  color: var(--c-ink);
+}
+:root.dark th,
+:root.dark td {
+  border-color: var(--c-border-soft);
+}
+
+/* Code blocks */
+:root.dark code {
+  background: #20242a;
+  color: var(--c-ink);
+}
+
+/* Subtle dist labels */
+:root.dark .dist-bar .sub {
+  color: var(--c-ink-soft);
+}
+
+/* Bankrate/MND legend cards on rate chart explainer */
+:root.dark .cl-marker-item {
+  color: var(--c-ink-soft);
+}
