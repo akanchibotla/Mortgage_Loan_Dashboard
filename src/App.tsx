@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { useExternalLinks } from "./lib/useExternalLinks";
 import { CalculatorProvider } from "./lib/useCalculator";
 
@@ -17,15 +17,18 @@ export default function App() {
         <Link to="/" className="brand">
           Mortgage rates by state
         </Link>
-        <Link to="/calculator">Calculator</Link>
-        <Link to="/methodology">Methodology</Link>
-        <a
-          href="https://github.com/akanchibotla/Mortgage_Loan_Dashboard"
-          target="_blank"
-          rel="noopener noreferrer"
+        <NavLink
+          to="/calculator"
+          className={({ isActive }) => (isActive ? "active" : "")}
         >
-          GitHub
-        </a>
+          Calculator
+        </NavLink>
+        <NavLink
+          to="/methodology"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
+          Methodology
+        </NavLink>
       </nav>
       <CalculatorProvider>
         <Suspense fallback={<p className="loading">Loading…</p>}>
