@@ -3946,17 +3946,20 @@ code {
   color: #fff;
 }
 
-/* Form select + number inputs */
-:root.dark select,
-:root.dark input[type="number"],
-:root.dark input[type="search"],
-:root.dark input[type="text"] {
-  background: #14161b;
-  border-color: var(--c-border);
-  color: var(--c-ink);
-}
+/* Native <option> dropdowns — dark surface so the menu list reads */
 :root.dark option {
   background: #14161b;
+  color: var(--c-ink);
+}
+
+/* Transparent-by-design inputs (sit inside styled cards) — keep
+   their bg transparent so the parent card's gradient shows through,
+   only the text color shifts for dark mode. */
+:root.dark .amount-input-wrap input[type="number"],
+:root.dark .rate-input,
+:root.dark .sc-field-input,
+:root.dark .rate-field-input {
+  background: transparent;
   color: var(--c-ink);
 }
 
