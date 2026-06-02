@@ -390,7 +390,12 @@ export default function HomePage() {
           <span className="map-controls-hint">Showing {term}-yr rates · click to drill in</span>
         </div>
         <Suspense fallback={<p className="loading">Loading map…</p>}>
-          <UsChoropleth index={states} term={term} loanAmount={loanAmount} />
+          <UsChoropleth
+            index={states}
+            term={term}
+            loanAmount={loanAmount}
+            selectedSlug={selectedStateSlug}
+          />
         </Suspense>
         <p className="map-caption">
           Hover any colored state for today's rate + your estimated payment. Use the{" "}

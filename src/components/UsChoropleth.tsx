@@ -12,6 +12,7 @@ interface Props {
   index: StatesIndexEntry[];
   term: 15 | 30;
   loanAmount: number;
+  selectedSlug?: string;
 }
 
 const WIDTH = 975;
@@ -32,7 +33,7 @@ interface Hovered {
   y: number;
 }
 
-export function UsChoropleth({ index, term, loanAmount }: Props) {
+export function UsChoropleth({ index, term, loanAmount, selectedSlug }: Props) {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState<Hovered | null>(null);
 
@@ -41,6 +42,11 @@ export function UsChoropleth({ index, term, loanAmount }: Props) {
     for (const s of index) m.set(s.fips, s);
     return m;
   }, [index]);
+
+  const selectedFips = useMemo(() => {
+    if (!selectedSlug) return null;
+    return index.find((s) => s.slug === selectedSlug)?.fips ?? null;
+  }, [index, selectedSlug]);
 
   const filledRates = index
     .map((s) => (term === 15 ? s.latest_15 : s.latest_30))
@@ -90,6 +96,23 @@ export function UsChoropleth({ index, term, loanAmount }: Props) {
             />
           );
         })}
+        {selectedFips &&
+          (() => {
+            const sf = features.find(
+              (f) => String(f.id).padStart(2, "0") === selectedFips,
+            );
+            if (!sf) return null;
+            return (
+              <path
+                d={pathFn(sf) ?? ""}
+                fill="none"
+                stroke="#000"
+                strokeWidth={2.5}
+                pointerEvents="none"
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })()}
       </svg>
       <ColorLegend minR={minR} maxR={maxR} term={term} />
       {hovered && <StateTooltip hovered={hovered} term={term} loanAmount={loanAmount} />}

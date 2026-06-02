@@ -9,6 +9,7 @@ interface Props {
   stateFips: string;
   counties: CountyEntry[];
   term: 15 | 30;
+  selectedFips?: string;
 }
 
 interface StateTopoFile {
@@ -44,15 +45,21 @@ function colorFor(rate: number | null | undefined, minR: number, maxR: number): 
   return `hsl(${hue}, 65%, 55%)`;
 }
 
-export function CountyChoropleth({ stateSlug, stateFips, counties, term }: Props) {
+export function CountyChoropleth({ stateSlug, stateFips, counties, term, selectedFips }: Props) {
   return (
     <Suspense fallback={<p className="loading">Loading {stateSlug} county map…</p>}>
-      <ChoroplethBody stateSlug={stateSlug} stateFips={stateFips} counties={counties} term={term} />
+      <ChoroplethBody
+        stateSlug={stateSlug}
+        stateFips={stateFips}
+        counties={counties}
+        term={term}
+        selectedFips={selectedFips}
+      />
     </Suspense>
   );
 }
 
-function ChoroplethBody({ stateSlug, stateFips, counties, term }: Props) {
+function ChoroplethBody({ stateSlug, stateFips, counties, term, selectedFips }: Props) {
   const navigate = useNavigate();
   const topo = use(getStateTopoPromise(stateFips));
   const [hovered, setHovered] = useState<{ name: string; rate?: number; x: number; y: number } | null>(
@@ -138,6 +145,23 @@ function ChoroplethBody({ stateSlug, stateFips, counties, term }: Props) {
             pointerEvents="none"
           />
         )}
+        {selectedFips &&
+          (() => {
+            const sf = stateFeatures.find(
+              (f) => String(f.id).padStart(5, "0") === selectedFips,
+            );
+            if (!sf) return null;
+            return (
+              <path
+                d={pathFn(sf) ?? ""}
+                fill="none"
+                stroke="#000"
+                strokeWidth={2.5}
+                pointerEvents="none"
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })()}
       </svg>
       <div className="map-legend">
         <span className="legend-label">HMDA {term}-yr mean</span>

@@ -45,6 +45,7 @@ function StateBody({ slug }: { slug: string }) {
   const { pmms15, pmms30 } = loadPmms();
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
+  const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
   usePageMeta({
     title: data ? `${data.meta.name} mortgage rates` : `${slug} mortgage rates`,
     description: data
@@ -174,6 +175,8 @@ function StateBody({ slug }: { slug: string }) {
         stateRate={(term === 15 ? data.bankrate15?.at(-1)?.rate : data.bankrate30?.at(-1)?.rate) ?? null}
         counties={counties}
         term={term}
+        selectedCountyFips={selectedCountyFips}
+        onSelectedCountyChange={setSelectedCountyFips}
       />
 
       {counties.length > 0 && (
@@ -193,6 +196,7 @@ function StateBody({ slug }: { slug: string }) {
               stateFips={data.meta.fips}
               counties={counties}
               term={term}
+              selectedFips={selectedCountyFips}
             />
           </Suspense>
           <div className="county-top">
@@ -296,14 +300,17 @@ function StateCalculator({
   stateRate,
   counties,
   term,
+  selectedCountyFips,
+  onSelectedCountyChange,
 }: {
   stateName: string;
   stateRate: number | null;
   counties: CountyEntry[];
   term: 15 | 30;
+  selectedCountyFips: string;
+  onSelectedCountyChange: (fips: string) => void;
 }) {
   const { loanAmount, setLoanAmount, rateText, setRateText } = useCalculator();
-  const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
 
   const sortedCounties = [...counties].sort((a, b) => a.name.localeCompare(b.name));
   const selectedCounty = counties.find((c) => c.fips === selectedCountyFips) ?? null;
@@ -372,7 +379,7 @@ function StateCalculator({
           <select
             className="sc-field-select"
             value={selectedCountyFips}
-            onChange={(e) => setSelectedCountyFips(e.target.value)}
+            onChange={(e) => onSelectedCountyChange(e.target.value)}
             disabled={sortedCounties.length === 0}
           >
             <option value="">— Statewide —</option>
