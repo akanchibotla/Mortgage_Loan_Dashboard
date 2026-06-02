@@ -15,9 +15,13 @@ export default function App() {
   return (
     <ThemeProvider>
       <nav className="topnav">
-        <Link to="/" className="brand">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) => `brand${isActive ? " active" : ""}`}
+        >
           Mortgage rates by state
-        </Link>
+        </NavLink>
         <NavLink
           to="/calculator"
           className={({ isActive }) => `topnav-strong${isActive ? " active" : ""}`}
