@@ -219,21 +219,6 @@ function computePhasePayments(
   return out;
 }
 
-interface ProductOption {
-  value: ProductType;
-  label: string;
-  group: "Fixed" | "ARM" | "Buydown";
-}
-
-const PRODUCT_OPTIONS: ProductOption[] = [
-  { value: "fixed", label: "Fixed-rate", group: "Fixed" },
-  { value: "arm-7-1", label: "7/1 ARM", group: "ARM" },
-  { value: "arm-5-1", label: "5/1 ARM", group: "ARM" },
-  { value: "buydown-2-1", label: "2-1 Buydown", group: "Buydown" },
-  { value: "buydown-1-0", label: "1-0 Buydown", group: "Buydown" },
-  { value: "buydown-3-2-1", label: "3-2-1 Buydown", group: "Buydown" },
-];
-
 const ARM_PRODUCTS = new Set<ProductType>(["arm-7-1", "arm-5-1"]);
 
 function newLoanId(): string {
@@ -813,32 +798,65 @@ function LoanCardForm({
 
       <label>
         <span>Loan structure</span>
-        <select
-          value={loan.productType}
-          onChange={(e) => onChange({ productType: e.target.value as ProductType })}
-        >
-          <optgroup label="Fixed">
-            {PRODUCT_OPTIONS.filter((o) => o.group === "Fixed").map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Adjustable rate">
-            {PRODUCT_OPTIONS.filter((o) => o.group === "ARM").map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Buydown">
-            {PRODUCT_OPTIONS.filter((o) => o.group === "Buydown").map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </optgroup>
-        </select>
+        <div className="product-toggle">
+          <div className="product-group">
+            <span className="product-group-label">Fixed</span>
+            <div className="product-pills">
+              <button
+                type="button"
+                className={`product-pill ${loan.productType === "fixed" ? "active" : ""}`}
+                onClick={() => onChange({ productType: "fixed" })}
+              >
+                Fixed-rate
+              </button>
+            </div>
+          </div>
+          <div className="product-group">
+            <span className="product-group-label">ARM</span>
+            <div className="product-pills">
+              <button
+                type="button"
+                className={`product-pill ${loan.productType === "arm-7-1" ? "active" : ""}`}
+                onClick={() => onChange({ productType: "arm-7-1" })}
+              >
+                7/1
+              </button>
+              <button
+                type="button"
+                className={`product-pill ${loan.productType === "arm-5-1" ? "active" : ""}`}
+                onClick={() => onChange({ productType: "arm-5-1" })}
+              >
+                5/1
+              </button>
+            </div>
+          </div>
+          <div className="product-group">
+            <span className="product-group-label">Buydown</span>
+            <div className="product-pills">
+              <button
+                type="button"
+                className={`product-pill ${loan.productType === "buydown-2-1" ? "active" : ""}`}
+                onClick={() => onChange({ productType: "buydown-2-1" })}
+              >
+                2-1
+              </button>
+              <button
+                type="button"
+                className={`product-pill ${loan.productType === "buydown-1-0" ? "active" : ""}`}
+                onClick={() => onChange({ productType: "buydown-1-0" })}
+              >
+                1-0
+              </button>
+              <button
+                type="button"
+                className={`product-pill ${loan.productType === "buydown-3-2-1" ? "active" : ""}`}
+                onClick={() => onChange({ productType: "buydown-3-2-1" })}
+              >
+                3-2-1
+              </button>
+            </div>
+          </div>
+        </div>
       </label>
 
       <label>
