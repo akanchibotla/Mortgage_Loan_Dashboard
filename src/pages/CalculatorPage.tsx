@@ -219,28 +219,20 @@ function computePhasePayments(
   return out;
 }
 
-interface LoanTypeOption {
-  value: string;
+interface ProductOption {
+  value: ProductType;
   label: string;
-  term: 15 | 30;
-  productType: ProductType;
   group: "Fixed" | "ARM" | "Buydown";
 }
 
-const LOAN_TYPE_OPTIONS: LoanTypeOption[] = [
-  { value: "fixed-30", label: "30-year Fixed", term: 30, productType: "fixed", group: "Fixed" },
-  { value: "fixed-15", label: "15-year Fixed", term: 15, productType: "fixed", group: "Fixed" },
-  { value: "arm-7-1", label: "7/1 ARM (30-year)", term: 30, productType: "arm-7-1", group: "ARM" },
-  { value: "arm-5-1", label: "5/1 ARM (30-year)", term: 30, productType: "arm-5-1", group: "ARM" },
-  { value: "buydown-2-1", label: "2-1 Buydown (30-year)", term: 30, productType: "buydown-2-1", group: "Buydown" },
-  { value: "buydown-1-0", label: "1-0 Buydown (30-year)", term: 30, productType: "buydown-1-0", group: "Buydown" },
-  { value: "buydown-3-2-1", label: "3-2-1 Buydown (30-year)", term: 30, productType: "buydown-3-2-1", group: "Buydown" },
+const PRODUCT_OPTIONS: ProductOption[] = [
+  { value: "fixed", label: "Fixed-rate", group: "Fixed" },
+  { value: "arm-7-1", label: "7/1 ARM", group: "ARM" },
+  { value: "arm-5-1", label: "5/1 ARM", group: "ARM" },
+  { value: "buydown-2-1", label: "2-1 Buydown", group: "Buydown" },
+  { value: "buydown-1-0", label: "1-0 Buydown", group: "Buydown" },
+  { value: "buydown-3-2-1", label: "3-2-1 Buydown", group: "Buydown" },
 ];
-
-function loanTypeKey(term: 15 | 30, productType: ProductType): string {
-  if (productType === "fixed") return term === 15 ? "fixed-15" : "fixed-30";
-  return productType;
-}
 
 const ARM_PRODUCTS = new Set<ProductType>(["arm-7-1", "arm-5-1"]);
 
@@ -800,30 +792,47 @@ function LoanCardForm({
       </label>
 
       <label>
-        <span>Loan type</span>
+        <span>Loan term</span>
+        <div className="term-toggle">
+          <button
+            type="button"
+            className={loan.term === 15 ? "active" : ""}
+            onClick={() => onChange({ term: 15 })}
+          >
+            15-year
+          </button>
+          <button
+            type="button"
+            className={loan.term === 30 ? "active" : ""}
+            onClick={() => onChange({ term: 30 })}
+          >
+            30-year
+          </button>
+        </div>
+      </label>
+
+      <label>
+        <span>Loan structure</span>
         <select
-          value={loanTypeKey(loan.term, loan.productType)}
-          onChange={(e) => {
-            const opt = LOAN_TYPE_OPTIONS.find((o) => o.value === e.target.value);
-            if (opt) onChange({ term: opt.term, productType: opt.productType });
-          }}
+          value={loan.productType}
+          onChange={(e) => onChange({ productType: e.target.value as ProductType })}
         >
           <optgroup label="Fixed">
-            {LOAN_TYPE_OPTIONS.filter((o) => o.group === "Fixed").map((o) => (
+            {PRODUCT_OPTIONS.filter((o) => o.group === "Fixed").map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
             ))}
           </optgroup>
           <optgroup label="Adjustable rate">
-            {LOAN_TYPE_OPTIONS.filter((o) => o.group === "ARM").map((o) => (
+            {PRODUCT_OPTIONS.filter((o) => o.group === "ARM").map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
             ))}
           </optgroup>
           <optgroup label="Buydown">
-            {LOAN_TYPE_OPTIONS.filter((o) => o.group === "Buydown").map((o) => (
+            {PRODUCT_OPTIONS.filter((o) => o.group === "Buydown").map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
