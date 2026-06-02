@@ -2951,7 +2951,7 @@ code {
 }
 .rate-field-input {
   flex: 0 0 auto;
-  width: 4.5em;
+  width: 3.5em;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2960,15 +2960,44 @@ code {
   color: var(--c-ink);
   font-variant-numeric: tabular-nums;
   outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  box-shadow: none;
 }
 .rate-field-input::-webkit-outer-spin-button,
 .rate-field-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+.rate-spin-buttons {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-left: 2px;
+}
+.rate-spin-button {
+  background: transparent;
+  border: 0;
+  padding: 1px 4px;
+  cursor: pointer;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--c-ink-mute, #6b7280);
+  border-radius: 2px;
+  transition: color 0.12s, background 0.12s;
+}
+.rate-spin-button:hover {
+  color: var(--c-brand);
+  background: rgba(31, 95, 168, 0.08);
+}
 .rate-field-suffix {
   flex: 1 1 auto;
   min-width: 0;
+  margin-left: 6px;
   font-size: 11px;
   font-style: italic;
   font-weight: 400;

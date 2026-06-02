@@ -54,7 +54,7 @@ function parseCustomRate(rateText: string): number | null {
   const t = rateText.trim();
   if (t === "") return null;
   const v = Number.parseFloat(t);
-  return Number.isFinite(v) && v > 0 ? v : null;
+  return Number.isFinite(v) ? v : null;
 }
 
 export default function CalculatorPage() {
@@ -458,6 +458,17 @@ function LoanCardForm({
       ? anchorRate.toFixed(2)
       : "";
 
+  const rateInputId = `loan-rate-${loan.id}`;
+
+  const RATE_STEP = 0.05;
+  const stepRate = (dir: 1 | -1) => {
+    const current = useCustom
+      ? parseCustomRate(loan.rateText) ?? anchorRate ?? 0
+      : anchorRate ?? 0;
+    const next = Math.max(0, Math.min(30, current + dir * RATE_STEP));
+    onChange({ rateText: next.toFixed(2), hasCustomRate: true });
+  };
+
   const countySorted = useMemo(
     () => [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans),
     [counties],
@@ -539,7 +550,7 @@ function LoanCardForm({
         />
       </label>
 
-      <label>
+      <label htmlFor={rateInputId}>
         <div className="loan-form-rate-header">
           <span>Rate</span>
           {useCustom && (
@@ -560,6 +571,7 @@ function LoanCardForm({
         </div>
         <div className="rate-field-combo">
           <input
+            id={rateInputId}
             type="number"
             className="rate-field-input"
             min={0}
@@ -568,6 +580,26 @@ function LoanCardForm({
             value={rateDisplay}
             onChange={(e) => onChange({ rateText: e.target.value, hasCustomRate: true })}
           />
+          <div className="rate-spin-buttons">
+            <button
+              type="button"
+              className="rate-spin-button"
+              onClick={() => stepRate(1)}
+              aria-label="Increase rate by 0.05%"
+              title="Increase by 0.05%"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              className="rate-spin-button"
+              onClick={() => stepRate(-1)}
+              aria-label="Decrease rate by 0.05%"
+              title="Decrease by 0.05%"
+            >
+              ▼
+            </button>
+          </div>
           {!useCustom && (
             <span className="rate-field-suffix">{anchorSourceLabel}</span>
           )}
