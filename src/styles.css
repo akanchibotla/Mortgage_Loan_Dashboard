@@ -2907,6 +2907,42 @@ code {
   border-color: var(--c-brand);
   box-shadow: 0 0 0 2px rgba(31, 95, 168, 0.15);
 }
+.loan-form-field-meta {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--c-brand);
+  font-size: 10px;
+}
+.rate-field-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.rate-field-wrap input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rate-reset-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  background: #fff;
+  border: 1px solid var(--c-border, #d4d8e0);
+  border-radius: 6px;
+  color: var(--c-ink-mute, #6b7280);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.rate-reset-btn:hover {
+  border-color: var(--c-brand);
+  background: #eef3fa;
+  color: var(--c-brand);
+}
 .loan-card-form .term-toggle {
   display: inline-flex;
   border: 1px solid var(--c-border, #d4d8e0);

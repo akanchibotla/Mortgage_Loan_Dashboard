@@ -49,6 +49,13 @@ function newLoanId(): string {
 
 type StatesIndex = ReturnType<typeof loadStatesIndex>["states"];
 
+function parseCustomRate(rateText: string): number | null {
+  const t = rateText.trim();
+  if (t === "") return null;
+  const v = Number.parseFloat(t);
+  return Number.isFinite(v) && v > 0 ? v : null;
+}
+
 export default function CalculatorPage() {
   usePageMeta({
     title: "Borrower expectation calculator",
@@ -182,175 +189,53 @@ function LoanCard({
         )}
       </div>
 
-      <div className="loan-card-form">
-        <label>
-          <span>State (optional)</span>
-          <select
-            value={loan.slug}
-            onChange={(e) => onChange({ slug: e.target.value, countyFips: "" })}
-          >
-            <option value="">— National (all U.S.) —</option>
-            {states.map((s) => (
-              <option key={s.slug} value={s.slug}>
-                {s.name} {s.has_hmda_band ? "(HMDA)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Suspense
-          fallback={
-            <label>
-              <span>County</span>
-              <select disabled>
-                <option>loading…</option>
-              </select>
-            </label>
-          }
-        >
-          <CountyPicker
-            slug={loan.slug}
-            countyFips={loan.countyFips}
-            onChange={(f) => onChange({ countyFips: f })}
-          />
-        </Suspense>
-        <label>
-          <span>Loan term</span>
-          <div className="term-toggle">
-            <button
-              type="button"
-              className={loan.term === 15 ? "active" : ""}
-              onClick={() => onChange({ term: 15 })}
-            >
-              15-year
-            </button>
-            <button
-              type="button"
-              className={loan.term === 30 ? "active" : ""}
-              onClick={() => onChange({ term: 30 })}
-            >
-              30-year
-            </button>
-          </div>
-        </label>
-        <label>
-          <span>Loan amount</span>
-          <input
-            type="number"
-            min={50_000}
-            max={3_000_000}
-            step={5_000}
-            value={loan.loanAmount}
-            onChange={(e) => onChange({ loanAmount: Math.max(0, Number(e.target.value)) })}
-          />
-        </label>
-        <label>
-          <span>Rate (optional)</span>
-          <input
-            type="number"
-            min={0}
-            max={30}
-            step={0.05}
-            placeholder="auto"
-            value={loan.rateText}
-            onChange={(e) => onChange({ rateText: e.target.value })}
-          />
-        </label>
-      </div>
-
       {loan.slug ? (
         <Suspense fallback={<p className="loading">Loading {loan.slug}…</p>}>
-          <LoanOutput
-            slug={loan.slug}
-            countyFips={loan.countyFips}
-            term={loan.term}
-            loanAmount={loan.loanAmount}
-            rateText={loan.rateText}
-          />
+          <StateLoanContent loan={loan} states={states} onChange={onChange} />
         </Suspense>
       ) : (
-        <NationalLoanOutput
-          term={loan.term}
-          loanAmount={loan.loanAmount}
-          rateText={loan.rateText}
-        />
+        <NationalLoanContent loan={loan} states={states} onChange={onChange} />
       )}
     </div>
   );
 }
 
-function CountyPicker({
-  slug,
-  countyFips,
+function StateLoanContent({
+  loan,
+  states,
   onChange,
 }: {
-  slug: string;
-  countyFips: string;
-  onChange: (fips: string) => void;
+  loan: LoanInstance;
+  states: StatesIndex;
+  onChange: (patch: Partial<LoanInstance>) => void;
 }) {
-  if (!slug) {
-    return (
-      <label>
-        <span>County</span>
-        <select disabled value="" onChange={() => onChange("")}>
-          <option>— pick a state first —</option>
-        </select>
-      </label>
-    );
-  }
-  const data = use(getStatePromise(slug));
-  const counties = data?.counties?.counties ?? [];
-  if (counties.length === 0) {
-    return (
-      <label>
-        <span>County</span>
-        <select disabled>
-          <option>not bundled</option>
-        </select>
-      </label>
-    );
-  }
-  const sorted = [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans);
-  return (
-    <label>
-      <span>County (optional)</span>
-      <select value={countyFips} onChange={(e) => onChange(e.target.value)}>
-        <option value="">— all of {data?.meta?.name ?? slug} —</option>
-        {sorted.map((c) => (
-          <option key={c.fips} value={c.fips}>
-            {c.name} (n={c.term_30.n_loans.toLocaleString()})
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function LoanOutput({
-  slug,
-  countyFips,
-  term,
-  loanAmount,
-  rateText,
-}: {
-  slug: string;
-  countyFips: string;
-  term: 15 | 30;
-  loanAmount: number;
-  rateText: string;
-}) {
-  const data = use(getStatePromise(slug));
+  const data = use(getStatePromise(loan.slug));
   if (!data) {
-    return <p className="loading">No data bundled for {slug} yet.</p>;
+    return (
+      <>
+        <LoanCardForm
+          loan={loan}
+          states={states}
+          counties={[]}
+          stateName=""
+          anchorRate={null}
+          anchorLabel="central"
+          onChange={onChange}
+        />
+        <p className="loading">No data bundled for {loan.slug} yet.</p>
+      </>
+    );
   }
-  const county: CountyEntry | undefined = countyFips
-    ? data.counties?.counties.find((c) => c.fips === countyFips)
+
+  const county: CountyEntry | undefined = loan.countyFips
+    ? data.counties?.counties.find((c) => c.fips === loan.countyFips)
     : undefined;
-  const bankrate = term === 15 ? data.bankrate15 : data.bankrate30;
-  const mnd = term === 15 ? data.mnd15 : data.mnd30;
+  const bankrate = loan.term === 15 ? data.bankrate15 : data.bankrate30;
+  const mnd = loan.term === 15 ? data.mnd15 : data.mnd30;
   const liveBankrate = latestNonNull(bankrate);
   const liveMnd = latestNonNull(mnd);
-  const stateHmda: HmdaSummary | undefined = term === 15 ? data.hmda15 : data.hmda30;
-  const countyDist = county ? (term === 15 ? county.term_15 : county.term_30) : undefined;
+  const stateHmda: HmdaSummary | undefined = loan.term === 15 ? data.hmda15 : data.hmda30;
+  const countyDist = county ? (loan.term === 15 ? county.term_15 : county.term_30) : undefined;
 
   const distLabel = countyDist?.n_loans
     ? `${county!.name} County (n=${countyDist.n_loans.toLocaleString()})`
@@ -363,27 +248,34 @@ function LoanOutput({
   const p50 = countyDist?.p50_pct ?? stateHmda?.p50_pct;
   const p75 = countyDist?.p75_pct ?? stateHmda?.p75_pct;
   const p90 = countyDist?.p90_pct ?? stateHmda?.p90_pct;
-  const meanRate =
+  const anchorRate =
     countyDist?.simple_mean_pct ?? stateHmda?.simple_mean_pct ?? liveBankrate ?? liveMnd ?? null;
 
-  const customRate =
-    rateText.trim() === "" ? null : Number.parseFloat(rateText);
-  const useCustom =
-    customRate != null && Number.isFinite(customRate) && customRate > 0;
-  const centralRate = useCustom ? (customRate as number) : meanRate;
-  const centralLabel = useCustom ? "your rate" : "central";
+  const customRate = parseCustomRate(loan.rateText);
+  const centralRate = customRate ?? anchorRate;
+  const centralLabel = customRate != null ? "your rate" : "central";
 
   return (
     <>
+      <LoanCardForm
+        loan={loan}
+        states={states}
+        counties={data.counties?.counties ?? []}
+        stateName={data.meta.name}
+        anchorRate={anchorRate}
+        anchorLabel="central"
+        onChange={onChange}
+      />
+
       <div className="loan-block">
         <h4 className="loan-block-h">Today's market</h4>
         <ul className="loan-stats">
           <li>
-            <span className="k">Bankrate ({term}-yr)</span>
+            <span className="k">Bankrate ({loan.term}-yr)</span>
             <span className="v">{liveBankrate != null ? `${liveBankrate.toFixed(2)}%` : "—"}</span>
           </li>
           <li>
-            <span className="k">MND ({term}-yr)</span>
+            <span className="k">MND ({loan.term}-yr)</span>
             <span className="v">{liveMnd != null ? `${liveMnd.toFixed(2)}%` : "—"}</span>
           </li>
         </ul>
@@ -428,14 +320,14 @@ function LoanOutput({
       ) : (
         <div className="loan-block">
           <p className="loan-block-empty">
-            HMDA distribution not bundled for {data.meta.name} {term}-yr yet.
+            HMDA distribution not bundled for {data.meta.name} {loan.term}-yr yet.
           </p>
         </div>
       )}
 
       <div className="loan-block loan-block-output">
         <h4 className="loan-block-h">
-          Monthly P&amp;I — ${loanAmount.toLocaleString()}
+          Monthly P&amp;I — ${loan.loanAmount.toLocaleString()}
         </h4>
         <ul className="loan-stats loan-stats-output">
           {centralRate != null && (
@@ -444,7 +336,7 @@ function LoanOutput({
                 @ {centralRate.toFixed(2)}% ({centralLabel})
               </span>
               <span className="v">
-                ${Math.round(monthlyPayment(loanAmount, centralRate, term)).toLocaleString()}
+                ${Math.round(monthlyPayment(loan.loanAmount, centralRate, loan.term)).toLocaleString()}
               </span>
             </li>
           )}
@@ -452,7 +344,7 @@ function LoanOutput({
             <li>
               <span className="k">@ {p10.toFixed(2)}% (best 10%)</span>
               <span className="v">
-                ${Math.round(monthlyPayment(loanAmount, p10, term)).toLocaleString()}
+                ${Math.round(monthlyPayment(loan.loanAmount, p10, loan.term)).toLocaleString()}
               </span>
             </li>
           )}
@@ -460,7 +352,7 @@ function LoanOutput({
             <li>
               <span className="k">@ {p90.toFixed(2)}% (worst 10%)</span>
               <span className="v">
-                ${Math.round(monthlyPayment(loanAmount, p90, term)).toLocaleString()}
+                ${Math.round(monthlyPayment(loan.loanAmount, p90, loan.term)).toLocaleString()}
               </span>
             </li>
           )}
@@ -468,11 +360,11 @@ function LoanOutput({
       </div>
 
       <div className="loan-card-footer">
-        <Link to={`/state/${slug}`}>{data.meta.name} dashboard &rarr;</Link>
-        {countyFips && (
+        <Link to={`/state/${loan.slug}`}>{data.meta.name} dashboard &rarr;</Link>
+        {loan.countyFips && (
           <>
             {" · "}
-            <Link to={`/state/${slug}/county/${countyFips}`}>
+            <Link to={`/state/${loan.slug}/county/${loan.countyFips}`}>
               {county?.name ?? "county"} County &rarr;
             </Link>
           </>
@@ -482,32 +374,39 @@ function LoanOutput({
   );
 }
 
-function NationalLoanOutput({
-  term,
-  loanAmount,
-  rateText,
+function NationalLoanContent({
+  loan,
+  states,
+  onChange,
 }: {
-  term: 15 | 30;
-  loanAmount: number;
-  rateText: string;
+  loan: LoanInstance;
+  states: StatesIndex;
+  onChange: (patch: Partial<LoanInstance>) => void;
 }) {
   const { pmms15, pmms30 } = loadPmms();
-  const usRate = term === 15 ? latestNonNull(pmms15) : latestNonNull(pmms30);
+  const usRate = loan.term === 15 ? latestNonNull(pmms15) : latestNonNull(pmms30);
 
-  const customRate =
-    rateText.trim() === "" ? null : Number.parseFloat(rateText);
-  const useCustom =
-    customRate != null && Number.isFinite(customRate) && customRate > 0;
-  const centralRate = useCustom ? (customRate as number) : usRate;
-  const centralLabel = useCustom ? "your rate" : "U.S. PMMS";
+  const customRate = parseCustomRate(loan.rateText);
+  const centralRate = customRate ?? usRate;
+  const centralLabel = customRate != null ? "your rate" : "U.S. PMMS";
 
   return (
     <>
+      <LoanCardForm
+        loan={loan}
+        states={states}
+        counties={[]}
+        stateName=""
+        anchorRate={usRate}
+        anchorLabel="U.S. PMMS"
+        onChange={onChange}
+      />
+
       <div className="loan-block">
         <h4 className="loan-block-h">Today's market — U.S.</h4>
         <ul className="loan-stats">
           <li>
-            <span className="k">FRED PMMS ({term}-yr, latest)</span>
+            <span className="k">FRED PMMS ({loan.term}-yr, latest)</span>
             <span className="v">{usRate != null ? `${usRate.toFixed(2)}%` : "—"}</span>
           </li>
         </ul>
@@ -522,7 +421,7 @@ function NationalLoanOutput({
 
       <div className="loan-block loan-block-output">
         <h4 className="loan-block-h">
-          Monthly P&amp;I — ${loanAmount.toLocaleString()}
+          Monthly P&amp;I — ${loan.loanAmount.toLocaleString()}
         </h4>
         <ul className="loan-stats loan-stats-output">
           {centralRate != null && (
@@ -531,7 +430,7 @@ function NationalLoanOutput({
                 @ {centralRate.toFixed(2)}% ({centralLabel})
               </span>
               <span className="v">
-                ${Math.round(monthlyPayment(loanAmount, centralRate, term)).toLocaleString()}
+                ${Math.round(monthlyPayment(loan.loanAmount, centralRate, loan.term)).toLocaleString()}
               </span>
             </li>
           )}
@@ -542,6 +441,145 @@ function NationalLoanOutput({
         <Link to="/methodology">FRED PMMS methodology &rarr;</Link>
       </div>
     </>
+  );
+}
+
+function LoanCardForm({
+  loan,
+  states,
+  counties,
+  stateName,
+  anchorRate,
+  anchorLabel,
+  onChange,
+}: {
+  loan: LoanInstance;
+  states: StatesIndex;
+  counties: CountyEntry[];
+  stateName: string;
+  anchorRate: number | null;
+  anchorLabel: string;
+  onChange: (patch: Partial<LoanInstance>) => void;
+}) {
+  const customRate = parseCustomRate(loan.rateText);
+  const useCustom = customRate != null;
+  const rateDisplay = useCustom
+    ? loan.rateText
+    : anchorRate != null
+      ? anchorRate.toFixed(2)
+      : "";
+
+  const countySorted = useMemo(
+    () => [...counties].sort((a, b) => b.term_30.n_loans - a.term_30.n_loans),
+    [counties],
+  );
+
+  return (
+    <div className="loan-card-form">
+      <label>
+        <span>State (optional)</span>
+        <select
+          value={loan.slug}
+          onChange={(e) => onChange({ slug: e.target.value, countyFips: "" })}
+        >
+          <option value="">— National (all U.S.) —</option>
+          {states.map((s) => (
+            <option key={s.slug} value={s.slug}>
+              {s.name} {s.has_hmda_band ? "(HMDA)" : ""}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        <span>{loan.slug && counties.length > 0 ? "County (optional)" : "County"}</span>
+        {loan.slug ? (
+          counties.length === 0 ? (
+            <select disabled>
+              <option>not bundled</option>
+            </select>
+          ) : (
+            <select
+              value={loan.countyFips}
+              onChange={(e) => onChange({ countyFips: e.target.value })}
+            >
+              <option value="">— all of {stateName} —</option>
+              {countySorted.map((c) => (
+                <option key={c.fips} value={c.fips}>
+                  {c.name} (n={c.term_30.n_loans.toLocaleString()})
+                </option>
+              ))}
+            </select>
+          )
+        ) : (
+          <select disabled>
+            <option>— pick a state first —</option>
+          </select>
+        )}
+      </label>
+
+      <label>
+        <span>Loan term</span>
+        <div className="term-toggle">
+          <button
+            type="button"
+            className={loan.term === 15 ? "active" : ""}
+            onClick={() => onChange({ term: 15 })}
+          >
+            15-year
+          </button>
+          <button
+            type="button"
+            className={loan.term === 30 ? "active" : ""}
+            onClick={() => onChange({ term: 30 })}
+          >
+            30-year
+          </button>
+        </div>
+      </label>
+
+      <label>
+        <span>Loan amount</span>
+        <input
+          type="number"
+          min={50_000}
+          max={3_000_000}
+          step={5_000}
+          value={loan.loanAmount}
+          onChange={(e) => onChange({ loanAmount: Math.max(0, Number(e.target.value)) })}
+        />
+      </label>
+
+      <label>
+        <span>
+          Rate{" "}
+          <span className="loan-form-field-meta">
+            ({useCustom ? "your value" : anchorLabel})
+          </span>
+        </span>
+        <div className="rate-field-wrap">
+          <input
+            type="number"
+            min={0}
+            max={30}
+            step={0.05}
+            value={rateDisplay}
+            onChange={(e) => onChange({ rateText: e.target.value })}
+          />
+          {useCustom && (
+            <button
+              type="button"
+              className="rate-reset-btn"
+              onClick={() => onChange({ rateText: "" })}
+              title={`Reset to ${anchorLabel}${anchorRate != null ? ` (${anchorRate.toFixed(2)}%)` : ""}`}
+              aria-label="Reset rate to default"
+            >
+              ↺
+            </button>
+          )}
+        </div>
+      </label>
+    </div>
   );
 }
 
