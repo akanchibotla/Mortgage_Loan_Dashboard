@@ -333,6 +333,9 @@ function StateCalculator({
   const monthly = monthlyPayment(loanAmount, effectiveRate, term);
   const totalPaid = monthly * term * 12;
   const totalInterest = Math.max(0, totalPaid - loanAmount);
+  const principalPct =
+    totalPaid > 0 ? Math.max(0, Math.min(100, (loanAmount / totalPaid) * 100)) : 0;
+  const interestPct = 100 - principalPct;
 
   const rateInputValue =
     rateText === "" && anchorRate != null ? anchorRate.toFixed(2) : rateText;
@@ -418,12 +421,42 @@ function StateCalculator({
           <span className="sc-output-label">Monthly P&amp;I</span>
           <span className="sc-output-value">{fmtMoney(monthly)}</span>
         </div>
-        <div className="sc-output-row sc-output-meta">
-          <span>
-            Over {term} years: <b>{fmtMoney(totalInterest)}</b> interest ·{" "}
-            <b>{fmtMoney(totalPaid)}</b> total paid
-          </span>
-          {isCustomRate && (
+        {totalPaid > 0 && (
+          <div
+            className="amort"
+            title={`Amortized over ${term} years at ${effectiveRate.toFixed(2)}%`}
+          >
+            <div
+              className="amort-bar"
+              role="img"
+              aria-label={`Loan split: ${fmtMoney(loanAmount)} principal, ${fmtMoney(totalInterest)} interest`}
+            >
+              <div
+                className="amort-bar-seg amort-principal"
+                style={{ width: `${principalPct}%` }}
+              />
+              <div
+                className="amort-bar-seg amort-interest"
+                style={{ width: `${interestPct}%` }}
+              />
+            </div>
+            <div className="amort-legend">
+              <span>
+                <span className="amort-dot amort-dot-p" />
+                {fmtMoney(loanAmount)} principal
+              </span>
+              <span>
+                <span className="amort-dot amort-dot-i" />
+                {fmtMoney(totalInterest)} interest
+              </span>
+            </div>
+            <div className="amort-total">
+              <b>{fmtMoney(totalPaid)}</b> paid over {term} years
+            </div>
+          </div>
+        )}
+        {isCustomRate && (
+          <div className="sc-output-hint">
             <button
               type="button"
               className="sc-reset-btn"
@@ -436,8 +469,8 @@ function StateCalculator({
             >
               Reset rate
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <details
