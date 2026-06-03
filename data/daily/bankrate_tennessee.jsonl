@@ -1,2 +1,2 @@
 {"date_iso": "2026-06-01", "fetched_at_utc": "2026-06-01T16:00:45+00:00", "as_of": "Monday, June 01, 2026", "state_slug": "tennessee", "source": "bankrate_state_browser", "table_15": null, "intro_15": 5.93, "table_30": null, "intro_30": 6.46}
-{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T07:01:49+00:00", "as_of": "Wednesday, June 03, 2026", "state_slug": "tennessee", "source": "bankrate_state_browser", "table_15": null, "intro_15": 5.87, "table_30": null, "intro_30": 6.56}
+{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T09:05:04+00:00", "as_of": "Wednesday, June 03, 2026", "state_slug": "tennessee", "source": "bankrate_state_browser", "attempts": 1, "table_15": null, "intro_15": 6.0, "table_30": null, "intro_30": 6.58}

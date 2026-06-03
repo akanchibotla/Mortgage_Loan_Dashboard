@@ -3,4 +3,4 @@
 {"date_iso": "2025-10-14", "term_15": 5.83, "term_30": 6.31, "as_of_raw": "10/14/2025", "wayback_timestamp": "20251014215610", "source": "mnd_wayback"}
 {"date_iso": "2026-01-16", "term_15": 5.6, "term_30": 6.07, "as_of_raw": "1/16/2026", "wayback_timestamp": "20260119151010", "source": "mnd_wayback"}
 {"date_iso": "2026-05-29", "term_15": 6.09, "term_30": 6.56, "as_of_raw": "5/29/2026", "fetched_at_utc": "2026-06-01T05:09:33+00:00", "source": "mnd_live"}
-{"date_iso": "2026-06-02", "term_15": 6.1, "term_30": 6.57, "as_of_raw": "6/2/2026", "fetched_at_utc": "2026-06-03T07:03:52+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
+{"date_iso": "2026-06-02", "term_15": 6.1, "term_30": 6.57, "as_of_raw": "6/2/2026", "fetched_at_utc": "2026-06-03T09:07:44+00:00", "state_slug": "north-carolina", "source": "mnd_live"}

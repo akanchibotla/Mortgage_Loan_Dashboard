@@ -1,2 +1,2 @@
 {"date_iso": "2026-06-01", "fetched_at_utc": "2026-06-01T15:43:33+00:00", "as_of": null, "state_slug": "washington", "source": "bankrate_state_browser", "table_15": null, "intro_15": 6.13, "table_30": null, "intro_30": 6.83}
-{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T07:02:19+00:00", "as_of": "Wednesday, June 03, 2026", "state_slug": "washington", "source": "bankrate_state_browser", "table_15": null, "intro_15": 5.8, "table_30": null, "intro_30": 6.45}
+{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T09:05:51+00:00", "as_of": "Wednesday, June 03, 2026", "state_slug": "washington", "source": "bankrate_state_browser", "attempts": 1, "table_15": null, "intro_15": 6.25, "table_30": null, "intro_30": 6.63}
