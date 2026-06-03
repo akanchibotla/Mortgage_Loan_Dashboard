@@ -49,6 +49,7 @@ function StateBody({ slug }: { slug: string }) {
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
   const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
+  const [timescale, setTimescale] = useState<"monthly" | "weekly">("monthly");
   usePageMeta({
     title: data ? `${data.meta.name} mortgage rates` : `${slug} mortgage rates`,
     description: data
@@ -76,6 +77,8 @@ function StateBody({ slug }: { slug: string }) {
   const usData = term === 15 ? pmms15 : pmms30;
   const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
   const mndData = (term === 15 ? data.mnd15 : data.mnd30) ?? undefined;
+  const ncDaily = (term === 15 ? data.bankrate15Daily : data.bankrate30Daily) ?? undefined;
+  const mndDaily = (term === 15 ? data.mnd15Daily : data.mnd30Daily) ?? undefined;
   const hmdaBand = term === 15 ? data.hmda15 : data.hmda30;
   const yMin = term === 15 ? 4.5 : 5.5;
 
@@ -167,16 +170,45 @@ function StateBody({ slug }: { slug: string }) {
       </header>
 
       <section className="section">
-        <h2>{term}-year fixed</h2>
+        <div className="rate-chart-header">
+          <h2>{term}-year fixed</h2>
+          <div
+            className="rate-timescale-toggle"
+            role="tablist"
+            aria-label="Chart time scale"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={timescale === "monthly"}
+              className={`pt-btn ${timescale === "monthly" ? "active" : ""}`}
+              onClick={() => setTimescale("monthly")}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={timescale === "weekly"}
+              className={`pt-btn ${timescale === "weekly" ? "active" : ""}`}
+              onClick={() => setTimescale("weekly")}
+            >
+              Weekly
+            </button>
+          </div>
+        </div>
         <RateChart
           usData={usData}
           ncData={ncData}
           mndData={mndData}
+          ncDaily={ncDaily}
+          mndDaily={mndDaily}
+          timescale={timescale}
           hmdaBand={hmdaBand}
           title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}
           usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
-          ncLabel={`${name} ${term}-yr fixed (Bankrate, monthly)`}
-          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, monthly)`}
+          ncLabel={`${name} ${term}-yr fixed (Bankrate, ${timescale})`}
+          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, ${timescale})`}
           yMin={yMin}
           yMax={7.5}
           stateLabel={name}

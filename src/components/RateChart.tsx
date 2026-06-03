@@ -3,6 +3,7 @@ import { Line } from "react-chartjs-2";
 import type { ChartData } from "chart.js";
 import type {
   ChartPoint,
+  DailyRatePoint,
   HmdaSummary,
   MonthlyRate,
   NcMonthlySnapshot,
@@ -14,6 +15,9 @@ interface Props {
   usData: MonthlyRate[];
   ncData: NcMonthlySnapshot[];
   mndData?: NcMonthlySnapshot[];
+  ncDaily?: DailyRatePoint[];
+  mndDaily?: DailyRatePoint[];
+  timescale?: "monthly" | "weekly";
   hmdaBand?: HmdaSummary;
   title: string;
   usLabel: string;
@@ -24,6 +28,29 @@ interface Props {
   stateLabel?: string;
   term?: 15 | 30;
   footerRight?: ReactNode;
+}
+
+// End-of-week (Sunday) ISO key for a given YYYY-MM-DD.
+function weekEndKey(dateIso: string): string {
+  const d = new Date(dateIso + "T00:00:00Z");
+  const dow = d.getUTCDay(); // 0 = Sun
+  const daysToSunday = (7 - dow) % 7;
+  d.setUTCDate(d.getUTCDate() + daysToSunday);
+  return d.toISOString().slice(0, 10);
+}
+
+function aggregateDailyToWeekly(daily: DailyRatePoint[]): NcMonthlySnapshot[] {
+  // For each week (keyed by Sunday end), keep the daily row with the latest date.
+  const byWeek = new Map<string, DailyRatePoint>();
+  for (const d of daily) {
+    if (d.rate == null) continue;
+    const wk = weekEndKey(d.date);
+    const prior = byWeek.get(wk);
+    if (!prior || prior.date < d.date) byWeek.set(wk, d);
+  }
+  return Array.from(byWeek.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([wk, row]) => ({ m: wk, date: row.date, rate: row.rate, src: row.src }));
 }
 
 const NC_RED = "#c8392c";
@@ -69,6 +96,9 @@ export function RateChart({
   usData,
   ncData,
   mndData,
+  ncDaily,
+  mndDaily,
+  timescale = "monthly",
   hmdaBand,
   title,
   usLabel,
@@ -81,9 +111,18 @@ export function RateChart({
   footerRight,
 }: Props) {
   const usPoints: ChartPoint[] = usData.map((p) => ({ x: `${p.month}-15`, y: p.rate }));
-  const ncPoints: ChartPoint[] = ncData.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
 
-  const ncStyles = ncData.map((p) => (p.rate == null ? styleFor("") : styleFor(p.src)));
+  // Pick the primary state-source series based on the timescale toggle.
+  // Weekly is derived in-browser from the daily JSONs; monthly comes from the
+  // reconciled 24-row file. If the user selects weekly but no daily data has
+  // accumulated yet, fall back to the monthly series so the chart still renders.
+  const ncWeekly = timescale === "weekly" && ncDaily ? aggregateDailyToWeekly(ncDaily) : null;
+  const mndWeekly = timescale === "weekly" && mndDaily ? aggregateDailyToWeekly(mndDaily) : null;
+  const ncSeries = ncWeekly && ncWeekly.length > 0 ? ncWeekly : ncData;
+  const mndSeries = mndWeekly && mndWeekly.length > 0 ? mndWeekly : mndData;
+
+  const ncPoints: ChartPoint[] = ncSeries.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
+  const ncStyles = ncSeries.map((p) => (p.rate == null ? styleFor("") : styleFor(p.src)));
 
   const datasets: ChartData<"line", ChartPoint[]>["datasets"] = [
     {
@@ -95,7 +134,7 @@ export function RateChart({
       pointRadius: 3,
       pointHoverRadius: 5,
       tension: 0.25,
-      order: 3,
+      order: 4,
     },
     {
       label: ncLabel,
@@ -111,13 +150,13 @@ export function RateChart({
       pointHoverRadius: 7,
       tension: 0.25,
       spanGaps: false,
-      order: 2,
+      order: 3,
     },
   ];
 
-  const mndHasAny = mndData && mndData.some((p) => p.rate != null);
+  const mndHasAny = mndSeries && mndSeries.some((p) => p.rate != null);
   if (mndHasAny) {
-    const mndPoints: ChartPoint[] = mndData!.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
+    const mndPoints: ChartPoint[] = mndSeries!.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
     datasets.push({
       label: mndLabel ?? "NC (Mortgage News Daily)",
       data: mndPoints,
@@ -130,7 +169,47 @@ export function RateChart({
       pointHoverRadius: 7,
       tension: 0.25,
       spanGaps: false,
-      order: 1,
+      order: 2,
+    });
+  }
+
+  // Daily trail overlay — thin line traversing the raw daily values. Visible on
+  // both monthly and weekly views so you can see the day-to-day movement that
+  // got compressed into each monthly/weekly point.
+  const ncDailyPts: ChartPoint[] =
+    (ncDaily ?? [])
+      .filter((d) => d.rate != null)
+      .map((d) => ({ x: d.date, y: d.rate, src: `${d.src} (daily)` }));
+  if (ncDailyPts.length >= 2) {
+    datasets.push({
+      label: `${ncLabel.replace(/\s*\(.*\)$/, "")} (daily trail)`,
+      data: ncDailyPts,
+      borderColor: "rgba(200, 57, 44, 0.45)",
+      backgroundColor: "rgba(200, 57, 44, 0.45)",
+      borderWidth: 1,
+      pointRadius: 1.5,
+      pointHoverRadius: 4,
+      tension: 0,
+      spanGaps: true,
+      order: 5,
+    });
+  }
+  const mndDailyPts: ChartPoint[] =
+    (mndDaily ?? [])
+      .filter((d) => d.rate != null)
+      .map((d) => ({ x: d.date, y: d.rate, src: `${d.src} (daily)` }));
+  if (mndDailyPts.length >= 2) {
+    datasets.push({
+      label: `${mndLabel?.replace(/\s*\(.*\)$/, "") ?? "MND"} (daily trail)`,
+      data: mndDailyPts,
+      borderColor: "rgba(13, 122, 110, 0.45)",
+      backgroundColor: "rgba(13, 122, 110, 0.45)",
+      borderWidth: 1,
+      pointRadius: 1.5,
+      pointHoverRadius: 4,
+      tension: 0,
+      spanGaps: true,
+      order: 6,
     });
   }
 

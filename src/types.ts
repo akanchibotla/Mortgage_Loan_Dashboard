@@ -97,3 +97,9 @@ export interface MndTodayFile {
   term_15: MndTodayPoint;
   term_30: MndTodayPoint;
 }
+
+export interface DailyRatePoint {
+  date: string;
+  rate: number;
+  src: string;
+}

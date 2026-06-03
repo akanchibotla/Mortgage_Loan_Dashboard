@@ -1,5 +1,6 @@
 import type {
   CountiesFile,
+  DailyRatePoint,
   HmdaDemographicsFile,
   HmdaSummary,
   MonthlyRate,
@@ -33,6 +34,10 @@ export interface StateData {
   bankrate30: NcMonthlySnapshot[] | null;
   mnd15: NcMonthlySnapshot[] | null;
   mnd30: NcMonthlySnapshot[] | null;
+  bankrate15Daily?: DailyRatePoint[] | null;
+  bankrate30Daily?: DailyRatePoint[] | null;
+  mnd15Daily?: DailyRatePoint[] | null;
+  mnd30Daily?: DailyRatePoint[] | null;
   hmda15?: HmdaSummary;
   hmda30?: HmdaSummary;
   counties?: CountiesFile;
@@ -70,17 +75,33 @@ async function loadOptional<T>(slug: string, leaf: string): Promise<T | null> {
 export async function loadStateData(slug: string): Promise<StateData | null> {
   const meta = metaForSlug(slug);
   if (!meta) return null;
-  const [bankrate15, bankrate30, mnd15, mnd30, hmda15, hmda30, counties, demographics] =
-    await Promise.all([
-      loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_15yr.json"),
-      loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
-      loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
-      loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
-      loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
-      loadOptional<HmdaSummary>(slug, "hmda_2024_30yr.json"),
-      loadOptional<CountiesFile>(slug, "counties.json"),
-      loadOptional<HmdaDemographicsFile>(slug, "hmda_2024_demographics.json"),
-    ]);
+  const [
+    bankrate15,
+    bankrate30,
+    mnd15,
+    mnd30,
+    bankrate15Daily,
+    bankrate30Daily,
+    mnd15Daily,
+    mnd30Daily,
+    hmda15,
+    hmda30,
+    counties,
+    demographics,
+  ] = await Promise.all([
+    loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_15yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
+    loadOptional<DailyRatePoint[]>(slug, "bankrate_15yr_daily.json"),
+    loadOptional<DailyRatePoint[]>(slug, "bankrate_30yr_daily.json"),
+    loadOptional<DailyRatePoint[]>(slug, "mnd_15yr_daily.json"),
+    loadOptional<DailyRatePoint[]>(slug, "mnd_30yr_daily.json"),
+    loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
+    loadOptional<HmdaSummary>(slug, "hmda_2024_30yr.json"),
+    loadOptional<CountiesFile>(slug, "counties.json"),
+    loadOptional<HmdaDemographicsFile>(slug, "hmda_2024_demographics.json"),
+  ]);
   return {
     slug,
     meta,
@@ -88,6 +109,10 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     bankrate30,
     mnd15,
     mnd30,
+    bankrate15Daily,
+    bankrate30Daily,
+    mnd15Daily,
+    mnd30Daily,
     hmda15: hmda15 ?? undefined,
     hmda30: hmda30 ?? undefined,
     counties: counties ?? undefined,

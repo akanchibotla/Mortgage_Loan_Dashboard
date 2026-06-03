@@ -76,6 +76,7 @@ jobs:
             echo "::group::Aggregate $s"
             python scripts/aggregate_mnd_state.py --state "$s" || echo "aggregate:$s" >> "$FAIL_LOG"
             python scripts/reconcile_state.py --state "$s" || echo "reconcile:$s" >> "$FAIL_LOG"
+            python scripts/emit_daily_view.py --state "$s" || echo "daily-view:$s" >> "$FAIL_LOG"
             echo "::endgroup::"
           done
 
