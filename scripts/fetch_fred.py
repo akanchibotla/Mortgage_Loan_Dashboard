@@ -185,15 +185,72 @@ def fetch_series_api(fred_id: str) -> list[tuple[datetime, float]]:
     return out
 
 
+def fetch_series_freddiemac(fred_id: str) -> list[tuple[datetime, float]]:
+    """Tier 1 fallback: scrape Freddie Mac's PMMS landing page for the most
+    recent week's published rate. Freddie publishes the same weekly survey
+    that backs MORTGAGE15US / MORTGAGE30US on FRED, but on independent
+    infrastructure (freddiemac.com vs fred.stlouisfed.org/api.stlouisfed.org)
+    — so it's a true belt-and-suspenders fallback that survives FRED-wide
+    outages. Returns a single-row list (latest week only); the monthly
+    aggregator still produces a current-month row from it."""
+    term = {"MORTGAGE15US": 15, "MORTGAGE30US": 30}.get(fred_id)
+    if term is None:
+        return []
+    url = "https://www.freddiemac.com/pmms"
+    try:
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=30) as r:
+            html = r.read().decode("utf-8", errors="replace")
+    except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError) as e:
+        print(f"  Freddie Mac PMMS raised: {e}", file=sys.stderr)
+        return []
+    import re as _re
+    # Anchor on the canonical "{term}-year fixed-rate mortgage" wording. The
+    # year-ago reference on the same page uses "{term}-year FRM averaged …"
+    # — different phrasing, so the regex won't false-match on it. Allow any
+    # chars between "mortgage" and "averaged" (the 15-year paragraph has
+    # "</strong>&nbsp;" between them; the 30-year has plain text), capped
+    # at 80 chars so we don't accidentally span to a different sentence.
+    rate_pat = _re.compile(
+        rf"{term}-year fixed-rate mortgage.{{0,80}}?averaged\s+(\d\.\d{{2,3}})\s*%",
+        _re.IGNORECASE | _re.DOTALL,
+    )
+    m = rate_pat.search(html)
+    if not m:
+        print(f"  Freddie Mac PMMS: no current {term}-yr rate found", file=sys.stderr)
+        return []
+    try:
+        rate = float(m.group(1))
+    except ValueError:
+        return []
+    # Survey date appears as "as of May 28, 2026" or "as of 05/28/2026".
+    date_pat = _re.compile(
+        r"as of\s+([A-Za-z]+\s+\d{1,2},?\s+20\d{2}|\d{1,2}/\d{1,2}/20\d{2})",
+        _re.IGNORECASE,
+    )
+    dm = date_pat.search(html)
+    survey_date = datetime.today()
+    if dm:
+        ds = dm.group(1).replace(",", "")
+        for fmt in ("%B %d %Y", "%b %d %Y", "%m/%d/%Y"):
+            try:
+                survey_date = datetime.strptime(ds, fmt)
+                break
+            except ValueError:
+                continue
+    return [(survey_date, rate)]
+
+
 def fetch_series(fred_id: str) -> list[tuple[datetime, float]]:
-    """Four-tier fetch:
-      Tier 0 — FRED API (requires FRED_API_KEY). Most reliable; preferred path.
-      Tier 1 — primary fredgraph.csv endpoint
-      Tier 2 — alternate series/X/downloaddata/X.csv endpoint
-      Tier 3 — HTML scrape of series/X page (single latest weekly row only)
-    Tier 0 silently skips when no API key is set, so the script remains usable
-    without one — it just falls back to the public CSV/HTML endpoints, which
-    are flakier. Raises only if all available tiers fail."""
+    """Five-tier fetch (each tier fires only when the previous yielded nothing):
+      Tier 0 — FRED API (requires FRED_API_KEY). Full series; most reliable.
+      Tier 1 — Freddie Mac PMMS direct (freddiemac.com). Independent host —
+               survives FRED outages. Returns single latest weekly row.
+      Tier 2 — primary fredgraph.csv endpoint (currently flaky from CI IPs).
+      Tier 3 — alternate series/X/downloaddata/X.csv endpoint.
+      Tier 4 — HTML scrape of series/X page (single latest weekly row).
+    Tier 0 silently skips when no API key is set; cascade still works. Raises
+    only when every available tier has failed."""
     api_rows = fetch_series_api(fred_id)
     if api_rows:
         print(
@@ -202,6 +259,15 @@ def fetch_series(fred_id: str) -> list[tuple[datetime, float]]:
             file=sys.stderr,
         )
         return api_rows
+
+    fm_rows = fetch_series_freddiemac(fred_id)
+    if fm_rows:
+        print(
+            f"  [{fred_id}] Freddie Mac PMMS yielded latest observation "
+            f"{fm_rows[0][0].date().isoformat()} = {fm_rows[0][1]}",
+            file=sys.stderr,
+        )
+        return fm_rows
 
     primary_url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={fred_id}"
     alt_url = f"https://fred.stlouisfed.org/series/{fred_id}/downloaddata/{fred_id}.csv"
