@@ -1166,6 +1166,9 @@ code {
 .cl-line-nw {
   border-top-color: #7c3aed;
 }
+.cl-line-rocket {
+  border-top-color: #ea580c;
+}
 .cl-swatch-hmda {
   width: 28px;
   height: 12px;
@@ -1261,6 +1264,16 @@ code {
   height: 7px;
   margin: 2px;
   background: #1f5fa8;
+  border-radius: 50%;
+}
+/* Small solid orange dot — Rocket Mortgage national monthly point. Same
+   shape and size as PMMS to signal "national tier"; orange to distinguish
+   the single-lender quote from PMMS's survey average. */
+.cl-m-rocket-dot {
+  width: 7px;
+  height: 7px;
+  margin: 2px;
+  background: #ea580c;
   border-radius: 50%;
 }
 /* Two-tone solid circle — the daily-trail terminal marker. Bankrate's trail

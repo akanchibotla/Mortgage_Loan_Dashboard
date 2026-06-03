@@ -59,6 +59,11 @@ jobs:
         run: |
           python scripts/fetch_fred.py || echo "fred" >> "$FAIL_LOG"
 
+      - name: Fetch Rocket Mortgage (national)
+        run: |
+          python scripts/fetch_rocket.py || echo "rocket" >> "$FAIL_LOG"
+          python scripts/aggregate_rocket.py || echo "aggregate-rocket" >> "$FAIL_LOG"
+
       - name: Fetch Bankrate live per state
         run: |
           for s in ${{ steps.states.outputs.slugs }}; do

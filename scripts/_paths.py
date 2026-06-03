@@ -35,6 +35,21 @@ def nerdwallet_today_view(slug: str) -> str:
     return os.path.join(state_data_dir(slug), "nerdwallet_today.json")
 
 
+# Rocket Mortgage is the only currently-tracked source that publishes a single
+# national rate rather than per-state. Its files therefore live at the top of
+# DATA_DIR / DAILY_DIR alongside the FRED-PMMS national series, with no slug.
+def rocket_jsonl() -> str:
+    return os.path.join(DAILY_DIR, "rocket.jsonl")
+
+
+def rocket_today_view() -> str:
+    return os.path.join(DATA_DIR, "rocket_today.json")
+
+
+def rocket_monthly(term: int) -> str:
+    return os.path.join(DATA_DIR, f"rocket_{term}yr_monthly.json")
+
+
 # Raw inputs that live outside the repo (only used by one-shot ingest scripts
 # that aren't part of the CI refresh pipeline).
 RAW_PMMS_XLSX = r"C:\Users\akanc\Documents\freddie_pmms.xlsx"

@@ -1,7 +1,11 @@
 export interface MonthlyRate {
   month: string;
-  rate: number;
-  n_weeks: number;
+  rate: number | null;
+  // FRED PMMS records its weekly survey aggregation count here; Rocket records
+  // its day-count. Either field is informational only — the chart just reads
+  // month + rate. Optional so both shapes can share the type.
+  n_weeks?: number;
+  n_obs?: number;
 }
 
 export interface NcMonthlySnapshot {

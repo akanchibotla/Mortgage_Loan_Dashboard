@@ -14,6 +14,7 @@ import "../chart/registerChart";
 
 interface Props {
   usData: MonthlyRate[];
+  rocketData?: MonthlyRate[];
   ncData: NcMonthlySnapshot[];
   mndData?: NcMonthlySnapshot[];
   nwData?: NcMonthlySnapshot[];
@@ -23,6 +24,7 @@ interface Props {
   hmdaBand?: HmdaSummary;
   title: string;
   usLabel: string;
+  rocketLabel?: string;
   ncLabel: string;
   mndLabel?: string;
   nwLabel?: string;
@@ -36,6 +38,7 @@ interface Props {
 const NC_RED = "#c8392c";
 const MND_TEAL = "#0d7a6e";
 const NW_PURPLE = "#7c3aed";
+const ROCKET_ORANGE = "#ea580c";
 
 interface NcStyle {
   pointStyle: "rectRot" | "circle" | "cross" | "triangle";
@@ -98,6 +101,7 @@ function styleForNw(src: string): NcStyle {
 
 export function RateChart({
   usData,
+  rocketData,
   ncData,
   mndData,
   nwData,
@@ -107,6 +111,7 @@ export function RateChart({
   hmdaBand,
   title,
   usLabel,
+  rocketLabel,
   ncLabel,
   mndLabel,
   nwLabel,
@@ -177,8 +182,29 @@ export function RateChart({
     pointRadius: 3,
     pointHoverRadius: 5,
     tension: 0.25,
-    order: 4,
+    order: 5,
   });
+
+  // Rocket Mortgage is a single-lender national quote. Same shape as PMMS
+  // (MonthlyRate). Renders as an orange solid-circle line — distinct from
+  // PMMS blue, but using the same "small filled dot" marker convention to
+  // signal that both lines belong to the national tier.
+  const rocketPoints: ChartPoint[] = (rocketData ?? [])
+    .filter((p) => p.rate != null)
+    .map((p) => ({ x: `${p.month}-15`, y: p.rate as number }));
+  if (rocketPoints.length > 0) {
+    pushDataset("rocket", {
+      label: rocketLabel ?? "Rocket Mortgage (national lender quote)",
+      data: rocketPoints,
+      borderColor: ROCKET_ORANGE,
+      backgroundColor: ROCKET_ORANGE,
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      tension: 0.25,
+      order: 4,
+    });
+  }
   pushDataset("bankrate", {
     label: ncLabel,
     data: ncPoints,
@@ -401,9 +427,11 @@ export function RateChart({
       </div>
       <ChartLegend
         usLabel={usLabel}
+        rocketLabel={rocketLabel}
         ncLabel={ncLabel}
         mndLabel={mndLabel}
         nwLabel={nwLabel}
+        rocketHasAny={rocketPoints.length > 0}
         mndHasAny={!!mndHasAny}
         nwHasAny={!!nwHasAny}
         hasHmda={!!hmdaBand && timescale === "monthly"}
@@ -430,9 +458,11 @@ export function RateChart({
 
 function ChartLegend({
   usLabel,
+  rocketLabel,
   ncLabel,
   mndLabel,
   nwLabel,
+  rocketHasAny,
   mndHasAny,
   nwHasAny,
   hasHmda,
@@ -442,9 +472,11 @@ function ChartLegend({
   onToggle,
 }: {
   usLabel: string;
+  rocketLabel?: string;
   ncLabel: string;
   mndLabel?: string;
   nwLabel?: string;
+  rocketHasAny: boolean;
   mndHasAny: boolean;
   nwHasAny: boolean;
   hasHmda: boolean;
@@ -478,6 +510,8 @@ function ChartLegend({
     <div className="chart-legend">
       <ul className="cl-datasets">
         {renderRow("pmms", "cl-line-us", usLabel)}
+        {rocketHasAny &&
+          renderRow("rocket", "cl-line-rocket", rocketLabel ?? "Rocket Mortgage (national lender quote)")}
         {renderRow("bankrate", "cl-line-state", ncLabel)}
         {mndHasAny &&
           renderRow("mnd", "cl-line-mnd", mndLabel ?? "Mortgage News Daily")}
@@ -492,6 +526,11 @@ function ChartLegend({
           <span className="cl-marker-item">
             <span className="cl-m cl-m-pmms-dot" aria-hidden="true" /> PMMS monthly
           </span>
+          {rocketHasAny && (
+            <span className="cl-marker-item">
+              <span className="cl-m cl-m-rocket-dot" aria-hidden="true" /> Rocket monthly
+            </span>
+          )}
           {mndHasAny && (
             <span className="cl-marker-item">
               <span className="cl-m cl-m-triangle" aria-hidden="true" /> MND monthly

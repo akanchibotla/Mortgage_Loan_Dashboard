@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState, use, type PointerEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import { loadPmms, loadStateData, type StateData } from "../lib/loadStateData";
+import { loadPmms, loadRocket, loadStateData, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import { useTermPreference } from "../lib/useTermPreference";
 import { useCalculator } from "../lib/useCalculator";
@@ -50,6 +50,7 @@ export default function StateDashboard() {
 function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
   const { pmms15, pmms30 } = loadPmms();
+  const { rocket15, rocket30 } = loadRocket();
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number>(PANEL_WIDTH_DEFAULT);
@@ -119,6 +120,7 @@ function StateBody({ slug }: { slug: string }) {
   const topCounties = sortedCounties.slice(0, 5);
 
   const usData = term === 15 ? pmms15 : pmms30;
+  const rocketData = (term === 15 ? rocket15 : rocket30) ?? undefined;
   const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
   const mndData = (term === 15 ? data.mnd15 : data.mnd30) ?? undefined;
   const nwData = (term === 15 ? data.nerdwallet15 : data.nerdwallet30) ?? undefined;
@@ -263,6 +265,7 @@ function StateBody({ slug }: { slug: string }) {
         </div>
         <RateChart
           usData={usData}
+          rocketData={rocketData}
           ncData={ncData}
           mndData={mndData}
           nwData={nwData}
@@ -272,6 +275,7 @@ function StateBody({ slug }: { slug: string }) {
           hmdaBand={hmdaBand}
           title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}
           usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
+          rocketLabel={`Rocket Mortgage ${term}-yr fixed (national)`}
           ncLabel={`${name} ${term}-yr fixed (Bankrate, ${timescale})`}
           mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, ${timescale})`}
           nwLabel={`${name} ${term}-yr fixed (NerdWallet state average)`}

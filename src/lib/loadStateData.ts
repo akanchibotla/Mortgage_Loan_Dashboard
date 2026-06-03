@@ -21,6 +21,14 @@ const pmmsFiles = import.meta.glob("../data/pmms_*_monthly.json", {
   import: "default",
 }) as Record<string, MonthlyRate[]>;
 
+// Eager: national Rocket Mortgage series. Same shape as PMMS (MonthlyRate),
+// rendered as a second national line on every state chart and clearly
+// labeled as a single-lender quote vs. PMMS's multi-lender survey.
+const rocketFiles = import.meta.glob("../data/rocket_*_monthly.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, MonthlyRate[]>;
+
 // Lazy: per-state time-series + HMDA JSON. Each route loader fetches just
 // its own state's files via dynamic import — Vite chunks them per state.
 const stateLoaders = import.meta.glob("../data/states/*/*.json", {
@@ -147,6 +155,13 @@ export function loadPmms() {
   return {
     pmms15: pmmsFiles["../data/pmms_15yr_monthly.json"],
     pmms30: pmmsFiles["../data/pmms_30yr_monthly.json"],
+  };
+}
+
+export function loadRocket() {
+  return {
+    rocket15: rocketFiles["../data/rocket_15yr_monthly.json"] ?? null,
+    rocket30: rocketFiles["../data/rocket_30yr_monthly.json"] ?? null,
   };
 }
 
