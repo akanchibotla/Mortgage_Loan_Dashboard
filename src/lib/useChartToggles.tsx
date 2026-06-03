@@ -8,15 +8,16 @@ import {
 } from "react";
 
 // Per-source identity used by the rate chart's series-visibility toggle.
-// Future sources (Phase 2 NerdWallet, Phase 3 Rocket Mortgage) extend this
-// union and the ALL_SOURCES list below; no other code needs to change.
+// Future sources (Phase 3 Rocket Mortgage, etc.) extend this union and the
+// ALL_SOURCES list below; no other code needs to change.
 export type ChartSourceId =
   | "pmms"
   | "bankrate"
   | "mnd"
+  | "nerdwallet"
   | "hmda";
 
-const ALL_SOURCES: ChartSourceId[] = ["pmms", "bankrate", "mnd", "hmda"];
+const ALL_SOURCES: ChartSourceId[] = ["pmms", "bankrate", "mnd", "nerdwallet", "hmda"];
 
 interface ChartToggleValue {
   isVisible: (id: ChartSourceId) => boolean;

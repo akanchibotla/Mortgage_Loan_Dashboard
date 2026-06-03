@@ -34,6 +34,8 @@ export interface StateData {
   bankrate30: NcMonthlySnapshot[] | null;
   mnd15: NcMonthlySnapshot[] | null;
   mnd30: NcMonthlySnapshot[] | null;
+  nerdwallet15: NcMonthlySnapshot[] | null;
+  nerdwallet30: NcMonthlySnapshot[] | null;
   bankrate15Daily?: DailyRatePoint[] | null;
   bankrate30Daily?: DailyRatePoint[] | null;
   mnd15Daily?: DailyRatePoint[] | null;
@@ -80,6 +82,8 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     bankrate30,
     mnd15,
     mnd30,
+    nerdwallet15,
+    nerdwallet30,
     bankrate15Daily,
     bankrate30Daily,
     mnd15Daily,
@@ -93,6 +97,8 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     loadOptional<NcMonthlySnapshot[]>(slug, "bankrate_30yr.json"),
     loadOptional<NcMonthlySnapshot[]>(slug, "mnd_15yr.json"),
     loadOptional<NcMonthlySnapshot[]>(slug, "mnd_30yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "nerdwallet_15yr.json"),
+    loadOptional<NcMonthlySnapshot[]>(slug, "nerdwallet_30yr.json"),
     loadOptional<DailyRatePoint[]>(slug, "bankrate_15yr_daily.json"),
     loadOptional<DailyRatePoint[]>(slug, "bankrate_30yr_daily.json"),
     loadOptional<DailyRatePoint[]>(slug, "mnd_15yr_daily.json"),
@@ -109,6 +115,8 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     bankrate30,
     mnd15,
     mnd30,
+    nerdwallet15,
+    nerdwallet30,
     bankrate15Daily,
     bankrate30Daily,
     mnd15Daily,

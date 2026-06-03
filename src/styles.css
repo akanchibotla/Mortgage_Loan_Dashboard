@@ -1163,6 +1163,9 @@ code {
   border-top-color: #0d7a6e;
   border-top-style: dashed;
 }
+.cl-line-nw {
+  border-top-color: #7c3aed;
+}
 .cl-swatch-hmda {
   width: 28px;
   height: 12px;

@@ -5,6 +5,7 @@ interface Props {
   usData: MonthlyRate[];
   ncData: NcMonthlySnapshot[];
   mndData?: NcMonthlySnapshot[];
+  nwData?: NcMonthlySnapshot[];
   mndDaily?: DailyRatePoint[];
   stateLabel?: string;
 }
@@ -56,13 +57,19 @@ function weeklyAvgsForMonth(daily: DailyRatePoint[] | undefined, ym: string): We
     });
 }
 
-export function RateTable({ usData, ncData, mndData, mndDaily, stateLabel }: Props) {
+export function RateTable({ usData, ncData, mndData, nwData, mndDaily, stateLabel }: Props) {
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const usByMonth = useMemo(() => new Map(usData.map((p) => [p.month, p.rate])), [usData]);
   const mndByMonth = useMemo(
     () => new Map((mndData ?? []).map((p) => [p.m, p.rate])),
     [mndData],
   );
+  const nwByMonth = useMemo(
+    () => new Map((nwData ?? []).map((p) => [p.m, p.rate])),
+    [nwData],
+  );
+  const showNw = (nwData ?? []).some((p) => p.rate != null);
+  const colCount = showNw ? 5 : 4;
 
   const stateCol = stateLabel ? `${stateLabel} (Bankrate)` : "State (Bankrate)";
 
@@ -74,12 +81,14 @@ export function RateTable({ usData, ncData, mndData, mndDaily, stateLabel }: Pro
           <th>U.S. (PMMS)</th>
           <th>{stateCol}</th>
           <th>MND</th>
+          {showNw && <th>NerdWallet</th>}
         </tr>
       </thead>
       <tbody>
         {ncData.map((p) => {
           const us = usByMonth.get(p.m);
           const mnd = mndByMonth.get(p.m);
+          const nw = nwByMonth.get(p.m);
           const weeks = weeklyAvgsForMonth(mndDaily, p.m);
           const hasWeeks = weeks.length > 0;
           const expanded = expandedMonth === p.m;
@@ -87,6 +96,7 @@ export function RateTable({ usData, ncData, mndData, mndDaily, stateLabel }: Pro
           const usCell = us != null ? `${us.toFixed(2)}%` : EMDASH;
           const ncCell = p.rate != null ? `${p.rate.toFixed(2)}%` : EMDASH;
           const mndCell = mnd != null ? `${mnd.toFixed(2)}%` : EMDASH;
+          const nwCell = nw != null ? `${nw.toFixed(2)}%` : EMDASH;
 
           return (
             <Fragment key={p.m}>
@@ -118,10 +128,11 @@ export function RateTable({ usData, ncData, mndData, mndDaily, stateLabel }: Pro
                     </button>
                   )}
                 </td>
+                {showNw && <td>{nwCell}</td>}
               </tr>
               {expanded && hasWeeks && (
                 <tr className="rt-week-row">
-                  <td colSpan={4}>
+                  <td colSpan={colCount}>
                     <div className="rt-week-chips">
                       {weeks.map((w) => (
                         <span key={w.weekStart} className="rt-week-chip">

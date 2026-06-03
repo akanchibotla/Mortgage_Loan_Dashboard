@@ -16,6 +16,7 @@ interface Props {
   usData: MonthlyRate[];
   ncData: NcMonthlySnapshot[];
   mndData?: NcMonthlySnapshot[];
+  nwData?: NcMonthlySnapshot[];
   ncDaily?: DailyRatePoint[];
   mndDaily?: DailyRatePoint[];
   timescale?: "monthly" | "weekly";
@@ -24,6 +25,7 @@ interface Props {
   usLabel: string;
   ncLabel: string;
   mndLabel?: string;
+  nwLabel?: string;
   yMin: number;
   yMax: number;
   stateLabel?: string;
@@ -33,6 +35,7 @@ interface Props {
 
 const NC_RED = "#c8392c";
 const MND_TEAL = "#0d7a6e";
+const NW_PURPLE = "#7c3aed";
 
 interface NcStyle {
   pointStyle: "rectRot" | "circle" | "cross" | "triangle";
@@ -70,10 +73,34 @@ function styleFor(src: string): NcStyle {
   };
 }
 
+// NerdWallet's data shape mirrors Bankrate's (live = today; everything else
+// from Wayback), so its markers follow the same convention — hollow circle
+// for the latest live reading, diamond for a historical Wayback reading —
+// just rendered in NW's purple instead of NC's red.
+function styleForNw(src: string): NcStyle {
+  if (src.startsWith("NerdWallet (Wayback)")) {
+    return {
+      pointStyle: "rectRot",
+      pointBackgroundColor: NW_PURPLE,
+      pointBorderColor: NW_PURPLE,
+      pointBorderWidth: 1,
+      pointRadius: 4,
+    };
+  }
+  return {
+    pointStyle: "circle",
+    pointBackgroundColor: "#fff",
+    pointBorderColor: NW_PURPLE,
+    pointBorderWidth: 2.5,
+    pointRadius: 5,
+  };
+}
+
 export function RateChart({
   usData,
   ncData,
   mndData,
+  nwData,
   ncDaily,
   mndDaily,
   timescale = "monthly",
@@ -82,6 +109,7 @@ export function RateChart({
   usLabel,
   ncLabel,
   mndLabel,
+  nwLabel,
   yMin,
   yMax,
   stateLabel,
@@ -233,6 +261,35 @@ export function RateChart({
     });
   }
 
+  // NerdWallet monthly series (state-average note rate). Same data shape
+  // as Bankrate — Wayback historical rows plus a single live trailing row —
+  // so we use the same per-point marker pattern (diamond for Wayback, hollow
+  // circle for live), recolored purple for source separation.
+  const nwHasAny = nwData && nwData.some((p) => p.rate != null);
+  if (nwHasAny) {
+    const nwSeries = nwData!;
+    const nwPoints: ChartPoint[] = nwSeries.map((p) => ({
+      x: p.date, y: p.rate, src: p.src,
+    }));
+    const nwStyles = nwSeries.map((p) => (p.rate == null ? styleForNw("") : styleForNw(p.src)));
+    pushDataset("nerdwallet", {
+      label: nwLabel ?? "NerdWallet (state average)",
+      data: nwPoints,
+      borderColor: NW_PURPLE,
+      backgroundColor: NW_PURPLE,
+      borderWidth: 2,
+      pointStyle: nwStyles.map((s) => s.pointStyle),
+      pointBackgroundColor: nwStyles.map((s) => s.pointBackgroundColor),
+      pointBorderColor: nwStyles.map((s) => s.pointBorderColor),
+      pointBorderWidth: nwStyles.map((s) => s.pointBorderWidth),
+      pointRadius: nwStyles.map((s) => s.pointRadius),
+      pointHoverRadius: 7,
+      tension: 0.25,
+      spanGaps: false,
+      order: 2,
+    });
+  }
+
   // Daily trail rule: trail is the recent slope leading up to NOW. Render
   // previous days as just the dashed line (no markers) and reserve the
   // marker for the LATEST point as the "current value" indicator. Weekly
@@ -311,7 +368,9 @@ export function RateChart({
         usLabel={usLabel}
         ncLabel={ncLabel}
         mndLabel={mndLabel}
+        nwLabel={nwLabel}
         mndHasAny={!!mndHasAny}
+        nwHasAny={!!nwHasAny}
         hasHmda={!!hmdaBand && timescale === "monthly"}
         visibleSet={visibleSet}
         onToggle={toggle}
@@ -336,7 +395,9 @@ function ChartLegend({
   usLabel,
   ncLabel,
   mndLabel,
+  nwLabel,
   mndHasAny,
+  nwHasAny,
   hasHmda,
   visibleSet,
   onToggle,
@@ -344,7 +405,9 @@ function ChartLegend({
   usLabel: string;
   ncLabel: string;
   mndLabel?: string;
+  nwLabel?: string;
   mndHasAny: boolean;
+  nwHasAny: boolean;
   hasHmda: boolean;
   visibleSet: Set<ChartSourceId>;
   onToggle: (id: ChartSourceId) => void;
@@ -377,6 +440,8 @@ function ChartLegend({
         {renderRow("bankrate", "cl-line-state", ncLabel)}
         {mndHasAny &&
           renderRow("mnd", "cl-line-mnd", mndLabel ?? "Mortgage News Daily")}
+        {nwHasAny &&
+          renderRow("nerdwallet", "cl-line-nw", nwLabel ?? "NerdWallet (state average)")}
         {hasHmda &&
           renderRow("hmda", "cl-swatch-hmda", "HMDA 2024 reference band")}
       </ul>

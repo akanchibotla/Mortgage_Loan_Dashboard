@@ -77,6 +77,7 @@ function StateBody({ slug }: { slug: string }) {
   const usData = term === 15 ? pmms15 : pmms30;
   const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
   const mndData = (term === 15 ? data.mnd15 : data.mnd30) ?? undefined;
+  const nwData = (term === 15 ? data.nerdwallet15 : data.nerdwallet30) ?? undefined;
   const ncDaily = (term === 15 ? data.bankrate15Daily : data.bankrate30Daily) ?? undefined;
   const mndDaily = (term === 15 ? data.mnd15Daily : data.mnd30Daily) ?? undefined;
   const hmdaBand = term === 15 ? data.hmda15 : data.hmda30;
@@ -128,6 +129,7 @@ function StateBody({ slug }: { slug: string }) {
               usData={usData}
               ncData={ncData}
               mndData={mndData}
+              nwData={nwData}
               mndDaily={mndDaily}
               stateLabel={name}
             />
@@ -207,6 +209,7 @@ function StateBody({ slug }: { slug: string }) {
           usData={usData}
           ncData={ncData}
           mndData={mndData}
+          nwData={nwData}
           ncDaily={ncDaily}
           mndDaily={mndDaily}
           timescale={timescale}
@@ -215,6 +218,7 @@ function StateBody({ slug }: { slug: string }) {
           usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
           ncLabel={`${name} ${term}-yr fixed (Bankrate, ${timescale})`}
           mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, ${timescale})`}
+          nwLabel={`${name} ${term}-yr fixed (NerdWallet state average)`}
           yMin={yMin}
           yMax={7.5}
           stateLabel={name}

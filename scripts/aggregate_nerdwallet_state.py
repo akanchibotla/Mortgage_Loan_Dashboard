@@ -62,11 +62,16 @@ def aggregate_term(rows: list[dict], term_key: str) -> list[dict]:
         if chosen is None:
             result.append({"m": m_label, "date": f"{y}-{mo:02d}-15", "rate": None, "src": "no archive"})
             continue
+        src = (
+            "NerdWallet (Wayback)"
+            if chosen.get("source") == "nerdwallet_wayback"
+            else "NerdWallet"
+        )
         result.append({
             "m": m_label,
             "date": chosen["date_iso"],
             "rate": chosen[term_key],
-            "src": "NerdWallet",
+            "src": src,
         })
     return result
 
