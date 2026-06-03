@@ -13,6 +13,8 @@ permissions:
 # eliminates the Node 20 deprecation warning. https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  # Path used by every step to record per-component failures. Read by the summary step.
+  FAIL_LOG: ${{ github.workspace }}/.refresh-failures.log
 
 jobs:
   refresh:
@@ -26,10 +28,17 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Init failure log
+        run: |
+          : > "$FAIL_LOG"
+
       - run: python -m pip install --upgrade pip
-      - run: pip install -r requirements.txt
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt || echo "pip-install failed" >> "$FAIL_LOG"
+
       - name: Install Playwright Chromium
-        run: python -m playwright install --with-deps chromium
+        run: python -m playwright install --with-deps chromium || echo "playwright-install failed" >> "$FAIL_LOG"
 
       - name: Discover active states
         id: states
@@ -40,40 +49,52 @@ jobs:
           echo "Active states: $slugs"
 
       - name: Fetch FRED PMMS (national)
-        run: python scripts/fetch_fred.py
+        run: |
+          python scripts/fetch_fred.py || echo "fred" >> "$FAIL_LOG"
 
       - name: Fetch Bankrate live per state
         run: |
-          set -e
           for s in ${{ steps.states.outputs.slugs }}; do
             echo "::group::Bankrate $s"
-            python scripts/fetch_bankrate_state.py --state "$s" || echo "Bankrate $s failed (continuing)"
+            python scripts/fetch_bankrate_state.py --state "$s" || echo "bankrate:$s" >> "$FAIL_LOG"
             sleep 4
             echo "::endgroup::"
           done
 
       - name: Fetch MND live per state
         run: |
-          set -e
           for s in ${{ steps.states.outputs.slugs }}; do
             echo "::group::MND $s"
-            python scripts/fetch_mnd_state.py --state "$s" || echo "MND $s failed (continuing)"
+            python scripts/fetch_mnd_state.py --state "$s" || echo "mnd:$s" >> "$FAIL_LOG"
             sleep 2
             echo "::endgroup::"
           done
 
       - name: Aggregate + reconcile per state
         run: |
-          set -e
           for s in ${{ steps.states.outputs.slugs }}; do
-            python scripts/aggregate_mnd_state.py --state "$s"
-            python scripts/reconcile_state.py --state "$s"
+            echo "::group::Aggregate $s"
+            python scripts/aggregate_mnd_state.py --state "$s" || echo "aggregate:$s" >> "$FAIL_LOG"
+            python scripts/reconcile_state.py --state "$s" || echo "reconcile:$s" >> "$FAIL_LOG"
+            echo "::endgroup::"
           done
 
       - name: Build states index + sitemap
         run: |
-          python scripts/build_states_index.py
-          python scripts/build_sitemap.py
+          python scripts/build_states_index.py || echo "states-index" >> "$FAIL_LOG"
+          python scripts/build_sitemap.py || echo "sitemap" >> "$FAIL_LOG"
+
+      - name: Summarize partial failures
+        if: always()
+        run: |
+          if [ -s "$FAIL_LOG" ]; then
+            echo "::warning::Daily refresh had partial failures:"
+            cat "$FAIL_LOG"
+            echo ""
+            echo "Count: $(wc -l < "$FAIL_LOG")"
+          else
+            echo "Daily refresh: no component-level failures."
+          fi
 
       - name: Commit refreshed data
         env:
@@ -88,5 +109,9 @@ jobs:
             echo "No data changes today."
             exit 0
           fi
-          git commit -m "auto: refresh data $(date -u +%Y-%m-%d)"
+          fail_summary=""
+          if [ -s "$FAIL_LOG" ]; then
+            fail_summary=" (partial: $(wc -l < "$FAIL_LOG") failure(s))"
+          fi
+          git commit -m "auto: refresh data $(date -u +%Y-%m-%d)${fail_summary}"
           git push

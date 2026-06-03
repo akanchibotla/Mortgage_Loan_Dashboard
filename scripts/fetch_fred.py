@@ -10,6 +10,8 @@ import io
 import json
 import os
 import sys
+import time
+import urllib.error
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
@@ -20,7 +22,16 @@ from _paths import DATA_DIR  # noqa: E402
 
 OUT_DIR = DATA_DIR
 SERIES = {15: "MORTGAGE15US", 30: "MORTGAGE30US"}
-HEADERS = {"User-Agent": "MortgageDashboard/1.0 (research)"}
+# Browser-ish UA — FRED's CSV endpoint sometimes blocks/throttles short ones.
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/csv,*/*;q=0.9",
+}
+RETRY_DELAYS_S = [3, 8, 20]  # 3 attempts: try, wait 3s, retry, wait 8s, retry, wait 20s, final
+TIMEOUT_S = 120
 
 _window = window_months()
 WINDOW_START = datetime(_window[0][0], _window[0][1], 1)
@@ -29,11 +40,30 @@ _end_y, _end_m = _window[-1]
 WINDOW_END = datetime(_end_y, _end_m, 28) + dt.timedelta(days=10)  # safely into next month
 
 
+def _fetch_csv_once(url: str) -> str:
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=TIMEOUT_S) as r:
+        return r.read().decode("utf-8")
+
+
 def fetch_series(fred_id: str) -> list[tuple[datetime, float]]:
     url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={fred_id}"
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=60) as r:
-        raw = r.read().decode("utf-8")
+    raw = None
+    last_err: Exception | None = None
+    for attempt in range(len(RETRY_DELAYS_S) + 1):
+        try:
+            raw = _fetch_csv_once(url)
+            break
+        except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError) as e:
+            last_err = e
+            if attempt < len(RETRY_DELAYS_S):
+                delay = RETRY_DELAYS_S[attempt]
+                print(f"  attempt {attempt + 1} failed: {e}; sleeping {delay}s before retry", file=sys.stderr)
+                time.sleep(delay)
+            else:
+                print(f"  attempt {attempt + 1} failed: {e}; giving up", file=sys.stderr)
+    if raw is None:
+        raise RuntimeError(f"FRED fetch for {fred_id} failed after retries: {last_err}")
     out: list[tuple[datetime, float]] = []
     reader = csv.DictReader(io.StringIO(raw))
     # FRED columns: 'observation_date', '<SERIES_ID>'
@@ -69,13 +99,20 @@ def aggregate(weekly: list[tuple[datetime, float]]) -> list[dict]:
     return results
 
 
-def main():
+def main() -> int:
     os.makedirs(OUT_DIR, exist_ok=True)
+    failures: list[str] = []
     for term, fred_id in SERIES.items():
         print(f"Fetching {fred_id} ({term}-yr) ...")
-        weekly = fetch_series(fred_id)
+        try:
+            weekly = fetch_series(fred_id)
+        except Exception as e:
+            print(f"  ERROR: {fred_id} failed: {e}", file=sys.stderr)
+            failures.append(fred_id)
+            continue
         if not weekly:
             print(f"  WARNING: no observations returned for {fred_id}")
+            failures.append(fred_id)
             continue
         monthly = aggregate(weekly)
         print(f"  {len(weekly)} weekly observations -> {len(monthly)} months in window")
@@ -85,7 +122,12 @@ def main():
         with open(out_path, "w") as f:
             json.dump(monthly, f, indent=2)
         print(f"  Saved -> {out_path}\n")
+    if failures:
+        # Exit 0 anyway — keep workflow alive. Existing cached PMMS JSONs remain
+        # untouched, so the dashboard keeps yesterday's values for failed series.
+        print(f"FRED summary: failed series: {failures}; previous JSON kept on disk.", file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
