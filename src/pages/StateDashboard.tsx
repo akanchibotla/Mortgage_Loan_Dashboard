@@ -26,20 +26,6 @@ const AmortPanel = lazy(() =>
 const PANEL_WIDTH_DEFAULT = 480;
 const PANEL_WIDTH_MIN = 360;
 const PANEL_WIDTH_MAX = 1100;
-const PANEL_WIDTH_STORAGE_KEY = "mld-rate-table-panel-width";
-
-function readSavedPanelWidth(): number {
-  if (typeof window === "undefined") return PANEL_WIDTH_DEFAULT;
-  try {
-    const raw = window.localStorage.getItem(PANEL_WIDTH_STORAGE_KEY);
-    if (!raw) return PANEL_WIDTH_DEFAULT;
-    const n = Number(raw);
-    if (!Number.isFinite(n)) return PANEL_WIDTH_DEFAULT;
-    return Math.max(PANEL_WIDTH_MIN, Math.min(PANEL_WIDTH_MAX, n));
-  } catch {
-    return PANEL_WIDTH_DEFAULT;
-  }
-}
 
 const cache = new Map<string, Promise<StateData | null>>();
 
@@ -66,19 +52,18 @@ function StateBody({ slug }: { slug: string }) {
   const { pmms15, pmms30 } = loadPmms();
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
-  const [panelWidth, setPanelWidth] = useState<number>(readSavedPanelWidth);
+  const [panelWidth, setPanelWidth] = useState<number>(PANEL_WIDTH_DEFAULT);
   const draggingRef = useRef(false);
   const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
   const [timescale, setTimescale] = useState<"monthly" | "weekly">("monthly");
 
-  // Persist the resized width so it survives reloads + per-state navigation.
+  // Resized width is ephemeral: every close (and page load) snaps it back
+  // to PANEL_WIDTH_DEFAULT so the next open starts from a known baseline.
   useEffect(() => {
-    try {
-      window.localStorage.setItem(PANEL_WIDTH_STORAGE_KEY, String(panelWidth));
-    } catch {
-      // ignore quota / private-mode failures
+    if (!tablePanelOpen) {
+      setPanelWidth(PANEL_WIDTH_DEFAULT);
     }
-  }, [panelWidth]);
+  }, [tablePanelOpen]);
 
   function onResizeStart(e: PointerEvent<HTMLDivElement>) {
     e.preventDefault();
