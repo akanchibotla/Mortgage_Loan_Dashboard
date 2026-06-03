@@ -9,9 +9,30 @@ interface BuildOptionsArgs {
   yMin: number;
   yMax: number;
   hmdaBand?: HmdaSummary;
+  timescale?: "monthly" | "weekly";
+  weeklyDays?: number; // window size when zoomed to weekly view; default 84 (~12 weeks)
 }
 
-export function buildOptions({ title, yMin, yMax, hmdaBand }: BuildOptionsArgs): ChartOptions<"line"> {
+export function buildOptions({
+  title,
+  yMin,
+  yMax,
+  hmdaBand,
+  timescale = "monthly",
+  weeklyDays = 84,
+}: BuildOptionsArgs): ChartOptions<"line"> {
+  let xMin: string = W.from;
+  let xMax: string = W.to;
+  let xUnit: "month" | "week" | "day" = "month";
+  let xLabel = "Month";
+  if (timescale === "weekly") {
+    const today = new Date();
+    const past = new Date(today.getTime() - weeklyDays * 24 * 60 * 60 * 1000);
+    xMin = past.toISOString().slice(0, 10);
+    xMax = today.toISOString().slice(0, 10);
+    xUnit = "week";
+    xLabel = "Week";
+  }
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -20,13 +41,17 @@ export function buildOptions({ title, yMin, yMax, hmdaBand }: BuildOptionsArgs):
       x: {
         type: "time",
         time: {
-          unit: "month",
-          displayFormats: { month: "MMM yyyy" },
+          unit: xUnit,
+          displayFormats: {
+            month: "MMM yyyy",
+            week: "MMM d",
+            day: "MMM d",
+          },
           tooltipFormat: "MMM d, yyyy",
         },
-        min: W.from,
-        max: W.to,
-        title: { display: true, text: "Month" },
+        min: xMin,
+        max: xMax,
+        title: { display: true, text: xLabel },
         ticks: { maxRotation: 45, minRotation: 45 },
       },
       y: {

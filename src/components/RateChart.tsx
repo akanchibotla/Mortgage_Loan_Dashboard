@@ -124,8 +124,12 @@ export function RateChart({
   const ncPoints: ChartPoint[] = ncSeries.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
   const ncStyles = ncSeries.map((p) => (p.rate == null ? styleFor("") : styleFor(p.src)));
 
-  const datasets: ChartData<"line", ChartPoint[]>["datasets"] = [
-    {
+  const datasets: ChartData<"line", ChartPoint[]>["datasets"] = [];
+  // US PMMS is monthly resolution — only show it on the monthly view. Including
+  // it on the weekly zoom would compress the weekly Bankrate/MND signal to a
+  // thin sliver next to the long PMMS line.
+  if (timescale === "monthly") {
+    datasets.push({
       label: usLabel,
       data: usPoints,
       borderColor: "#1f5fa8",
@@ -135,24 +139,24 @@ export function RateChart({
       pointHoverRadius: 5,
       tension: 0.25,
       order: 4,
-    },
-    {
-      label: ncLabel,
-      data: ncPoints,
-      borderColor: NC_RED,
-      backgroundColor: NC_RED,
-      borderWidth: 2,
-      pointStyle: ncStyles.map((s) => s.pointStyle),
-      pointBackgroundColor: ncStyles.map((s) => s.pointBackgroundColor),
-      pointBorderColor: ncStyles.map((s) => s.pointBorderColor),
-      pointBorderWidth: ncStyles.map((s) => s.pointBorderWidth),
-      pointRadius: ncStyles.map((s) => s.pointRadius),
-      pointHoverRadius: 7,
-      tension: 0.25,
-      spanGaps: false,
-      order: 3,
-    },
-  ];
+    });
+  }
+  datasets.push({
+    label: ncLabel,
+    data: ncPoints,
+    borderColor: NC_RED,
+    backgroundColor: NC_RED,
+    borderWidth: 2,
+    pointStyle: ncStyles.map((s) => s.pointStyle),
+    pointBackgroundColor: ncStyles.map((s) => s.pointBackgroundColor),
+    pointBorderColor: ncStyles.map((s) => s.pointBorderColor),
+    pointBorderWidth: ncStyles.map((s) => s.pointBorderWidth),
+    pointRadius: ncStyles.map((s) => s.pointRadius),
+    pointHoverRadius: 7,
+    tension: 0.25,
+    spanGaps: false,
+    order: 3,
+  });
 
   const mndHasAny = mndSeries && mndSeries.some((p) => p.rate != null);
   if (mndHasAny) {
@@ -173,9 +177,10 @@ export function RateChart({
     });
   }
 
-  // Daily trail overlay — thin line traversing the raw daily values. Visible on
-  // both monthly and weekly views so you can see the day-to-day movement that
-  // got compressed into each monthly/weekly point.
+  // Daily trail overlay — connects the raw daily values so the user can see
+  // day-to-day movement on top of whichever aggregation (monthly/weekly) is
+  // showing. Drawn ABOVE the primary series so it stays visible even when
+  // dates overlap. Requires at least 2 daily points; otherwise omitted.
   const ncDailyPts: ChartPoint[] =
     (ncDaily ?? [])
       .filter((d) => d.rate != null)
@@ -184,14 +189,16 @@ export function RateChart({
     datasets.push({
       label: `${ncLabel.replace(/\s*\(.*\)$/, "")} (daily trail)`,
       data: ncDailyPts,
-      borderColor: "rgba(200, 57, 44, 0.45)",
-      backgroundColor: "rgba(200, 57, 44, 0.45)",
-      borderWidth: 1,
-      pointRadius: 1.5,
-      pointHoverRadius: 4,
+      borderColor: "rgba(200, 57, 44, 0.85)",
+      backgroundColor: "rgba(200, 57, 44, 0.85)",
+      borderWidth: 2,
+      borderDash: [3, 3],
+      pointRadius: 3.5,
+      pointStyle: "circle",
+      pointHoverRadius: 6,
       tension: 0,
       spanGaps: true,
-      order: 5,
+      order: 1,
     });
   }
   const mndDailyPts: ChartPoint[] =
@@ -202,14 +209,16 @@ export function RateChart({
     datasets.push({
       label: `${mndLabel?.replace(/\s*\(.*\)$/, "") ?? "MND"} (daily trail)`,
       data: mndDailyPts,
-      borderColor: "rgba(13, 122, 110, 0.45)",
-      backgroundColor: "rgba(13, 122, 110, 0.45)",
-      borderWidth: 1,
-      pointRadius: 1.5,
-      pointHoverRadius: 4,
+      borderColor: "rgba(13, 122, 110, 0.85)",
+      backgroundColor: "rgba(13, 122, 110, 0.85)",
+      borderWidth: 2,
+      borderDash: [3, 3],
+      pointRadius: 3.5,
+      pointStyle: "circle",
+      pointHoverRadius: 6,
       tension: 0,
       spanGaps: true,
-      order: 6,
+      order: 0,
     });
   }
 
@@ -218,7 +227,16 @@ export function RateChart({
   return (
     <>
       <div className="chartwrap">
-        <Line data={data} options={buildOptions({ title, yMin, yMax, hmdaBand })} />
+        <Line
+          data={data}
+          options={buildOptions({
+            title,
+            yMin,
+            yMax,
+            hmdaBand: timescale === "monthly" ? hmdaBand : undefined,
+            timescale,
+          })}
+        />
       </div>
       <ChartLegend
         usLabel={usLabel}
