@@ -114,14 +114,6 @@ function StateBody({ slug }: { slug: string }) {
             </h3>
             <p className="side-panel-sub">U.S. PMMS vs {name} Bankrate, by month</p>
           </div>
-          <button
-            type="button"
-            className="side-panel-close"
-            onClick={() => setTablePanelOpen(false)}
-            aria-label="Close panel"
-          >
-            ✕
-          </button>
         </div>
         {ncData.length > 0 ? (
           <Suspense fallback={<p className="loading">Loading table…</p>}>

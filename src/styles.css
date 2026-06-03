@@ -1653,6 +1653,10 @@ code {
   display: flex;
   flex-direction: column;
   padding: 18px 16px;
+  /* Panel scrolls on its own; without this the wheel events bubble to
+     the document and the main page scrolls behind the open panel. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .side-panel.open {
@@ -1715,6 +1719,13 @@ code {
   margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--c-border-soft, #eef1f6);
+  /* Stay visible while the panel body scrolls. */
+  position: sticky;
+  top: -18px; /* cancels .side-panel's top padding so the header pins flush */
+  background: inherit;
+  z-index: 1;
+  padding-top: 18px;
+  margin-top: -18px;
 }
 
 .side-panel-titles {
