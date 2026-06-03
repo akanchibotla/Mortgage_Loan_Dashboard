@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# Run JS-based actions on Node 24. Required from June 16, 2026; opting in early
+# eliminates the Node 20 deprecation warning. https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
