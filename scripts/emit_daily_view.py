@@ -73,7 +73,11 @@ def emit_bankrate(slug: str) -> tuple[int, int]:
             rate = r.get(f"table_{term}") or r.get(f"intro_{term}")
             if rate is None:
                 continue
-            out.append({"date": d, "rate": rate, "src": "Bankrate"})
+            row = {"date": d, "rate": rate, "src": "Bankrate"}
+            method = r.get("source_method")
+            if method:
+                row["method"] = method
+            out.append(row)
         path = os.path.join(out_dir, f"bankrate_{term}yr_daily.json")
         _write_json(path, out)
         counts.append(len(out))
@@ -101,7 +105,11 @@ def emit_mnd(slug: str) -> tuple[int, int]:
             rate = r.get(f"term_{term}")
             if rate is None:
                 continue
-            out.append({"date": d, "rate": rate, "src": "MND"})
+            row = {"date": d, "rate": rate, "src": "MND"}
+            method = r.get("source_method")
+            if method:
+                row["method"] = method
+            out.append(row)
         path = os.path.join(out_dir, f"mnd_{term}yr_daily.json")
         _write_json(path, out)
         counts.append(len(out))
