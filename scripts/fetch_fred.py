@@ -132,12 +132,77 @@ def fetch_series_html_fallback(fred_id: str) -> list[tuple[datetime, float]]:
     return []
 
 
+def fetch_series_api(fred_id: str) -> list[tuple[datetime, float]]:
+    """Tier 0: official FRED API (api.stlouisfed.org). Most reliable endpoint
+    when a free API key is configured via the FRED_API_KEY env var. Returns
+    [] when no key is set OR when the API request fails — callers always fall
+    through to the CSV/HTML tiers in either case, so the script keeps working
+    even without an API key configured."""
+    api_key = os.environ.get("FRED_API_KEY", "").strip()
+    if not api_key:
+        return []
+    url = (
+        f"https://api.stlouisfed.org/fred/series/observations"
+        f"?series_id={fred_id}&api_key={api_key}&file_type=json"
+    )
+    backoffs = [2, 5]
+    payload: dict | None = None
+    last_err: Exception | None = None
+    for attempt in range(len(backoffs) + 1):
+        try:
+            req = urllib.request.Request(url, headers=HEADERS)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                payload = json.loads(r.read().decode("utf-8"))
+            break
+        except (
+            TimeoutError,
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            json.JSONDecodeError,
+        ) as e:
+            last_err = e
+            print(f"  [{fred_id} API] attempt {attempt + 1} failed: {e}", file=sys.stderr)
+            if attempt < len(backoffs):
+                time.sleep(backoffs[attempt])
+    if payload is None:
+        print(f"  [{fred_id} API] exhausted retries; last error: {last_err}", file=sys.stderr)
+        return []
+    obs = payload.get("observations") or []
+    out: list[tuple[datetime, float]] = []
+    for row in obs:
+        if not isinstance(row, dict):
+            continue
+        date_str = row.get("date", "")
+        val_str = row.get("value", ".")
+        if val_str in ("", ".", None):
+            continue
+        try:
+            d = datetime.strptime(date_str, "%Y-%m-%d")
+            v = float(val_str)
+        except (ValueError, TypeError):
+            continue
+        out.append((d, v))
+    return out
+
+
 def fetch_series(fred_id: str) -> list[tuple[datetime, float]]:
-    """Three-tier fetch:
+    """Four-tier fetch:
+      Tier 0 — FRED API (requires FRED_API_KEY). Most reliable; preferred path.
       Tier 1 — primary fredgraph.csv endpoint
       Tier 2 — alternate series/X/downloaddata/X.csv endpoint
       Tier 3 — HTML scrape of series/X page (single latest weekly row only)
-    Each tier uses its own retry loop. Raises only if all three tiers fail."""
+    Tier 0 silently skips when no API key is set, so the script remains usable
+    without one — it just falls back to the public CSV/HTML endpoints, which
+    are flakier. Raises only if all available tiers fail."""
+    api_rows = fetch_series_api(fred_id)
+    if api_rows:
+        print(
+            f"  [{fred_id}] FRED API yielded {len(api_rows)} weekly observations "
+            f"(latest {api_rows[-1][0].date().isoformat()} = {api_rows[-1][1]})",
+            file=sys.stderr,
+        )
+        return api_rows
+
     primary_url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={fred_id}"
     alt_url = f"https://fred.stlouisfed.org/series/{fred_id}/downloaddata/{fred_id}.csv"
 

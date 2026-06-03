@@ -43,6 +43,23 @@ python scripts/build_states_index.py
 
 Then append `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`. The daily cron picks it up.
 
+## FRED API key (recommended)
+
+The FRED PMMS fetcher tries the official API at `api.stlouisfed.org` first
+when a key is configured, then falls back to the public CSV + HTML
+endpoints. The API tier is far more reliable — the public CSV graph
+endpoint is currently flaky and the runner sometimes can't reach the HTML
+page either, so without a key the dashboard can drift to stale PMMS values.
+
+1. Register a free key: <https://fred.stlouisfed.org/docs/api/api_key.html>
+2. Add it as a repo secret named `FRED_API_KEY`
+   (Settings → Secrets and variables → Actions → New repository secret)
+3. The daily workflow picks it up automatically — no other changes needed
+
+Locally, export `FRED_API_KEY=<your_key>` before running
+`python scripts/fetch_fred.py`. If unset, the script skips the API tier and
+prints what it tries next; you don't have to delete it.
+
 ## Data sources
 
 | Source | Coverage | Refresh |
