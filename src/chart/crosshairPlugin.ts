@@ -20,15 +20,22 @@
 import type { Plugin } from "chart.js";
 
 interface CursorState {
+  cursorX: number | null;
   cursorY: number | null;
 }
 
 const STATE_KEY = "__crosshairState" as const;
 const stateOf = (chart: unknown): CursorState => {
   const c = chart as { [STATE_KEY]?: CursorState };
-  if (!c[STATE_KEY]) c[STATE_KEY] = { cursorY: null };
+  if (!c[STATE_KEY]) c[STATE_KEY] = { cursorX: null, cursorY: null };
   return c[STATE_KEY]!;
 };
+
+const inChartArea = (
+  x: number,
+  y: number,
+  area: { left: number; right: number; top: number; bottom: number },
+): boolean => x >= area.left && x <= area.right && y >= area.top && y <= area.bottom;
 
 export const crosshairPlugin: Plugin<"line"> = {
   id: "crosshair",
@@ -40,29 +47,38 @@ export const crosshairPlugin: Plugin<"line"> = {
     // mousemove + touchmove come through via the wrapped native event.
     const nativeType = (e.native as Event | null)?.type;
     if (nativeType === "mousemove" || nativeType === "touchmove") {
+      state.cursorX = e.x ?? null;
       state.cursorY = e.y ?? null;
+      // Force a redraw on every move so the free-cursor crosshair tracks
+      // 1:1 even when no point is in range (without changed=true Chart.js
+      // would skip the redraw when the tooltip stays inactive).
       args.changed = true;
     } else if (nativeType === "mouseout" || e.type === "mouseout") {
+      state.cursorX = null;
       state.cursorY = null;
       args.changed = true;
     }
   },
 
   afterDatasetsDraw(chart) {
-    const tooltip = chart.tooltip;
-    if (!tooltip) return;
-    const active = tooltip.getActiveElements?.() ?? [];
-    if (active.length === 0) return;
-
-    // Snap X to the time slice the tooltip locked onto.
-    const xPx = (active[0].element as unknown as { x: number }).x;
-
-    // Snap Y to whichever active dataset's point is closest to the cursor.
-    // If we have no cursor position yet (touch first frame, etc.) just use
-    // the first item — same result as Chart.js's own tooltip caret pick.
     const state = stateOf(chart);
-    let yPx = (active[0].element as unknown as { y: number }).y;
-    if (state.cursorY != null) {
+    if (state.cursorX == null || state.cursorY == null) return;
+    const { chartArea } = chart;
+    if (!inChartArea(state.cursorX, state.cursorY, chartArea)) return;
+
+    const tooltip = chart.tooltip;
+    const active = tooltip?.getActiveElements?.() ?? [];
+
+    let xPx: number;
+    let yPx: number;
+    if (active.length > 0) {
+      // Snapped to a data point. The vertical line locks to the snapped
+      // X (time slice). The horizontal line locks to whichever active
+      // dataset's point is closest to the cursor's Y — so sliding the
+      // cursor up to PMMS pins the horizontal anchor on PMMS, down to
+      // NerdWallet pins it on NW.
+      xPx = (active[0].element as unknown as { x: number }).x;
+      yPx = (active[0].element as unknown as { y: number }).y;
       let bestDist = Math.abs(yPx - state.cursorY);
       for (let i = 1; i < active.length; i++) {
         const candidate = (active[i].element as unknown as { y: number }).y;
@@ -72,21 +88,26 @@ export const crosshairPlugin: Plugin<"line"> = {
           yPx = candidate;
         }
       }
+    } else {
+      // Free cursor — no point is in snap range. Crosshair tracks the
+      // raw cursor; no tooltip shows.
+      xPx = state.cursorX;
+      yPx = state.cursorY;
     }
 
-    const { ctx, chartArea } = chart;
+    const { ctx } = chart;
     ctx.save();
     ctx.strokeStyle = "rgba(74, 85, 104, 0.55)";
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 4]);
 
-    // Vertical line — snapped X across the full plot height
+    // Vertical line through the snap/cursor X, edge-to-edge
     ctx.beginPath();
     ctx.moveTo(xPx, chartArea.top);
     ctx.lineTo(xPx, chartArea.bottom);
     ctx.stroke();
 
-    // Horizontal line — snapped Y across the full plot width
+    // Horizontal line through the snap/cursor Y, edge-to-edge
     ctx.beginPath();
     ctx.moveTo(chartArea.left, yPx);
     ctx.lineTo(chartArea.right, yPx);

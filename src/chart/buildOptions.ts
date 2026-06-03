@@ -36,7 +36,12 @@ export function buildOptions({
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: { mode: "nearest", intersect: false },
+    // intersect: true with the enlarged Chart.defaults.elements.point.hitRadius
+    // (set in registerChart.ts) gives the "free cursor, snap when close"
+    // behavior — tooltip only activates when the cursor enters a point's
+    // hit area, and the crosshair plugin draws at the raw cursor position
+    // outside those zones.
+    interaction: { mode: "nearest", intersect: true },
     scales: {
       x: {
         type: "time",
