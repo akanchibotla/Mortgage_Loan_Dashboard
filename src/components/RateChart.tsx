@@ -407,6 +407,8 @@ export function RateChart({
         mndHasAny={!!mndHasAny}
         nwHasAny={!!nwHasAny}
         hasHmda={!!hmdaBand && timescale === "monthly"}
+        hasExperian={ncSeries.some((p) => (p.src ?? "").startsWith("Experian"))}
+        hasDailyTrail={ncDailyValid.length >= 2 || mndDailyValid.length >= 2}
         visibleSet={visibleSet}
         onToggle={toggle}
       />
@@ -434,6 +436,8 @@ function ChartLegend({
   mndHasAny,
   nwHasAny,
   hasHmda,
+  hasExperian,
+  hasDailyTrail,
   visibleSet,
   onToggle,
 }: {
@@ -444,6 +448,8 @@ function ChartLegend({
   mndHasAny: boolean;
   nwHasAny: boolean;
   hasHmda: boolean;
+  hasExperian: boolean;
+  hasDailyTrail: boolean;
   visibleSet: Set<ChartSourceId>;
   onToggle: (id: ChartSourceId) => void;
 }) {
@@ -481,23 +487,38 @@ function ChartLegend({
           renderRow("hmda", "cl-swatch-hmda", "HMDA 2024 reference band")}
       </ul>
       <div className="cl-markers-section" aria-label="Point style variants">
-        {mndHasAny && (
-          <div className="cl-markers-col">
-            <span className="cl-marker-item">
-              <span className="cl-m cl-m-triangle" aria-hidden="true" /> daily
-            </span>
-          </div>
-        )}
+        {/* Right column — per-source markers (one shape per dataset). */}
         <div className="cl-markers-col">
           <span className="cl-marker-item">
-            <span className="cl-m cl-m-diamond" aria-hidden="true" /> Wayback
+            <span className="cl-m cl-m-pmms-dot" aria-hidden="true" /> PMMS monthly
+          </span>
+          {mndHasAny && (
+            <span className="cl-marker-item">
+              <span className="cl-m cl-m-triangle" aria-hidden="true" /> MND monthly
+            </span>
+          )}
+          {hasDailyTrail && (
+            <span className="cl-marker-item">
+              <span className="cl-m cl-m-trail-dot" aria-hidden="true" /> daily-trail latest
+            </span>
+          )}
+        </div>
+        {/* Left column — shape variants that apply across multiple sources.
+            Wayback / live shapes appear in Bankrate-red and (when present)
+            NerdWallet-purple; only the red swatch is shown to keep the
+            legend compact. */}
+        <div className="cl-markers-col">
+          <span className="cl-marker-item">
+            <span className="cl-m cl-m-diamond" aria-hidden="true" /> Wayback (archive)
           </span>
           <span className="cl-marker-item">
-            <span className="cl-m cl-m-circle" aria-hidden="true" /> live
+            <span className="cl-m cl-m-circle" aria-hidden="true" /> live (today)
           </span>
-          <span className="cl-marker-item">
-            <span className="cl-m cl-m-cross" aria-hidden="true" /> Experian
-          </span>
+          {hasExperian && (
+            <span className="cl-marker-item">
+              <span className="cl-m cl-m-cross" aria-hidden="true" /> Experian (NC only)
+            </span>
+          )}
         </div>
       </div>
     </div>

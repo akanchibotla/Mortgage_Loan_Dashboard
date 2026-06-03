@@ -1254,6 +1254,34 @@ code {
   border-bottom: 11px solid #0d7a6e;
   background: transparent;
 }
+/* Small solid blue dot — PMMS monthly survey point (Chart.js default style
+   for the pmms dataset, undocumented in earlier versions of the legend). */
+.cl-m-pmms-dot {
+  width: 7px;
+  height: 7px;
+  margin: 2px;
+  background: #1f5fa8;
+  border-radius: 50%;
+}
+/* Two-tone solid circle — the daily-trail terminal marker. Bankrate's trail
+   draws this in red; MND's trail draws this in teal. Showing both halves
+   in the legend swatch makes it clear the same shape appears in both
+   source colors. */
+.cl-m-trail-dot {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(200, 57, 44, 0.85);
+}
+.cl-m-trail-dot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background: rgba(13, 122, 110, 0.85);
+}
 
 /* "What's the green band?" explainer pill under the rate chart */
 .hmda-explainer {
