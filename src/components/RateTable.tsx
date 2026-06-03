@@ -104,29 +104,31 @@ export function RateTable({ usData, ncData, mndData, nwData, mndDaily, stateLabe
                 <td>{p.m}</td>
                 <td>{usCell}</td>
                 <td>{ncCell}</td>
-                <td className="rt-mnd-cell">
-                  <span>{mndCell}</span>
-                  {hasWeeks && (
-                    <button
-                      type="button"
-                      className={`rt-weekly-toggle${expanded ? " is-open" : ""}`}
-                      onClick={() => setExpandedMonth(expanded ? null : p.m)}
-                      aria-expanded={expanded}
-                      aria-label={
-                        expanded
-                          ? `Hide weekly breakdown for ${p.m}`
-                          : `Show weekly breakdown for ${p.m}`
-                      }
-                      title={
-                        expanded
-                          ? "Hide weekly averages"
-                          : `Show ${weeks.length} weekly avg${weeks.length === 1 ? "" : "s"}`
-                      }
-                    >
-                      <span className="rt-weekly-count">{weeks.length}w</span>
-                      <span className="rt-weekly-caret" aria-hidden="true">▾</span>
-                    </button>
-                  )}
+                <td>
+                  <div className="rt-mnd-cell">
+                    <span>{mndCell}</span>
+                    {hasWeeks && (
+                      <button
+                        type="button"
+                        className={`rt-weekly-toggle${expanded ? " is-open" : ""}`}
+                        onClick={() => setExpandedMonth(expanded ? null : p.m)}
+                        aria-expanded={expanded}
+                        aria-label={
+                          expanded
+                            ? `Hide weekly breakdown for ${p.m}`
+                            : `Show weekly breakdown for ${p.m}`
+                        }
+                        title={
+                          expanded
+                            ? "Hide weekly averages"
+                            : `Show ${weeks.length} weekly avg${weeks.length === 1 ? "" : "s"}`
+                        }
+                      >
+                        <span className="rt-weekly-count">{weeks.length}w</span>
+                        <span className="rt-weekly-caret" aria-hidden="true">▾</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
                 {showNw && <td>{nwCell}</td>}
               </tr>
