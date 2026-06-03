@@ -36,8 +36,8 @@
   },
   {
     "month": "2025-01",
-    "rate": null,
-    "n_obs": 0
+    "rate": 7.25,
+    "n_obs": 1
   },
   {
     "month": "2025-02",
@@ -46,73 +46,73 @@
   },
   {
     "month": "2025-03",
-    "rate": null,
-    "n_obs": 0
+    "rate": 7.125,
+    "n_obs": 1
   },
   {
     "month": "2025-04",
-    "rate": null,
-    "n_obs": 0
+    "rate": 7.125,
+    "n_obs": 1
   },
   {
     "month": "2025-05",
-    "rate": null,
-    "n_obs": 0
+    "rate": 7.125,
+    "n_obs": 1
   },
   {
     "month": "2025-06",
-    "rate": null,
-    "n_obs": 0
+    "rate": 7.125,
+    "n_obs": 1
   },
   {
     "month": "2025-07",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.875,
+    "n_obs": 1
   },
   {
     "month": "2025-08",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.75,
+    "n_obs": 1
   },
   {
     "month": "2025-09",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.75,
+    "n_obs": 1
   },
   {
     "month": "2025-10",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.5,
+    "n_obs": 1
   },
   {
     "month": "2025-11",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.625,
+    "n_obs": 1
   },
   {
     "month": "2025-12",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.5,
+    "n_obs": 1
   },
   {
     "month": "2026-01",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.5,
+    "n_obs": 1
   },
   {
     "month": "2026-02",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.375,
+    "n_obs": 1
   },
   {
     "month": "2026-03",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.99,
+    "n_obs": 1
   },
   {
     "month": "2026-04",
-    "rate": null,
-    "n_obs": 0
+    "rate": 6.625,
+    "n_obs": 1
   },
   {
     "month": "2026-05",
