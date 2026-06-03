@@ -111,18 +111,16 @@ export default function HomePage() {
         filter={filter}
         onFilter={setFilter}
       />
-      {!panelOpen && (
-        <button
-          type="button"
-          className="side-panel-toggle"
-          onClick={() => setPanelOpen(true)}
-          aria-label="Open state list"
-          title="Show all states"
-        >
-          <span className="hamburger">☰</span>
-          <span className="toggle-label">All states</span>
-        </button>
-      )}
+      <button
+        type="button"
+        className={`side-panel-toggle ${panelOpen ? "open state-list-toggle-open" : ""}`}
+        onClick={() => setPanelOpen((v) => !v)}
+        aria-label={panelOpen ? "Hide state list" : "Open state list"}
+        title={panelOpen ? "Hide all states" : "Show all states"}
+      >
+        <span className="hamburger">{panelOpen ? "✕" : "☰"}</span>
+        <span className="toggle-label">{panelOpen ? "Hide states" : "All states"}</span>
+      </button>
 
       {/* CALCULATOR HERO — interactive controls that drive the map below */}
       <section className="hero hero-calc">
@@ -489,14 +487,6 @@ function StatePanel({
               Showing <b>{term}-year</b> quoted rate · click any state to drill in
             </p>
           </div>
-          <button
-            type="button"
-            className="side-panel-close"
-            onClick={onClose}
-            aria-label="Close panel"
-          >
-            ✕
-          </button>
         </div>
         <input
           type="search"

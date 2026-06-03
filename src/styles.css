@@ -2328,12 +2328,18 @@ code {
 .side-panel-toggle.rate-table-toggle-open {
   left: 492px;
 }
+/* Home page state-list panel is the default 320px wide, so the toggle
+   slides to just past its right edge (320 + 12px gutter). */
+.side-panel-toggle.state-list-toggle-open {
+  left: 332px;
+}
 @media (max-width: 720px) {
   .side-panel.rate-table-panel {
     width: 100vw;
     max-width: 100vw;
   }
-  .side-panel-toggle.rate-table-toggle-open {
+  .side-panel-toggle.rate-table-toggle-open,
+  .side-panel-toggle.state-list-toggle-open {
     left: auto;
     right: 12px;
   }
