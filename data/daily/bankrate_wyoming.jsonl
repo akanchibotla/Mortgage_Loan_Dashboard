@@ -1,2 +1,2 @@
 {"date_iso": "2026-06-01", "fetched_at_utc": "2026-06-01T16:59:21+00:00", "as_of": null, "state_slug": "wyoming", "source": "bankrate_state_browser", "table_15": null, "intro_15": 6.19, "table_30": null, "intro_30": 6.56}
-{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T11:01:22+00:00", "as_of": null, "state_slug": "wyoming", "source": "bankrate_state_browser", "source_method": "browser", "attempts": 1, "table_15": null, "table_30": null, "intro_15": 6.0, "intro_30": 6.58}
+{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T17:44:11+00:00", "as_of": null, "state_slug": "wyoming", "source": "bankrate_state_browser", "source_method": "browser", "attempts": 1, "table_15": null, "table_30": null, "intro_15": 5.87, "intro_30": 6.56}

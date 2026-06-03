@@ -1,2 +1,2 @@
 {"date_iso": "2026-06-01", "fetched_at_utc": "2026-06-01T16:26:01+00:00", "as_of": null, "state_slug": "hawaii", "source": "bankrate_state_browser", "table_15": null, "intro_15": 5.75, "table_30": null, "intro_30": 6.44}
-{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T10:53:12+00:00", "as_of": null, "state_slug": "hawaii", "source": "bankrate_state_browser", "source_method": "browser", "attempts": 1, "table_15": null, "table_30": null, "intro_15": 5.97, "intro_30": 6.64}
+{"date_iso": "2026-06-03", "fetched_at_utc": "2026-06-03T17:36:09+00:00", "as_of": null, "state_slug": "hawaii", "source": "bankrate_state_browser", "source_method": "browser", "attempts": 1, "table_15": null, "table_30": null, "intro_15": 5.47, "intro_30": 6.19}
