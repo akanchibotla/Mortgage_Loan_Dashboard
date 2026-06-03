@@ -26,10 +26,17 @@ export function buildOptions({
   let xUnit: "month" | "week" | "day" = "month";
   let xLabel = "Month";
   if (timescale === "weekly") {
+    // Data range stays 26 weeks ending today (weeklyDays = 182). xMax then
+    // extends one extra week past today so the rightmost tick sits a week
+    // ahead of the latest live point — that puts the most-recent marker in
+    // the middle of a tick interval instead of jammed against the right
+    // edge of the chart, where it's hard to read and hovering its tooltip
+    // gets clipped.
     const today = new Date();
     const past = new Date(today.getTime() - weeklyDays * 24 * 60 * 60 * 1000);
+    const futurePad = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
     xMin = past.toISOString().slice(0, 10);
-    xMax = today.toISOString().slice(0, 10);
+    xMax = futurePad.toISOString().slice(0, 10);
     xUnit = "week";
     xLabel = "Week";
   }
