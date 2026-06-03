@@ -125,8 +125,36 @@ export function RateChart({
   const ncSeries = ncData;
   const mndSeries = mndData;
 
+  // Date range covered by the daily-trail datasets. When a monthly-aggregate
+  // point falls inside this range its marker is suppressed on the Monthly
+  // view, because the daily trail already represents that reading (and the
+  // trail's own "only the latest gets a marker" rule then handles the
+  // visual cluster cleanly). Weekly view keeps every monthly marker visible
+  // since on that scale the marker is the anchor among the daily noise.
+  const ncDailyValid = (ncDaily ?? []).filter((d) => d.rate != null);
+  const mndDailyValid = (mndDaily ?? []).filter((d) => d.rate != null);
+  const ncDailyRange: [string, string] | null =
+    ncDailyValid.length >= 2
+      ? [ncDailyValid[0].date, ncDailyValid[ncDailyValid.length - 1].date]
+      : null;
+  const mndDailyRange: [string, string] | null =
+    mndDailyValid.length >= 2
+      ? [mndDailyValid[0].date, mndDailyValid[mndDailyValid.length - 1].date]
+      : null;
+  const inMonthlySuppressRange = (
+    date: string,
+    range: [string, string] | null,
+  ): boolean =>
+    timescale === "monthly" && range !== null && date >= range[0] && date <= range[1];
+
   const ncPoints: ChartPoint[] = ncSeries.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
-  const ncStyles = ncSeries.map((p) => (p.rate == null ? styleFor("") : styleFor(p.src)));
+  const ncStyles = ncSeries.map((p) => {
+    const base = p.rate == null ? styleFor("") : styleFor(p.src);
+    if (p.rate != null && inMonthlySuppressRange(p.date, ncDailyRange)) {
+      return { ...base, pointRadius: 0 };
+    }
+    return base;
+  });
 
   const { isVisible, visibleSet, toggle } = useChartToggles();
   const datasets: ChartData<"line", ChartPoint[]>["datasets"] = [];
@@ -239,8 +267,15 @@ export function RateChart({
     const isolated = isolationOf(mndPointsRaw);
     const lastIdx = mndPointsRaw.length - 1;
     // Latest reading always gets a marker (acts as the "current value"
-    // indicator), even when it's part of a close cluster.
-    const showMonthlyMarker = (i: number) => isolated[i] || i === lastIdx;
+    // indicator), even when it's part of a close cluster — UNLESS the
+    // daily trail already covers this date, in which case the trail's
+    // own latest marker is the canonical "current" indicator.
+    const showMonthlyMarker = (i: number) => {
+      if (inMonthlySuppressRange(mndPointsRaw[i].x as string, mndDailyRange)) {
+        return false;
+      }
+      return isolated[i] || i === lastIdx;
+    };
     pushDataset("mnd", {
       label: mndLabel ?? "NC (Mortgage News Daily)",
       data,
