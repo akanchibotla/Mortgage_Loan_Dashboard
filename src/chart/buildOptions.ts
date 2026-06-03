@@ -36,6 +36,18 @@ export function buildOptions({
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
+    // The chart renders static historical + daily data; nothing's animating
+    // in for narrative effect. Leaving animation on means every React
+    // re-render (panel open, dataset toggle, term flip) passes a freshly
+    // constructed datasets array to Chart.js, which then plays its default
+    // 1s numeric animation. For most series that's invisible because the
+    // markers don't change position; but the MND daily trail has exactly
+    // one visible marker (the "latest" point — earlier daily points
+    // render at radius 0 so the trail is just the dashed line), so its
+    // y-from-baseline animation looks like a single point pinging up from
+    // the bottom of the chart. Disabling all animations makes updates
+    // snappy and consistent — there's no narrative value lost.
+    animation: false,
     // intersect: true with the enlarged Chart.defaults.elements.point.hitRadius
     // (set in registerChart.ts) gives the "free cursor, snap when close"
     // behavior — tooltip only activates when the cursor enters a point's
