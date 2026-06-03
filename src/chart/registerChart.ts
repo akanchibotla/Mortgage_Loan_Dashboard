@@ -12,6 +12,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import annotationPlugin from "chartjs-plugin-annotation";
+import { crosshairPlugin } from "./crosshairPlugin";
 
 Chart.register(
   LineController,
@@ -24,4 +25,5 @@ Chart.register(
   Title,
   Filler,
   annotationPlugin,
+  crosshairPlugin,
 );
