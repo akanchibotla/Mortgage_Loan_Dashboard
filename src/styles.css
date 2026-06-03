@@ -1653,6 +1653,11 @@ code {
   display: flex;
   flex-direction: column;
   padding: 18px 16px;
+  /* border-box so the resize handle's X-position lines up with the
+     panel's visual right edge — without this, padding + border add
+     ~33px to the rendered width and the resizer + toggle drift past
+     the panel boundary as the user drags. */
+  box-sizing: border-box;
   /* Panel scrolls on its own; without this the wheel events bubble to
      the document and the main page scrolls behind the open panel. */
   overflow-y: auto;
@@ -2326,6 +2331,8 @@ code {
   max-width: 95vw;
 }
 .side-panel-toggle.rate-table-toggle-open {
+  /* Fallback offset when inline style isn't set (e.g. first paint).
+     StateDashboard overrides this with style={{ left: panelWidth + 12 }}. */
   left: 492px;
 }
 /* Home page state-list panel is the default 320px wide, so the toggle
@@ -2333,15 +2340,62 @@ code {
 .side-panel-toggle.state-list-toggle-open {
   left: 332px;
 }
+
+/* Vertical drag handle pinned to the rate-table panel's right edge.
+   Lives as a sibling of the panel (position: fixed) so it stays put
+   while the panel body scrolls underneath it. */
+.side-panel-resizer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  margin-left: -4px; /* center the 8px handle on the panel edge */
+  cursor: col-resize;
+  background: transparent;
+  z-index: 55; /* above panel (50) and backdrop (40), below toggle (60) */
+  touch-action: none;
+}
+.side-panel-resizer::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 36px;
+  background: var(--c-border, #d4d8e0);
+  border-radius: 1px;
+  transition: background 0.15s, height 0.15s;
+  pointer-events: none;
+}
+.side-panel-resizer:hover::after,
+.side-panel-resizer:active::after {
+  background: var(--c-brand, #1f5fa8);
+  height: 72px;
+}
+
+/* Inside the rate-table drawer, the comparison table fills the panel
+   width — so resizing actually scales the columns instead of leaving
+   white space (or clipping) at the right edge. */
+.side-panel.rate-table-panel table {
+  width: 100%;
+}
+
 @media (max-width: 720px) {
+  .side-panel-resizer {
+    display: none;
+  }
+  /* On mobile the panel covers the full viewport, so inline width/left
+     styles from the dashboard shouldn't apply — force the full-width
+     layout with !important. */
   .side-panel.rate-table-panel {
-    width: 100vw;
-    max-width: 100vw;
+    width: 100vw !important;
+    max-width: 100vw !important;
   }
   .side-panel-toggle.rate-table-toggle-open,
   .side-panel-toggle.state-list-toggle-open {
-    left: auto;
-    right: 12px;
+    left: auto !important;
+    right: 12px !important;
   }
 }
 

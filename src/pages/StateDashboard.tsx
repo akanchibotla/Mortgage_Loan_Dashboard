@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, use } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, use, type PointerEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { loadPmms, loadStateData, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
@@ -22,6 +22,24 @@ const DemographicsPanel = lazy(() =>
 const AmortPanel = lazy(() =>
   import("../components/AmortPanel").then((m) => ({ default: m.AmortPanel })),
 );
+
+const PANEL_WIDTH_DEFAULT = 480;
+const PANEL_WIDTH_MIN = 360;
+const PANEL_WIDTH_MAX = 1100;
+const PANEL_WIDTH_STORAGE_KEY = "mld-rate-table-panel-width";
+
+function readSavedPanelWidth(): number {
+  if (typeof window === "undefined") return PANEL_WIDTH_DEFAULT;
+  try {
+    const raw = window.localStorage.getItem(PANEL_WIDTH_STORAGE_KEY);
+    if (!raw) return PANEL_WIDTH_DEFAULT;
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return PANEL_WIDTH_DEFAULT;
+    return Math.max(PANEL_WIDTH_MIN, Math.min(PANEL_WIDTH_MAX, n));
+  } catch {
+    return PANEL_WIDTH_DEFAULT;
+  }
+}
 
 const cache = new Map<string, Promise<StateData | null>>();
 
@@ -48,8 +66,43 @@ function StateBody({ slug }: { slug: string }) {
   const { pmms15, pmms30 } = loadPmms();
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
+  const [panelWidth, setPanelWidth] = useState<number>(readSavedPanelWidth);
+  const draggingRef = useRef(false);
   const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
   const [timescale, setTimescale] = useState<"monthly" | "weekly">("monthly");
+
+  // Persist the resized width so it survives reloads + per-state navigation.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(PANEL_WIDTH_STORAGE_KEY, String(panelWidth));
+    } catch {
+      // ignore quota / private-mode failures
+    }
+  }, [panelWidth]);
+
+  function onResizeStart(e: PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    draggingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+  function onResizeMove(e: PointerEvent<HTMLDivElement>) {
+    if (!draggingRef.current) return;
+    // Panel is left-anchored, so cursor's clientX === panel's right edge.
+    const next = Math.max(
+      PANEL_WIDTH_MIN,
+      Math.min(PANEL_WIDTH_MAX, Math.round(e.clientX)),
+    );
+    setPanelWidth(next);
+  }
+  function onResizeEnd(e: PointerEvent<HTMLDivElement>) {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // capture may already be gone
+    }
+  }
   usePageMeta({
     title: data ? `${data.meta.name} mortgage rates` : `${slug} mortgage rates`,
     description: data
@@ -88,6 +141,7 @@ function StateBody({ slug }: { slug: string }) {
       <button
         type="button"
         className={`side-panel-toggle ${tablePanelOpen ? "open rate-table-toggle-open" : ""}`}
+        style={tablePanelOpen ? { left: `${panelWidth + 12}px` } : undefined}
         onClick={() => setTablePanelOpen((v) => !v)}
         aria-label={tablePanelOpen ? "Close monthly table" : "Open monthly comparison table"}
         title={tablePanelOpen ? "Hide monthly table" : "Show monthly comparison table"}
@@ -103,9 +157,27 @@ function StateBody({ slug }: { slug: string }) {
           aria-hidden="true"
         />
       )}
+      {tablePanelOpen && (
+        <div
+          className="side-panel-resizer"
+          style={{ left: `${panelWidth}px` }}
+          onPointerDown={onResizeStart}
+          onPointerMove={onResizeMove}
+          onPointerUp={onResizeEnd}
+          onPointerCancel={onResizeEnd}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize monthly comparison panel"
+          aria-valuenow={panelWidth}
+          aria-valuemin={PANEL_WIDTH_MIN}
+          aria-valuemax={PANEL_WIDTH_MAX}
+          title="Drag to resize"
+        />
+      )}
       <aside
         className={`side-panel rate-table-panel ${tablePanelOpen ? "open" : ""}`}
         aria-hidden={!tablePanelOpen}
+        style={{ width: `${panelWidth}px` }}
       >
         <div className="side-panel-header">
           <div>
