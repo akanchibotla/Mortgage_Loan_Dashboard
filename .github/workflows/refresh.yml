@@ -77,11 +77,21 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Fetch NerdWallet live per state
+        run: |
+          for s in ${{ steps.states.outputs.slugs }}; do
+            echo "::group::NerdWallet $s"
+            python scripts/fetch_nerdwallet_state.py --state "$s" || echo "nerdwallet:$s" >> "$FAIL_LOG"
+            sleep 2
+            echo "::endgroup::"
+          done
+
       - name: Aggregate + reconcile per state
         run: |
           for s in ${{ steps.states.outputs.slugs }}; do
             echo "::group::Aggregate $s"
-            python scripts/aggregate_mnd_state.py --state "$s" || echo "aggregate:$s" >> "$FAIL_LOG"
+            python scripts/aggregate_mnd_state.py --state "$s" || echo "aggregate-mnd:$s" >> "$FAIL_LOG"
+            python scripts/aggregate_nerdwallet_state.py --state "$s" || echo "aggregate-nerdwallet:$s" >> "$FAIL_LOG"
             python scripts/reconcile_state.py --state "$s" || echo "reconcile:$s" >> "$FAIL_LOG"
             python scripts/emit_daily_view.py --state "$s" || echo "daily-view:$s" >> "$FAIL_LOG"
             echo "::endgroup::"
