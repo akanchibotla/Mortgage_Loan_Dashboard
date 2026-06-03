@@ -10,7 +10,7 @@ interface BuildOptionsArgs {
   yMax: number;
   hmdaBand?: HmdaSummary;
   timescale?: "monthly" | "weekly";
-  weeklyDays?: number; // window size when zoomed to weekly view; default 84 (~12 weeks)
+  weeklyDays?: number; // window size when zoomed to weekly view; default 182 (~26 weeks)
 }
 
 export function buildOptions({
@@ -19,7 +19,7 @@ export function buildOptions({
   yMax,
   hmdaBand,
   timescale = "monthly",
-  weeklyDays = 84,
+  weeklyDays = 182,
 }: BuildOptionsArgs): ChartOptions<"line"> {
   let xMin: string = W.from;
   let xMax: string = W.to;
