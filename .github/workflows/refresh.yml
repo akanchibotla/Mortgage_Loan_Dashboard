@@ -97,6 +97,60 @@ jobs:
             echo "Daily refresh: no component-level failures."
           fi
 
+      - name: Validate daily coverage
+        if: always()
+        run: |
+          today=$(date -u +%Y-%m-%d)
+          yesterday=$(date -u -d 'yesterday' +%Y-%m-%d)
+          bk_missing=()
+          bk_stale=()
+          mnd_missing=()
+          mnd_stale=()
+          for s in ${{ steps.states.outputs.slugs }}; do
+            bf="src/data/states/$s/bankrate_30yr_daily.json"
+            mf="src/data/states/$s/mnd_30yr_daily.json"
+            if [ -f "$bf" ]; then
+              last=$(jq -r '.[-1].date // ""' "$bf" 2>/dev/null)
+              if [ -z "$last" ]; then
+                bk_missing+=("$s")
+              elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
+                bk_stale+=("$s=$last")
+              fi
+            else
+              bk_missing+=("$s")
+            fi
+            if [ -f "$mf" ]; then
+              last=$(jq -r '.[-1].date // ""' "$mf" 2>/dev/null)
+              if [ -z "$last" ]; then
+                mnd_missing+=("$s")
+              elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
+                mnd_stale+=("$s=$last")
+              fi
+            else
+              mnd_missing+=("$s")
+            fi
+          done
+          ok=true
+          if [ ${#bk_missing[@]} -gt 0 ]; then
+            echo "::warning::Bankrate daily files missing/empty: ${bk_missing[*]}"
+            ok=false
+          fi
+          if [ ${#bk_stale[@]} -gt 0 ]; then
+            echo "::warning::Bankrate daily files stale (last row >1 day old): ${bk_stale[*]}"
+            ok=false
+          fi
+          if [ ${#mnd_missing[@]} -gt 0 ]; then
+            echo "::warning::MND daily files missing/empty: ${mnd_missing[*]}"
+            ok=false
+          fi
+          if [ ${#mnd_stale[@]} -gt 0 ]; then
+            echo "::warning::MND daily files stale (last row >1 day old): ${mnd_stale[*]}"
+            ok=false
+          fi
+          if $ok; then
+            echo "Daily coverage check passed: every active state has recent Bankrate + MND data."
+          fi
+
       - name: Commit refreshed data
         env:
           GIT_AUTHOR_NAME: 'github-actions[bot]'
