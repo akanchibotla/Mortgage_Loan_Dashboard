@@ -27,6 +27,14 @@ def mnd_today_view(slug: str) -> str:
     return os.path.join(state_data_dir(slug), "mnd_today.json")
 
 
+def nerdwallet_jsonl(slug: str) -> str:
+    return os.path.join(DAILY_DIR, f"nerdwallet_{slug}.jsonl")
+
+
+def nerdwallet_today_view(slug: str) -> str:
+    return os.path.join(state_data_dir(slug), "nerdwallet_today.json")
+
+
 # Raw inputs that live outside the repo (only used by one-shot ingest scripts
 # that aren't part of the CI refresh pipeline).
 RAW_PMMS_XLSX = r"C:\Users\akanc\Documents\freddie_pmms.xlsx"
