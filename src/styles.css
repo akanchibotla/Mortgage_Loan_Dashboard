@@ -3232,6 +3232,11 @@ code {
 .loan-amort-details {
   margin-top: 12px;
 }
+
+.loan-card-spacer {
+  flex: 1 1 0;
+  min-height: 0;
+}
 .loan-amort-details > summary {
   display: inline-flex;
   align-items: center;

@@ -511,6 +511,8 @@ function StateLoanContent({
         p90={p90}
       />
 
+      <div className="loan-card-spacer" aria-hidden="true" />
+
       <LoanAmortDisclosure
         loan={loan}
         centralRate={centralRate}
@@ -566,6 +568,8 @@ function NationalLoanContent({
         centralRate={centralRate}
         centralLabel={centralLabel}
       />
+
+      <div className="loan-card-spacer" aria-hidden="true" />
 
       <LoanAmortDisclosure
         loan={loan}
