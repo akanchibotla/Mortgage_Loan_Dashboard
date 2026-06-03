@@ -1,4 +1,14 @@
-import { lazy, Suspense, use, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  use,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import { loadPmms, loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
@@ -286,6 +296,47 @@ export default function CalculatorPage() {
 
   const cols = Math.min(loans.length, MAX_LOANS);
 
+  // Align ".loan-card-top" (form + HMDA block) and ".loan-block-output"
+  // (Monthly P&I) heights across every comparison card so the P&I label
+  // and the "See month-by-month amortization" button each sit on a
+  // shared y across all cards regardless of which loan structure / state
+  // is selected. Re-measures when loans change or the window resizes.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [resizeTick, setResizeTick] = useState(0);
+
+  const measureSections = useCallback(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    // Reset CSS variables so the next measurement sees the natural height,
+    // not the previously-applied min-height floor.
+    grid.style.setProperty("--card-top-min", "auto");
+    grid.style.setProperty("--card-pi-min", "auto");
+    // Force a synchronous reflow before reading offsetHeight.
+    void grid.offsetHeight;
+    const tops = grid.querySelectorAll<HTMLElement>(".loan-card-top");
+    const pis = grid.querySelectorAll<HTMLElement>(".loan-block-output");
+    let topMax = 0;
+    tops.forEach((el) => {
+      if (el.offsetHeight > topMax) topMax = el.offsetHeight;
+    });
+    let piMax = 0;
+    pis.forEach((el) => {
+      if (el.offsetHeight > piMax) piMax = el.offsetHeight;
+    });
+    if (topMax > 0) grid.style.setProperty("--card-top-min", `${topMax}px`);
+    if (piMax > 0) grid.style.setProperty("--card-pi-min", `${piMax}px`);
+  }, []);
+
+  useLayoutEffect(() => {
+    measureSections();
+  }, [measureSections, loans, resizeTick]);
+
+  useEffect(() => {
+    const onResize = () => setResizeTick((t) => t + 1);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   return (
     <>
       <h1>Borrower expectation calculator</h1>
@@ -315,7 +366,7 @@ export default function CalculatorPage() {
         </button>
       </div>
 
-      <div className={`calc-compare-grid cols-${cols}`}>
+      <div className={`calc-compare-grid cols-${cols}`} ref={gridRef}>
         {loans.map((loan, idx) => (
           <LoanCard
             key={loan.id}
@@ -449,6 +500,7 @@ function StateLoanContent({
 
   return (
     <>
+      <div className="loan-card-top">
       <LoanCardForm
         loan={loan}
         states={states}
@@ -502,6 +554,7 @@ function StateLoanContent({
           </p>
         </div>
       )}
+      </div>
 
       <PhasePaymentBlock
         loan={loan}
@@ -553,15 +606,17 @@ function NationalLoanContent({
 
   return (
     <>
-      <LoanCardForm
-        loan={loan}
-        states={states}
-        counties={[]}
-        stateName=""
-        anchorRate={usRate}
-        anchorSourceLabel={anchorSourceLabel}
-        onChange={onChange}
-      />
+      <div className="loan-card-top">
+        <LoanCardForm
+          loan={loan}
+          states={states}
+          counties={[]}
+          stateName=""
+          anchorRate={usRate}
+          anchorSourceLabel={anchorSourceLabel}
+          onChange={onChange}
+        />
+      </div>
 
       <PhasePaymentBlock
         loan={loan}

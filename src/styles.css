@@ -3160,6 +3160,24 @@ code {
 .calc-compare-grid:has(.loan-amort-details[open]) {
   align-items: start;
 }
+
+/* Two horizontal lines should stay aligned across every comparison card
+   regardless of loan structure, state, or ARM selection:
+     - the Monthly P&I section header
+     - the "See month-by-month amortization" button
+   That requires equalizing the section ABOVE P&I (form + HMDA block) and
+   the P&I section itself. The CSS variables --card-top-min and
+   --card-pi-min are written by a useLayoutEffect in CalculatorPage that
+   measures each card's natural section heights and sets the per-grid
+   floor; cards with shorter content stretch to the floor. */
+.loan-card-top {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--card-top-min, auto);
+}
+.loan-card .loan-block.loan-block-output {
+  min-height: var(--card-pi-min, auto);
+}
 .calc-compare-grid.cols-1 {
   grid-template-columns: 1fr;
 }
