@@ -75,16 +75,42 @@ def _fetch_html_once(slug: str) -> str:
             browser.close()
 
 
+def _html_has_real_values(html: str) -> bool:
+    """An attempt is real only if at least one term yields a non-placeholder value
+    from either the table or the intro band."""
+    for term in (15, 30):
+        for pat in (table_pattern(term), intro_pattern(term)):
+            m = pat.search(html)
+            if m and real(float(m.group(1))) is not None:
+                return True
+    return False
+
+
 def fetch_html(slug: str) -> tuple[str, int]:
     """Try up to len(RETRY_BACKOFFS_S)+1 times. Returns (html, attempts_used).
-    Considers an attempt successful if HTML is returned (non-empty)."""
+
+    An attempt is "successful" only when the HTML contains at least one real
+    rate value (table_* or intro_*). Un-hydrated pages still return long HTML
+    so a size check alone never retries — see the bug where every failure
+    showed attempts=1 despite a 3-attempt budget."""
     last_err: Exception | None = None
+    best_html: str | None = None
     for attempt in range(len(RETRY_BACKOFFS_S) + 1):
         try:
             html = _fetch_html_once(slug)
             if html and len(html) > 1000:
-                return html, attempt + 1
-            print(f"  attempt {attempt + 1}: HTML too short ({len(html) if html else 0} chars)", file=sys.stderr)
+                if _html_has_real_values(html):
+                    return html, attempt + 1
+                best_html = html
+                print(
+                    f"  attempt {attempt + 1}: HTML returned but no real rate values; will retry",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"  attempt {attempt + 1}: HTML too short ({len(html) if html else 0} chars)",
+                    file=sys.stderr,
+                )
         except Exception as e:  # broad: include browser launch + sync_playwright errors
             last_err = e
             print(f"  attempt {attempt + 1} raised: {e}", file=sys.stderr)
@@ -92,7 +118,13 @@ def fetch_html(slug: str) -> tuple[str, int]:
             delay = RETRY_BACKOFFS_S[attempt]
             print(f"  sleeping {delay}s before retry", file=sys.stderr)
             time.sleep(delay)
-    raise RuntimeError(f"Bankrate fetch_html failed for {slug} after {len(RETRY_BACKOFFS_S) + 1} attempts: {last_err}")
+    # Exhausted retries. If we ever got a usable-length page, return it so the
+    # caller can still record a partial row (as_of, etc.) instead of raising.
+    if best_html is not None:
+        return best_html, len(RETRY_BACKOFFS_S) + 1
+    raise RuntimeError(
+        f"Bankrate fetch_html failed for {slug} after {len(RETRY_BACKOFFS_S) + 1} attempts: {last_err}"
+    )
 
 
 def write_jsonl_idempotent(path: str, new_row: dict) -> None:
