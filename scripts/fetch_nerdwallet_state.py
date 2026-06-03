@@ -46,25 +46,49 @@ HEADERS = {
 
 # Headline APR line — anchored on the exact "1w" delta marker that follows
 # each rate, so we don't false-match a 30-year-fixed APR from a comparison row.
+# Modern layout only (the "X-Year Fixed APR" headline doesn't exist in pre-2024 archives).
 HEADLINE_30_PAT = re.compile(r"30-Year Fixed APR\s+(\d+\.\d{1,3})%\s+-?\d+\.\d+%\s+1w", re.I)
 HEADLINE_15_PAT = re.compile(r"15-Year Fixed APR\s+(\d+\.\d{1,3})%\s+-?\d+\.\d+%\s+1w", re.I)
 
-# Product table row — "30-year Fixed   6.29%   6.30%" (interest rate then APR).
-# Negative lookahead skips FHA / VA / Jumbo variants so we only match the
-# conventional headline product.
+# Product table row — covers all three layouts of the page we've seen:
+#   modern   (2024+): "30-year Fixed   6.29%   6.30%"
+#   2023:             "30-year fixed-rate 6.115% 6.203%"   (hyphen before "rate")
+#   2020-2021:        "30-year fixed rate 3.012% 3.081%"   (space before "rate")
+# Negative lookahead skips FHA / VA / Jumbo / Investment / Condo / Second-home
+# variants so we only pin the conventional purchase product.
 PRODUCT_30_PAT = re.compile(
-    r"30-year Fixed\s+(?!FHA|VA|Jumbo)(\d+\.\d{1,3})%\s+(\d+\.\d{1,3})%",
+    r"30-year Fixed(?:[\- ]rate)?\s+"
+    r"(?!FHA|VA|Jumbo|Investment|Condo|Second)"
+    r"(\d+\.\d{1,3})%\s+(\d+\.\d{1,3})%",
     re.I,
 )
 PRODUCT_15_PAT = re.compile(
-    r"15-year Fixed\s+(?!FHA|VA|Jumbo)(\d+\.\d{1,3})%\s+(\d+\.\d{1,3})%",
+    r"15-year Fixed(?:[\- ]rate)?\s+"
+    r"(?!FHA|VA|Jumbo|Investment|Condo|Second)"
+    r"(\d+\.\d{1,3})%\s+(\d+\.\d{1,3})%",
     re.I,
 )
 
-# As-of timestamp printed on the page, e.g.:
-#   "Rates are current as of June 3, 2026 2:10 PM EDT"
+# Tertiary fallback used only by older archives: a sentence of the form
+#   2023:      "Today's mortgage rates in NC are 6.203% for a 30-year fixed, 5.494% for a 15-year fixed"
+#   2020-2021: "Current rates in NC are 3.081 % for a 30-year fixed, 2.875 % for a 15-year fixed"
+# Both phrasings use "are" as the verb; the older one has a space before "%".
+# The numbers in this sentence are APR, so we record them in term_*_apr only.
+SENTENCE_PAT = re.compile(
+    r"are\s+(\d+\.\d{1,3})\s*%\s+for\s+a\s+30[\- ]year\s+fixed[^,]*,\s+"
+    r"(\d+\.\d{1,3})\s*%\s+for\s+a\s+15[\- ]year\s+fixed",
+    re.I,
+)
+
+# As-of timestamp printed on the page. Two phrasings across history:
+#   modern (2024+): "Rates are current as of June 3, 2026 2:10 PM EDT"
+#   archives:       "(APR) Accurate as of 08/09/2020"  (date only, no time)
 AS_OF_PAT = re.compile(
     r"current as of\s+([A-Z][a-z]+ \d{1,2},\s+20\d{2}\s+\d{1,2}:\d{2}\s*[AP]M\s+[A-Z]{2,4})",
+    re.I,
+)
+AS_OF_ARCHIVE_PAT = re.compile(
+    r"Accurate as of\s+(\d{1,2}/\d{1,2}/20\d{2})",
     re.I,
 )
 
@@ -83,37 +107,71 @@ def _strip_html(html: str) -> str:
 
 
 def _parse_as_of(raw: str | None) -> str | None:
-    """NerdWallet stamp → ISO date (drop time-of-day; daily granularity is enough)."""
+    """NerdWallet stamp → ISO date (drop time-of-day; daily granularity is enough).
+
+    Handles two phrasings:
+      - modern:  "June 3, 2026 2:10 PM EDT"
+      - archive: "08/09/2020"
+    """
     if not raw:
         return None
     m = re.match(r"([A-Z][a-z]+)\s+(\d{1,2}),\s+(20\d{2})", raw)
-    if not m:
-        return None
-    try:
-        return dt.datetime.strptime(
-            f"{m.group(1)} {m.group(2)} {m.group(3)}", "%B %d %Y"
-        ).date().isoformat()
-    except ValueError:
-        return None
+    if m:
+        try:
+            return dt.datetime.strptime(
+                f"{m.group(1)} {m.group(2)} {m.group(3)}", "%B %d %Y"
+            ).date().isoformat()
+        except ValueError:
+            return None
+    m = re.match(r"(\d{1,2})/(\d{1,2})/(20\d{2})", raw)
+    if m:
+        try:
+            return dt.date(int(m.group(3)), int(m.group(1)), int(m.group(2))).isoformat()
+        except ValueError:
+            return None
+    return None
 
 
 def extract(text: str) -> dict | None:
-    """Pull both Interest rate (canonical) and APR (secondary) from one page."""
-    # Try product-table interest+APR first; fall back to headline-only APR.
+    """Pull both Interest rate (canonical) and APR (secondary) from one page.
+
+    Priority order:
+      1. Product table (PRODUCT_*): gives both interest rate + APR. Present on
+         modern (2024+) and historical (~2023) layouts.
+      2. Headline (HEADLINE_*): "30-Year Fixed APR X.XX% 1w". Modern only;
+         gives APR only.
+      3. Sentence (SENTENCE_PAT): "are X.XX% for a 30-year fixed, ...".
+         Historical archives only; gives APR only.
+    """
     p30 = PRODUCT_30_PAT.search(text)
     p15 = PRODUCT_15_PAT.search(text)
     h30 = HEADLINE_30_PAT.search(text)
     h15 = HEADLINE_15_PAT.search(text)
+    s_all = SENTENCE_PAT.search(text)
 
-    term_30 = float(p30.group(1)) if p30 else (float(h30.group(1)) if h30 else None)
-    term_30_apr = float(p30.group(2)) if p30 else (float(h30.group(1)) if h30 else None)
-    term_15 = float(p15.group(1)) if p15 else (float(h15.group(1)) if h15 else None)
-    term_15_apr = float(p15.group(2)) if p15 else (float(h15.group(1)) if h15 else None)
-
-    if term_15 is None and term_30 is None:
+    def headline_or_sentence_apr(headline_m, idx_in_sentence: int) -> float | None:
+        if headline_m:
+            return float(headline_m.group(1))
+        if s_all:
+            return float(s_all.group(idx_in_sentence))
         return None
 
-    as_of_m = AS_OF_PAT.search(text)
+    term_30 = float(p30.group(1)) if p30 else None
+    term_30_apr = float(p30.group(2)) if p30 else headline_or_sentence_apr(h30, 1)
+    term_15 = float(p15.group(1)) if p15 else None
+    term_15_apr = float(p15.group(2)) if p15 else headline_or_sentence_apr(h15, 2)
+
+    if term_15 is None and term_30 is None and term_15_apr is None and term_30_apr is None:
+        return None
+
+    if p30 or p15:
+        src = "product_table"
+    elif h30 or h15:
+        src = "headline_only"
+    else:
+        src = "sentence_only"
+
+    as_of_m = AS_OF_PAT.search(text) or AS_OF_ARCHIVE_PAT.search(text)
     as_of_raw = as_of_m.group(1).strip() if as_of_m else None
     return {
         "term_15": term_15,
@@ -121,7 +179,7 @@ def extract(text: str) -> dict | None:
         "term_15_apr": term_15_apr,
         "term_30_apr": term_30_apr,
         "as_of_raw": as_of_raw,
-        "extracted_from": "product_table" if (p30 or p15) else "headline_only",
+        "extracted_from": src,
     }
 
 
