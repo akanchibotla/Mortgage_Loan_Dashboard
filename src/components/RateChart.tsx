@@ -9,6 +9,7 @@ import type {
   NcMonthlySnapshot,
 } from "../types";
 import { buildOptions } from "../chart/buildOptions";
+import { useChartToggles, type ChartSourceId } from "../lib/useChartToggles";
 import "../chart/registerChart";
 
 interface Props {
@@ -99,8 +100,19 @@ export function RateChart({
   const ncPoints: ChartPoint[] = ncSeries.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
   const ncStyles = ncSeries.map((p) => (p.rate == null ? styleFor("") : styleFor(p.src)));
 
+  const { isVisible, visibleSet, toggle } = useChartToggles();
   const datasets: ChartData<"line", ChartPoint[]>["datasets"] = [];
-  datasets.push({
+  // Track each dataset's source ID so the legend can show what's toggled
+  // and the chart can hide datasets without re-ordering the array.
+  const sourceIds: ChartSourceId[] = [];
+  const pushDataset = (
+    sid: ChartSourceId,
+    ds: ChartData<"line", ChartPoint[]>["datasets"][number],
+  ) => {
+    sourceIds.push(sid);
+    datasets.push({ ...ds, hidden: !isVisible(sid) });
+  };
+  pushDataset("pmms", {
     label: usLabel,
     data: usPoints,
     borderColor: "#1f5fa8",
@@ -111,7 +123,7 @@ export function RateChart({
     tension: 0.25,
     order: 4,
   });
-  datasets.push({
+  pushDataset("bankrate", {
     label: ncLabel,
     data: ncPoints,
     borderColor: NC_RED,
@@ -201,7 +213,7 @@ export function RateChart({
     // Latest reading always gets a marker (acts as the "current value"
     // indicator), even when it's part of a close cluster.
     const showMonthlyMarker = (i: number) => isolated[i] || i === lastIdx;
-    datasets.push({
+    pushDataset("mnd", {
       label: mndLabel ?? "NC (Mortgage News Daily)",
       data,
       borderColor: MND_TEAL,
@@ -232,7 +244,7 @@ export function RateChart({
   if (ncDailyPts.length >= 2) {
     const data = withGapBreaks(ncDailyPts);
     const lastIdx = ncDailyPts.length - 1;
-    datasets.push({
+    pushDataset("bankrate", {
       label: `${ncLabel.replace(/\s*\(.*\)$/, "")} (daily trail)`,
       data,
       borderColor: "rgba(200, 57, 44, 0.85)",
@@ -258,7 +270,7 @@ export function RateChart({
   if (mndDailyPts.length >= 2) {
     const data = withGapBreaks(mndDailyPts);
     const lastIdx = mndDailyPts.length - 1;
-    datasets.push({
+    pushDataset("mnd", {
       label: `${mndLabel?.replace(/\s*\(.*\)$/, "") ?? "MND"} (daily trail)`,
       data,
       borderColor: "rgba(13, 122, 110, 0.85)",
@@ -289,7 +301,8 @@ export function RateChart({
             title,
             yMin,
             yMax,
-            hmdaBand: timescale === "monthly" ? hmdaBand : undefined,
+            hmdaBand:
+              timescale === "monthly" && isVisible("hmda") ? hmdaBand : undefined,
             timescale,
           })}
         />
@@ -299,6 +312,9 @@ export function RateChart({
         ncLabel={ncLabel}
         mndLabel={mndLabel}
         mndHasAny={!!mndHasAny}
+        hasHmda={!!hmdaBand && timescale === "monthly"}
+        visibleSet={visibleSet}
+        onToggle={toggle}
       />
       {(hmdaBand || footerRight) && (
         <div className="chart-footer-row">
@@ -321,29 +337,48 @@ function ChartLegend({
   ncLabel,
   mndLabel,
   mndHasAny,
+  hasHmda,
+  visibleSet,
+  onToggle,
 }: {
   usLabel: string;
   ncLabel: string;
   mndLabel?: string;
   mndHasAny: boolean;
+  hasHmda: boolean;
+  visibleSet: Set<ChartSourceId>;
+  onToggle: (id: ChartSourceId) => void;
 }) {
+  const renderRow = (
+    id: ChartSourceId,
+    swatchClass: string,
+    label: string,
+  ) => {
+    const on = visibleSet.has(id);
+    return (
+      <li>
+        <button
+          type="button"
+          className={`cl-toggle${on ? "" : " off"}`}
+          onClick={() => onToggle(id)}
+          aria-pressed={on}
+          aria-label={`${on ? "Hide" : "Show"} ${label}`}
+        >
+          <span className={`cl-swatch ${swatchClass}`} aria-hidden="true" />
+          <span className="cl-label">{label}</span>
+        </button>
+      </li>
+    );
+  };
   return (
     <div className="chart-legend">
       <ul className="cl-datasets">
-        <li>
-          <span className="cl-swatch cl-line-us" aria-hidden="true" />
-          <span className="cl-label">{usLabel}</span>
-        </li>
-        <li>
-          <span className="cl-swatch cl-line-state" aria-hidden="true" />
-          <span className="cl-label">{ncLabel}</span>
-        </li>
-        {mndHasAny && (
-          <li>
-            <span className="cl-swatch cl-line-mnd" aria-hidden="true" />
-            <span className="cl-label">{mndLabel ?? "Mortgage News Daily"}</span>
-          </li>
-        )}
+        {renderRow("pmms", "cl-line-us", usLabel)}
+        {renderRow("bankrate", "cl-line-state", ncLabel)}
+        {mndHasAny &&
+          renderRow("mnd", "cl-line-mnd", mndLabel ?? "Mortgage News Daily")}
+        {hasHmda &&
+          renderRow("hmda", "cl-swatch-hmda", "HMDA 2024 reference band")}
       </ul>
       <div className="cl-markers-section" aria-label="Point style variants">
         {mndHasAny && (

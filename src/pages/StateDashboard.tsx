@@ -124,7 +124,13 @@ function StateBody({ slug }: { slug: string }) {
         </div>
         {ncData.length > 0 ? (
           <Suspense fallback={<p className="loading">Loading table…</p>}>
-            <RateTable usData={usData} ncData={ncData} />
+            <RateTable
+              usData={usData}
+              ncData={ncData}
+              mndData={mndData}
+              mndDaily={mndDaily}
+              stateLabel={name}
+            />
           </Suspense>
         ) : (
           <p className="side-panel-empty">No Bankrate series available for this term.</p>
