@@ -53,15 +53,21 @@ function StateBody({ slug }: { slug: string }) {
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number>(PANEL_WIDTH_DEFAULT);
+  const [tableSession, setTableSession] = useState(0);
   const draggingRef = useRef(false);
   const [selectedCountyFips, setSelectedCountyFips] = useState<string>("");
   const [timescale, setTimescale] = useState<"monthly" | "weekly">("monthly");
 
   // Resized width is ephemeral: every close (and page load) snaps it back
   // to PANEL_WIDTH_DEFAULT so the next open starts from a known baseline.
+  // Bumping tableSession on each open also remounts <RateTable> via its
+  // key, which drops any expanded weekly-breakdown row carried over from
+  // the previous open — same "fresh table on each open" intent.
   useEffect(() => {
     if (!tablePanelOpen) {
       setPanelWidth(PANEL_WIDTH_DEFAULT);
+    } else {
+      setTableSession((s) => s + 1);
     }
   }, [tablePanelOpen]);
 
@@ -175,6 +181,7 @@ function StateBody({ slug }: { slug: string }) {
         {ncData.length > 0 ? (
           <Suspense fallback={<p className="loading">Loading table…</p>}>
             <RateTable
+              key={tableSession}
               usData={usData}
               ncData={ncData}
               mndData={mndData}
