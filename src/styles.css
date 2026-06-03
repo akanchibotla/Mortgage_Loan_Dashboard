@@ -3151,6 +3151,15 @@ code {
   gap: 14px;
   align-items: stretch;
 }
+/* When any comparison card's amortization disclosure is open, switch the
+   grid from "all cards stretch to row height" to "each card sizes to its
+   own content." Result: opening one card grows ONLY that card; siblings
+   stay at their natural height instead of being dragged taller by the
+   grid row. With every disclosure closed, the default stretch rule
+   above takes over again so the cards re-equalize on close. */
+.calc-compare-grid:has(.loan-amort-details[open]) {
+  align-items: start;
+}
 .calc-compare-grid.cols-1 {
   grid-template-columns: 1fr;
 }
