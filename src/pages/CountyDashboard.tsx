@@ -79,27 +79,6 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
         counties={data.counties.counties}
         currentFips={countyFips}
       />
-
-      <div className="notes">
-        <b>Method</b>
-        <ul>
-          <li>
-            Source: <a href="https://ffiec.cfpb.gov/data-browser/">FFIEC HMDA 2024 public LAR</a>,
-            filtered to NC + home purchase + originated + loan_term=180 or 360.
-          </li>
-          <li>
-            Distribution stats are computed across the loan-level rates closed in {county.name} County
-            in calendar year 2024. Percentiles are unweighted (each loan counts once); the
-            loan-amount-weighted mean weights larger loans more heavily.
-          </li>
-          <li>
-            HMDA public LAR has no month-of-origination field for privacy, so these are annual
-            figures, not monthly time series. To see how rates trended over the year for {data.meta.name},
-            head to the <Link to={`/state/${slug}`}>state dashboard</Link>.
-          </li>
-          <li>Counties with fewer than 30 closed loans for a term are flagged "small sample" — treat their range and median as noisy.</li>
-        </ul>
-      </div>
     </>
   );
 }
