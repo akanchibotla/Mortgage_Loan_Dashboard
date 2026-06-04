@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, type MouseEvent } from "react";
 import { fmtMoney } from "../lib/payment";
 
 interface AmortRow {
@@ -59,8 +59,6 @@ export function AmortPanel({
   }
   const crossoverIdx = schedule.findIndex((r) => r.principal > r.interest);
   const crossoverMonth = crossoverIdx >= 0 ? crossoverIdx + 1 : -1;
-  const interestY1 = schedule[0].interest;
-  const interestYn = schedule[schedule.length - 1].interest;
   return (
     <div className="amort-panel">
       <AmortChart schedule={schedule} crossoverMonth={crossoverMonth} />
@@ -71,16 +69,13 @@ export function AmortPanel({
         <span>
           <span className="amort-dot amort-dot-i" /> Interest portion
         </span>
-        <span className="amort-legend-note">
-          Month 1: {fmtMoney(interestY1)} interest · Month {schedule.length}:{" "}
-          {fmtMoney(interestYn)} interest
-        </span>
         {crossoverMonth > 0 && (
           <span className="amort-legend-cross">
             ┊ Principal &gt; interest from month {crossoverMonth} (year{" "}
             {Math.ceil(crossoverMonth / 12)})
           </span>
         )}
+        <span className="amort-chart-hint">Hover for month details</span>
       </div>
       <AmortMonthSliders schedule={schedule} loanAmount={loanAmount} />
     </div>
@@ -101,95 +96,188 @@ function AmortChart({
   const innerW = W - 2 * PAD_X;
   const innerH = H - 2 * PAD_Y;
   const n = schedule.length;
-  const payment = schedule[0]?.payment ?? 0;
-  if (n === 0 || payment <= 0) return null;
+  if (n === 0) return null;
+
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   const x = (m: number) => PAD_X + (m / n) * innerW;
-  const y = (v: number) => PAD_Y + (1 - v / payment) * innerH;
+  // 100%-normalized per month: each column is the full payment for THAT
+  // month, with interest occupying the top interestShare of the column
+  // and principal the rest. Removes the visual artifact in variable-
+  // payment products (ARMs, buydowns) where using the first month's
+  // payment as a global scale makes later-phase columns look wrong.
+  const yShare = (row: AmortRow) => {
+    if (row.payment <= 0) return PAD_Y + innerH;
+    const interestShare = Math.max(0, Math.min(1, row.interest / row.payment));
+    return PAD_Y + (1 - interestShare) * innerH;
+  };
 
-  // Interest area: from baseline up to interest curve.
+  // Interest area: from baseline up to the per-month-normalized interest curve.
   let interestPath = `M ${PAD_X} ${PAD_Y + innerH}`;
   for (let i = 0; i < n; i++) {
-    interestPath += ` L ${x(i + 1)} ${y(schedule[i].interest)}`;
+    interestPath += ` L ${x(i + 1)} ${yShare(schedule[i])}`;
   }
   interestPath += ` L ${x(n)} ${PAD_Y + innerH} Z`;
 
-  // Year ticks
+  // Year ticks. Multiples of 5 always get labels; the year that contains
+  // the crossover also gets labeled so the user can read off when
+  // principal first beats interest without counting tick marks.
   const totalYears = Math.floor(n / 12);
+  const crossoverYear = crossoverMonth > 0 ? Math.ceil(crossoverMonth / 12) : -1;
   const ticks: number[] = [];
   for (let yr = 1; yr <= totalYears; yr++) ticks.push(yr);
 
+  // Mouse → month index. The SVG uses preserveAspectRatio="none" so the
+  // viewBox stretches to the container width; that means container-pixel
+  // ratios map directly onto SVG-x ratios.
+  const onMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const xRelRaw = (e.clientX - rect.left) / rect.width;
+    const padFrac = PAD_X / W;
+    const innerXRel = (xRelRaw - padFrac) / (1 - 2 * padFrac);
+    if (innerXRel < 0 || innerXRel > 1) {
+      setHoverIdx(null);
+      return;
+    }
+    setHoverIdx(Math.min(n - 1, Math.max(0, Math.floor(innerXRel * n))));
+  };
+  const onMouseLeave = () => setHoverIdx(null);
+
+  const hoverRow = hoverIdx !== null ? schedule[hoverIdx] : null;
+  // Tooltip horizontal anchor — translateX(-50%) is applied in CSS, but
+  // near the edges we flip the anchor so the tooltip stays inside the
+  // chart bounds.
+  const ttLeftPct =
+    hoverIdx !== null ? ((x(hoverIdx + 0.5) / W) * 100) : 0;
+  const ttAnchor =
+    ttLeftPct < 18 ? "left" : ttLeftPct > 82 ? "right" : "center";
+
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H + 14}`}
-      preserveAspectRatio="none"
-      className="amort-chart"
-      role="img"
-      aria-label="Stacked area chart of monthly principal versus interest over the loan life"
+    <div
+      className="amort-chart-wrap"
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
     >
-      <defs>
-        <linearGradient id="amort-grad-p" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1f5fa8" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#2c75c2" stopOpacity="0.7" />
-        </linearGradient>
-        <linearGradient id="amort-grad-i" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c4ccd9" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#aab6c5" stopOpacity="0.95" />
-        </linearGradient>
-      </defs>
-      {/* Principal background fills the payment box */}
-      <rect
-        x={PAD_X}
-        y={PAD_Y}
-        width={innerW}
-        height={innerH}
-        fill="url(#amort-grad-p)"
-      />
-      {/* Interest area on top */}
-      <path d={interestPath} fill="url(#amort-grad-i)" />
-      {/* Year ticks */}
-      {ticks.map((yr) => {
-        const cx = x(yr * 12);
-        const tall = yr % 5 === 0;
-        return (
-          <g key={yr}>
-            <line
-              x1={cx}
-              y1={PAD_Y + innerH}
-              x2={cx}
-              y2={PAD_Y + innerH + (tall ? 5 : 2)}
-              stroke="rgba(74, 85, 104, 0.55)"
-              strokeWidth={tall ? 1.2 : 0.7}
-              vectorEffect="non-scaling-stroke"
-            />
-            {tall && (
-              <text
-                x={cx}
-                y={PAD_Y + innerH + 12}
-                textAnchor="middle"
-                fontSize="9"
-                fill="#6b7280"
-              >
-                yr {yr}
-              </text>
-            )}
-          </g>
-        );
-      })}
-      {/* Crossover line */}
-      {crossoverMonth > 0 && crossoverMonth <= n && (
-        <line
-          x1={x(crossoverMonth)}
-          y1={PAD_Y}
-          x2={x(crossoverMonth)}
-          y2={PAD_Y + innerH}
-          stroke="#143a66"
-          strokeWidth={1.2}
-          strokeDasharray="4 3"
-          vectorEffect="non-scaling-stroke"
+      <svg
+        viewBox={`0 0 ${W} ${H + 14}`}
+        preserveAspectRatio="none"
+        className="amort-chart"
+        role="img"
+        aria-label="Stacked area chart of monthly principal versus interest over the loan life"
+      >
+        <defs>
+          <linearGradient id="amort-grad-p" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1f5fa8" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#2c75c2" stopOpacity="0.7" />
+          </linearGradient>
+          <linearGradient id="amort-grad-i" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#c4ccd9" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#aab6c5" stopOpacity="0.95" />
+          </linearGradient>
+        </defs>
+        {/* Principal background fills the payment box */}
+        <rect
+          x={PAD_X}
+          y={PAD_Y}
+          width={innerW}
+          height={innerH}
+          fill="url(#amort-grad-p)"
         />
+        {/* Interest area on top */}
+        <path d={interestPath} fill="url(#amort-grad-i)" />
+        {/* Year ticks */}
+        {ticks.map((yr) => {
+          const cx = x(yr * 12);
+          const isCrossover = yr === crossoverYear;
+          const tall = yr % 5 === 0 || isCrossover;
+          return (
+            <g key={yr}>
+              <line
+                x1={cx}
+                y1={PAD_Y + innerH}
+                x2={cx}
+                y2={PAD_Y + innerH + (tall ? 5 : 2)}
+                stroke="rgba(74, 85, 104, 0.55)"
+                strokeWidth={tall ? 1.2 : 0.7}
+                vectorEffect="non-scaling-stroke"
+              />
+              {tall && (
+                <text
+                  x={cx}
+                  y={PAD_Y + innerH + 12}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fill={isCrossover ? "#143a66" : "#6b7280"}
+                  fontWeight={isCrossover ? 700 : 400}
+                >
+                  yr {yr}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        {/* Crossover line */}
+        {crossoverMonth > 0 && crossoverMonth <= n && (
+          <line
+            x1={x(crossoverMonth)}
+            y1={PAD_Y}
+            x2={x(crossoverMonth)}
+            y2={PAD_Y + innerH}
+            stroke="#143a66"
+            strokeWidth={1.2}
+            strokeDasharray="4 3"
+            vectorEffect="non-scaling-stroke"
+          />
+        )}
+        {/* Cursor crosshair on hover */}
+        {hoverIdx !== null && (
+          <line
+            x1={x(hoverIdx + 0.5)}
+            y1={PAD_Y}
+            x2={x(hoverIdx + 0.5)}
+            y2={PAD_Y + innerH}
+            stroke="rgba(20, 58, 102, 0.55)"
+            strokeWidth={1.2}
+            vectorEffect="non-scaling-stroke"
+          />
+        )}
+      </svg>
+      {hoverRow && (
+        <div
+          className={`amort-chart-tooltip amort-tt-${ttAnchor}`}
+          style={{ left: `${ttLeftPct}%` }}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="amort-tt-head">
+            Month {hoverRow.month}
+            <span className="amort-tt-year">
+              {" "}
+              · Year {Math.ceil(hoverRow.month / 12)}
+            </span>
+          </div>
+          <div className="amort-tt-row">
+            <span className="amort-dot amort-dot-p" aria-hidden="true" />
+            <span>Principal</span>
+            <b>{fmtMoney(hoverRow.principal)}</b>
+          </div>
+          <div className="amort-tt-row">
+            <span className="amort-dot amort-dot-i" aria-hidden="true" />
+            <span>Interest</span>
+            <b>{fmtMoney(hoverRow.interest)}</b>
+          </div>
+          <div className="amort-tt-row amort-tt-row-meta">
+            <span>Payment</span>
+            <b>{fmtMoney(hoverRow.payment)}</b>
+          </div>
+          <div className="amort-tt-row amort-tt-row-meta">
+            <span>Balance</span>
+            <b>{fmtMoney(hoverRow.balance)}</b>
+          </div>
+        </div>
       )}
-    </svg>
+    </div>
   );
 }
 
