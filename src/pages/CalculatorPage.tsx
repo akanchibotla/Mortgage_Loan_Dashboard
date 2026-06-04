@@ -1060,9 +1060,6 @@ function LoanCardForm({
                   ▼
                 </button>
               </div>
-              {!armUseCustom && (
-                <span className="rate-field-suffix">follows main rate</span>
-              )}
             </div>
           </label>
         );
