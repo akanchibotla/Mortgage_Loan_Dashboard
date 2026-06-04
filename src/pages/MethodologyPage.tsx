@@ -67,20 +67,26 @@ export default function MethodologyPage() {
         <ul>
           <li><b>n_loans</b>: count of clean originations in the bucket.</li>
           <li>
-            <b>Simple mean</b>: arithmetic mean of <code>interest_rate</code> across all loans.
+            <b>Average rate</b>: arithmetic mean of <code>interest_rate</code> across all loans
+            (each loan counts equally).
           </li>
           <li>
-            <b>Loan-amount-weighted mean</b>: mean weighted by <code>loan_amount</code>. Larger loans
-            count more.
+            <b>Average weighted by loan size</b>: same mean but each loan is weighted by its
+            <code>loan_amount</code>, so a $700K loan moves the average more than a $200K loan.
           </li>
           <li>
-            <b>p10–p90</b>: 10th to 90th percentile of the rate distribution (unweighted).
+            <b>Middle 80% of rates</b>: the range covering all but the cheapest 10% and the most
+            expensive 10% of closed loans (the 10th to 90th percentile of the rate distribution,
+            each loan counted equally).
           </li>
-          <li><b>p25–p75</b>: interquartile range (unweighted).</li>
+          <li>
+            <b>Middle 50% of rates</b>: the central half — all but the cheapest and most expensive
+            25% of closed loans (the 25th to 75th percentile).
+          </li>
         </ul>
         <p>
-          Counties with &lt;30 originations for a term are flagged "low n" — treat their percentiles
-          as noisy.
+          Counties with fewer than 30 closed loans for a term are flagged "small sample" — treat
+          their median and range as noisy.
         </p>
       </section>
 
@@ -90,11 +96,12 @@ export default function MethodologyPage() {
           For each state we also compute per-bucket distributions across four dimensions: race
           (HMDA <code>derived_race</code>), ethnicity (<code>derived_ethnicity</code>), sex (
           <code>derived_sex</code>), and loan-amount bracket. Each bucket gets the same stats
-          (n, mean, percentiles).
+          (loan count, average, and the percentile range).
         </p>
         <p>
-          <b>Important interpretation note.</b> When you see "Black borrowers got an X bp lower
-          mean rate than White borrowers in this state," that's a population-level observation, not
+          <b>Important interpretation note.</b> When you see "Black borrowers got an average rate
+          0.20 percentage points lower than White borrowers in this state," that's a
+          population-level observation, not
           a lender-bias finding. The difference reflects a mix of factors:
         </p>
         <ul>
@@ -148,11 +155,11 @@ export default function MethodologyPage() {
       <section className="section">
         <h2>Limitations &amp; what we don't do</h2>
         <ul>
-          <li>No intraday data. Rates can move 25 bp between morning and afternoon; this dashboard is daily-resolution.</li>
-          <li>No ARM, refinance, FHA-specific, or VA-specific breakdowns yet. All views are 15-yr or 30-yr fixed conventional purchase.</li>
-          <li>HMDA public LAR strips some fields for privacy (e.g., the exact origination date and credit score). All percentiles are calendar-year-2024 aggregates.</li>
-          <li>Bankrate's quoted rates are a panel survey, not actual closed-loan rates. They typically run ~10–30 bp above or below HMDA closings depending on point/credit dynamics.</li>
-          <li>The three rate sources (FRED PMMS lender survey, Bankrate lender-aggregate quote, MND lock-flow) use different methodologies and typically disagree by ~10–30 bp even on the same date. Don't expect the three lines on each state chart to agree.</li>
+          <li>No intraday data. Rates can move 0.25 percentage points between morning and afternoon; this dashboard is daily-resolution.</li>
+          <li>No ARM, refinance, FHA-specific, or VA-specific breakdowns yet. All views are 15-year or 30-year fixed conventional purchase.</li>
+          <li>HMDA public LAR strips some fields for privacy (e.g., the exact origination date and credit score). All percentile ranges are calendar-year-2024 aggregates.</li>
+          <li>Bankrate's quoted rates are a panel survey, not actual closed-loan rates. They typically run about 0.10–0.30 percentage points above or below HMDA closings depending on point/credit dynamics.</li>
+          <li>The rate sources (FRED PMMS lender survey, Bankrate lender-aggregate quote, MND lock-flow, NerdWallet state average, Rocket Mortgage national quote) use different methodologies and typically disagree by about 0.10–0.30 percentage points even on the same date. Don't expect the lines on each state chart to agree.</li>
           <li>The "today" Bankrate value is whatever the rendered page shows at refresh time. Their methodology can shift; we capture what's there.</li>
           <li>State boundaries on the choropleth match the U.S. Census 2024 cartographic file. Some FIPS edge cases (Connecticut planning regions, Virginia independent cities) may render unexpectedly.</li>
         </ul>

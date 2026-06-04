@@ -37,9 +37,9 @@ export function DemographicsPanel({ data, stateName, term }: Props) {
       <h2>{stateName} HMDA breakdowns — who got which rate?</h2>
       <p className="sub">
         2024 closed-loan distributions sliced by demographic dimensions (FFIEC HMDA public LAR).
-        Bucket counts &lt;30 are hidden. Differences reflect a mix of credit profile, loan size,
-        and program selection (FHA/VA vs. conventional) — not necessarily lender discrimination on
-        identical applications.
+        Buckets with fewer than 30 loans are hidden. Differences reflect a mix of credit profile,
+        loan size, and program selection (FHA/VA vs. conventional) — not necessarily lender
+        discrimination on identical applications.
       </p>
       <div className="dim-toggle">
         {(Object.keys(DIM_LABELS) as Dim[]).map((d) => (
@@ -57,8 +57,8 @@ export function DemographicsPanel({ data, stateName, term }: Props) {
         <thead>
           <tr>
             <th>Bucket</th>
-            <th className="num">n loans</th>
-            <th className="num">Mean</th>
+            <th className="num">Loans</th>
+            <th className="num">Avg rate</th>
             <th>Distribution</th>
             <th className="num">vs overall</th>
           </tr>
@@ -116,8 +116,15 @@ function BucketRow({
           </div>
         )}
       </td>
-      <td className={`num delta ${delta > 5 ? "delta-up" : delta < -5 ? "delta-down" : ""}`}>
-        {delta === 0 ? "0 bp" : delta > 0 ? `+${delta} bp` : `${delta} bp`}
+      <td
+        className={`num delta ${delta > 5 ? "delta-up" : delta < -5 ? "delta-down" : ""}`}
+        title="Difference between this bucket's average rate and the overall average across all buckets, in percentage points"
+      >
+        {delta === 0
+          ? "even"
+          : delta > 0
+            ? `+${(delta / 100).toFixed(2)} pts`
+            : `${(delta / 100).toFixed(2)} pts`}
       </td>
     </tr>
   );

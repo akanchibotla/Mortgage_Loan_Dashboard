@@ -464,9 +464,9 @@ function StateLoanContent({
   const countyDist = county ? (loan.term === 15 ? county.term_15 : county.term_30) : undefined;
 
   const distLabel = countyDist?.n_loans
-    ? `${county!.name} County (n=${countyDist.n_loans.toLocaleString()})`
+    ? `${county!.name} County (${countyDist.n_loans.toLocaleString()} closed loans)`
     : stateHmda?.n_loans
-      ? `${data.meta.name} (n=${stateHmda.n_loans.toLocaleString()})`
+      ? `${data.meta.name} (${stateHmda.n_loans.toLocaleString()} closed loans)`
       : null;
 
   const p10 = countyDist?.p10_pct ?? stateHmda?.p10_pct;
@@ -529,7 +529,7 @@ function StateLoanContent({
           <ul className="loan-stats">
             {p10 != null && (
               <li>
-                <span className="k">p10 (low)</span>
+                <span className="k">best 10%</span>
                 <span className="v">{p10.toFixed(2)}%</span>
               </li>
             )}
@@ -541,7 +541,7 @@ function StateLoanContent({
             )}
             {p90 != null && (
               <li>
-                <span className="k">p90 (high)</span>
+                <span className="k">worst 10%</span>
                 <span className="v">{p90.toFixed(2)}%</span>
               </li>
             )}

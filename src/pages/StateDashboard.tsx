@@ -329,7 +329,7 @@ function StateBody({ slug }: { slug: string }) {
           <div className="county-top">
             <h3 className="county-top-h3">
               Top counties by volume
-              <span className="county-top-meta">2024 {term}-yr originations</span>
+              <span className="county-top-meta">2024 {term}-year closed loans</span>
             </h3>
             <div className="county-top-grid">
               {topCounties.map((c) => {

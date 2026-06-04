@@ -445,7 +445,7 @@ export default function HomePage() {
             <div className="stat-value">
               ~7<span className="stat-value-sub">M</span>
             </div>
-            <div className="stat-label">HMDA originations</div>
+            <div className="stat-label">HMDA closed loans</div>
           </div>
           <div className="stat-card accent">
             <div className="stat-value">{states.filter((s) => s.latest_30 != null).length}</div>

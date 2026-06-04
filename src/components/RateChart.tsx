@@ -582,7 +582,7 @@ function HmdaBandExplainer({
       <div className="hmda-explainer-body">
         <p>
           The green region shows the actual rates closed loans got in {stateLabel} during 2024
-          ({band.n_loans.toLocaleString()} {term}-yr home-purchase originations, from{" "}
+          ({band.n_loans.toLocaleString()} closed {term}-year home-purchase loans, from{" "}
           <a href="https://ffiec.cfpb.gov/data-browser/" target="_blank" rel="noopener noreferrer">
             FFIEC HMDA
           </a>
@@ -593,7 +593,8 @@ function HmdaBandExplainer({
           <li>
             <span className="hmda-sw hmda-sw-outer" aria-hidden="true" />
             <span>
-              <b>Outer pale box</b> — middle 80% of rates (p10–p90):{" "}
+              <b>Outer pale box</b> — middle 80% of rates (excludes the cheapest 10% and most
+              expensive 10% of closings):{" "}
               <span className="mono">
                 {band.p10_pct.toFixed(2)}%–{band.p90_pct.toFixed(2)}%
               </span>
@@ -602,7 +603,7 @@ function HmdaBandExplainer({
           <li>
             <span className="hmda-sw hmda-sw-inner" aria-hidden="true" />
             <span>
-              <b>Inner darker box</b> — middle 50% of rates (p25–p75):{" "}
+              <b>Inner darker box</b> — middle 50% of rates (the central half of closings):{" "}
               <span className="mono">
                 {band.p25_pct.toFixed(2)}%–{band.p75_pct.toFixed(2)}%
               </span>
@@ -611,14 +612,14 @@ function HmdaBandExplainer({
           <li>
             <span className="hmda-sw hmda-sw-line-long" aria-hidden="true" />
             <span>
-              <b>Long-dash line</b> — simple mean rate:{" "}
+              <b>Long-dash line</b> — average rate (each loan counts equally):{" "}
               <span className="mono">{band.simple_mean_pct.toFixed(2)}%</span>
             </span>
           </li>
           <li>
             <span className="hmda-sw hmda-sw-line-short" aria-hidden="true" />
             <span>
-              <b>Short-dash line</b> — amount-weighted mean (weighted by loan size):{" "}
+              <b>Short-dash line</b> — average weighted by loan size (bigger loans count more):{" "}
               <span className="mono">{band.amount_weighted_mean_pct.toFixed(2)}%</span>
             </span>
           </li>

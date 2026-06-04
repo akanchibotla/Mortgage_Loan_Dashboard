@@ -155,17 +155,17 @@ function StateTooltip({
       {hmda?.p50 != null && (
         <div className="tt-section">
           <div className="tt-section-label">
-            HMDA 2024 actuals <span className="tt-section-n">n={hmda.n?.toLocaleString()}</span>
+            HMDA 2024 actuals <span className="tt-section-n">{hmda.n?.toLocaleString()} loans</span>
           </div>
           <div className="tt-row">
-            <span className="tt-k">Median (p50)</span>
+            <span className="tt-k">Median</span>
             <span className="tt-val">
               {fmtRate(hmda.p50)} · {fmtMoney(monthlyPayment(loanAmount, hmda.p50, term))}
             </span>
           </div>
           {hmda.p10 != null && (
             <div className="tt-row tt-row-low">
-              <span className="tt-k">Best 10% (p10)</span>
+              <span className="tt-k">Best 10%</span>
               <span className="tt-val">
                 {fmtRate(hmda.p10)} · {fmtMoney(monthlyPayment(loanAmount, hmda.p10, term))}
               </span>
@@ -173,7 +173,7 @@ function StateTooltip({
           )}
           {hmda.p90 != null && (
             <div className="tt-row tt-row-high">
-              <span className="tt-k">Worst 10% (p90)</span>
+              <span className="tt-k">Worst 10%</span>
               <span className="tt-val">
                 {fmtRate(hmda.p90)} · {fmtMoney(monthlyPayment(loanAmount, hmda.p90, term))}
               </span>

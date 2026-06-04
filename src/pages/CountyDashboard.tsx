@@ -31,7 +31,7 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
       ? `${county.name} County, ${data!.meta.postal} mortgage rates`
       : `County ${countyFips}`,
     description: county
-      ? `HMDA 2024 closed-loan distribution for ${county.name} County, ${data!.meta.postal}: p10–p90 rate range, n=${county.term_30.n_loans.toLocaleString()} 30-yr originations plus ${county.term_15.n_loans.toLocaleString()} 15-yr, vs state aggregate.`
+      ? `HMDA 2024 closed-loan distribution for ${county.name} County, ${data!.meta.postal}: middle 80% rate range from ${county.term_30.n_loans.toLocaleString()} closed 30-year loans plus ${county.term_15.n_loans.toLocaleString()} 15-year, vs the state aggregate.`
       : undefined,
   });
   if (!data) {
@@ -91,7 +91,7 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
             figures, not monthly time series. To see how rates trended over the year for {data.meta.name},
             head to the <Link to={`/state/${slug}`}>state dashboard</Link>.
           </li>
-          <li>Counties with &lt;30 originations for a term are flagged "low n" — treat their percentiles as noisy.</li>
+          <li>Counties with fewer than 30 closed loans for a term are flagged "small sample" — treat their range and median as noisy.</li>
         </ul>
       </div>
     </>
@@ -114,25 +114,25 @@ function DistributionSection({
     return (
       <section className="section">
         <h2>{title}</h2>
-        <p className="sub">No {term}-yr originations recorded in {county.name} County for 2024.</p>
+        <p className="sub">No {term}-year closed loans recorded in {county.name} County for 2024.</p>
       </section>
     );
   }
   return (
     <section className="section">
       <h2>
-        {title} — {county.name} <span className="muted">(n={d.n_loans.toLocaleString()})</span>
-        {d.low_n && <span className="state-tag" style={{ marginLeft: 8 }}>low n</span>}
+        {title} — {county.name} <span className="muted">({d.n_loans.toLocaleString()} closed loans)</span>
+        {d.low_n && <span className="state-tag" style={{ marginLeft: 8 }}>small sample</span>}
       </h2>
       <DistributionBar d={d} />
       <div className="kv-grid">
-        <Stat k="p10" v={fmtRate(d.p10_pct)} />
-        <Stat k="p25" v={fmtRate(d.p25_pct)} />
-        <Stat k="median (p50)" v={fmtRate(d.p50_pct)} />
-        <Stat k="p75" v={fmtRate(d.p75_pct)} />
-        <Stat k="p90" v={fmtRate(d.p90_pct)} />
-        <Stat k="simple mean" v={fmtRate(d.simple_mean_pct)} />
-        <Stat k="loan-amount-weighted mean" v={fmtRate(d.amount_weighted_mean_pct)} />
+        <Stat k="best 10%" v={fmtRate(d.p10_pct)} />
+        <Stat k="lower 25%" v={fmtRate(d.p25_pct)} />
+        <Stat k="median" v={fmtRate(d.p50_pct)} />
+        <Stat k="upper 25%" v={fmtRate(d.p75_pct)} />
+        <Stat k="worst 10%" v={fmtRate(d.p90_pct)} />
+        <Stat k="average rate" v={fmtRate(d.simple_mean_pct)} />
+        <Stat k="average weighted by loan size" v={fmtRate(d.amount_weighted_mean_pct)} />
       </div>
       {term === 15 && stateHmda && (
         <p className="sub" style={{ marginTop: 12 }}>
@@ -166,13 +166,13 @@ function DistributionBar({ d }: { d: CountyEntry["term_30"] }) {
         <div
           className="dist-band-outer"
           style={{ left: pct(d.p10_pct), width: w(d.p10_pct, d.p90_pct) }}
-          title={`p10–p90: ${d.p10_pct.toFixed(2)}%–${d.p90_pct.toFixed(2)}%`}
+          title={`middle 80% of rates: ${d.p10_pct.toFixed(2)}%–${d.p90_pct.toFixed(2)}%`}
         />
         {d.p25_pct && d.p75_pct && (
           <div
             className="dist-band-inner"
             style={{ left: pct(d.p25_pct), width: w(d.p25_pct, d.p75_pct) }}
-            title={`p25–p75: ${d.p25_pct.toFixed(2)}%–${d.p75_pct.toFixed(2)}%`}
+            title={`middle 50% of rates: ${d.p25_pct.toFixed(2)}%–${d.p75_pct.toFixed(2)}%`}
           />
         )}
         {d.p50_pct && (
@@ -242,16 +242,18 @@ function fmtRate(v?: number): string {
 
 function compareBp(a?: number, b?: number): string {
   if (a == null || b == null) return "—";
+  // bp here is the integer count of basis points; we format it as a
+  // friendly "X.XX percentage points" string for body copy.
   const bp = Math.round((a - b) * 100);
   if (bp === 0) return "identical";
-  if (bp > 0) return `${bp} bp higher`;
-  return `${-bp} bp lower`;
+  const pts = (Math.abs(bp) / 100).toFixed(2);
+  return bp > 0 ? `${pts} percentage points higher` : `${pts} percentage points lower`;
 }
 
 function countyAggregateBlurb(c: CountyEntry): string {
   const n30 = c.term_30.n_loans;
   const n15 = c.term_15.n_loans;
-  return `n=${n30.toLocaleString()} 30-yr + ${n15.toLocaleString()} 15-yr originations in 2024.`;
+  return `${n30.toLocaleString()} closed 30-year loans + ${n15.toLocaleString()} 15-year, 2024.`;
 }
 
 function notFound(_slug: string, fips?: string) {
