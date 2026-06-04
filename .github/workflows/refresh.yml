@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: write
+  # Needed for the post-failure notifier step: it opens a GitHub issue when
+  # a scheduled (cron) run fails, so a silent overnight break leaves a paper
+  # trail in the repo issues tab instead of dying invisibly in the Actions log.
+  issues: write
 
 # Run JS-based actions on Node 24. Required from June 16, 2026; opting in early
 # eliminates the Node 20 deprecation warning. https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
@@ -31,6 +35,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          # Cache pip's wheel cache keyed on requirements.txt. When the file
+          # hasn't changed (the common case for a daily cron), the install
+          # step pulls wheels from cache instead of PyPI — ~15-25s saved per
+          # run and one fewer external dependency to fail on.
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Init failure log
         run: |
@@ -41,8 +51,29 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt || echo "pip-install failed" >> "$FAIL_LOG"
 
+      # Playwright's Chromium binary is ~170 MB. Caching it keyed on
+      # requirements.txt (which pins the Playwright version) skips the
+      # full download/install on every run where the version hasn't moved —
+      # typically saving ~45-60s. The "Install Playwright Chromium" step
+      # below is then gated on a cache miss.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('requirements.txt') }}
+
       - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: python -m playwright install --with-deps chromium || echo "playwright-install failed" >> "$FAIL_LOG"
+
+      - name: Install Playwright OS deps (cache-hit path)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        # When the browser binary itself is cached, we still need the
+        # apt-level shared libs Chromium links against (libnss3, libxkbcommon0,
+        # etc.) on a fresh runner — the binary alone isn't enough. This is
+        # a no-op for the binary but ensures system libs are present.
+        run: python -m playwright install-deps chromium || echo "playwright-deps failed" >> "$FAIL_LOG"
 
       - name: Discover active states
         id: states
@@ -125,16 +156,28 @@ jobs:
 
       - name: Validate daily coverage
         if: always()
+        env:
+          # When set to "1" (e.g. via workflow_dispatch input later), the
+          # validator fails the job if too many sources are missing or
+          # stale. Default is permissive (warn-only) because partial coverage
+          # is a normal outcome — one state's bot challenge shouldn't tank
+          # the whole run. Threshold lives in STRICT_THRESHOLD below.
+          STRICT_COVERAGE: ${{ vars.STRICT_COVERAGE || '0' }}
+          STRICT_THRESHOLD: '20'   # percent of source-state cells allowed to be missing/stale
         run: |
           today=$(date -u +%Y-%m-%d)
           yesterday=$(date -u -d 'yesterday' +%Y-%m-%d)
+          curr_month=$(date -u +%Y-%m)
+          prev_month=$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)
           bk_missing=()
           bk_stale=()
           mnd_missing=()
           mnd_stale=()
           nw_missing=()
           nw_stale=()
+          state_count=0
           for s in ${{ steps.states.outputs.slugs }}; do
+            state_count=$((state_count + 1))
             bf="src/data/states/$s/bankrate_30yr_daily.json"
             mf="src/data/states/$s/mnd_30yr_daily.json"
             # NerdWallet doesn't have a *_daily.json view (no daily-trail in
@@ -189,6 +232,30 @@ jobs:
             rk_status="missing (no file)"
           fi
 
+          # PMMS (Freddie Mac Primary Mortgage Market Survey) is the national
+          # monthly anchor for the chart. It's published weekly and aggregated
+          # to a monthly mean. The newest .month entry should always be the
+          # current calendar month (mid-month onward) or the previous one
+          # (early in a new month before this week's PMMS lands).
+          pmms_status_30="ok"
+          pmms_status_15="ok"
+          for term in 30 15; do
+            pf="src/data/pmms_${term}yr_monthly.json"
+            if [ -f "$pf" ]; then
+              last=$(jq -r '.[-1].month // ""' "$pf" 2>/dev/null)
+              if [ -z "$last" ]; then
+                status_val="missing (no rows)"
+              elif [ "$last" != "$curr_month" ] && [ "$last" != "$prev_month" ]; then
+                status_val="stale (last=$last)"
+              else
+                status_val="ok"
+              fi
+            else
+              status_val="missing (no file)"
+            fi
+            if [ "$term" = "30" ]; then pmms_status_30="$status_val"; else pmms_status_15="$status_val"; fi
+          done
+
           ok=true
           if [ ${#bk_missing[@]} -gt 0 ]; then
             echo "::warning::Bankrate daily files missing/empty: ${bk_missing[*]}"
@@ -218,8 +285,76 @@ jobs:
             echo "::warning::Rocket Mortgage JSONL: $rk_status"
             ok=false
           fi
+          if [ "$pmms_status_30" != "ok" ]; then
+            echo "::warning::PMMS 30-yr monthly: $pmms_status_30"
+            ok=false
+          fi
+          if [ "$pmms_status_15" != "ok" ]; then
+            echo "::warning::PMMS 15-yr monthly: $pmms_status_15"
+            ok=false
+          fi
           if $ok; then
             echo "Daily coverage check passed: every tracked source has a recent row."
+          fi
+
+          # ----- $GITHUB_STEP_SUMMARY markdown table -----
+          # Surfaces the run's coverage health on the workflow run page (not
+          # buried in step logs). Counts per source come straight from the
+          # arrays above; PMMS is one row each because it's national-monthly.
+          bk_m=${#bk_missing[@]}; bk_s=${#bk_stale[@]}
+          mnd_m=${#mnd_missing[@]}; mnd_s=${#mnd_stale[@]}
+          nw_m=${#nw_missing[@]};  nw_s=${#nw_stale[@]}
+          {
+            echo "## Daily refresh — coverage summary"
+            echo ""
+            echo "**Date (UTC):** $today"
+            echo "**Tracked states:** $state_count"
+            if [ -s "$FAIL_LOG" ]; then
+              echo "**Component failures:** $(wc -l < "$FAIL_LOG") (see workflow log for detail)"
+            else
+              echo "**Component failures:** 0"
+            fi
+            echo ""
+            echo "| Source | Scope | Missing | Stale (>1d) | Status |"
+            echo "|---|---|---:|---:|---|"
+            echo "| Bankrate | per state | $bk_m | $bk_s | $( [ $bk_m -eq 0 ] && [ $bk_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| MND | per state | $mnd_m | $mnd_s | $( [ $mnd_m -eq 0 ] && [ $mnd_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| NerdWallet | per state | $nw_m | $nw_s | $( [ $nw_m -eq 0 ] && [ $nw_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| Rocket | national | - | - | $rk_status |"
+            echo "| PMMS 30-yr | national-monthly | - | - | $pmms_status_30 |"
+            echo "| PMMS 15-yr | national-monthly | - | - | $pmms_status_15 |"
+            echo ""
+            if [ $bk_m -gt 0 ] || [ $bk_s -gt 0 ]; then
+              echo "**Bankrate problem states:** ${bk_missing[*]} ${bk_stale[*]}"
+            fi
+            if [ $mnd_m -gt 0 ] || [ $mnd_s -gt 0 ]; then
+              echo "**MND problem states:** ${mnd_missing[*]} ${mnd_stale[*]}"
+            fi
+            if [ $nw_m -gt 0 ] || [ $nw_s -gt 0 ]; then
+              echo "**NerdWallet problem states:** ${nw_missing[*]} ${nw_stale[*]}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # ----- STRICT_COVERAGE gate -----
+          # Total "cells" we track = 3 sources × N states + 3 nationals (rocket
+          # + 2 PMMS terms). If the share of broken cells exceeds the
+          # threshold and STRICT_COVERAGE=1, fail the job — partial failures
+          # below threshold stay warnings so a single flaky state isn't fatal.
+          if [ "$STRICT_COVERAGE" = "1" ]; then
+            per_state_cells=$((state_count * 3))
+            total_cells=$((per_state_cells + 3))
+            broken=$((bk_m + bk_s + mnd_m + mnd_s + nw_m + nw_s))
+            [ "$rk_status" != "ok" ] && broken=$((broken + 1))
+            [ "$pmms_status_30" != "ok" ] && broken=$((broken + 1))
+            [ "$pmms_status_15" != "ok" ] && broken=$((broken + 1))
+            if [ "$total_cells" -gt 0 ]; then
+              pct=$(( broken * 100 / total_cells ))
+              echo "STRICT_COVERAGE: $broken / $total_cells cells broken ($pct%); threshold $STRICT_THRESHOLD%"
+              if [ "$pct" -gt "$STRICT_THRESHOLD" ]; then
+                echo "::error::Coverage failure rate $pct% exceeds threshold $STRICT_THRESHOLD% (STRICT_COVERAGE=1)"
+                exit 1
+              fi
+            fi
           fi
 
       - name: Commit refreshed data
@@ -253,3 +388,55 @@ jobs:
           done
           echo "Push failed after 5 attempts"
           exit 1
+
+      # Opens a GitHub issue when a *scheduled* (cron) run fails. Manual
+      # (workflow_dispatch) runs are exempt because the human invoker is
+      # already watching the logs. De-duplicated by title — if a refresh-
+      # failed issue from a previous day is still open, append a comment
+      # instead of opening a duplicate. This makes overnight failures
+      # visible in the repo's Issues tab instead of dying silently.
+      - name: Notify on scheduled failure
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Daily refresh failed (${today})`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `Scheduled daily refresh failed.`,
+              ``,
+              `- **Run:** ${runUrl}`,
+              `- **Triggered by:** ${context.eventName}`,
+              `- **SHA:** ${context.sha}`,
+              ``,
+              `Check the run's "Validate daily coverage" step summary for the per-source breakdown.`,
+              `If this is intermittent (transient HTTP / bot challenge), close this issue once the next run is green.`,
+            ].join('\n');
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'daily-refresh-failure',
+              per_page: 50,
+            });
+            const dup = existing.data.find(i => i.title.startsWith('Daily refresh failed'));
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body: `Another failure: ${runUrl}`,
+              });
+              core.info(`Appended comment to existing issue #${dup.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['daily-refresh-failure', 'automation'],
+              });
+              core.info(`Opened issue #${created.data.number}`);
+            }
