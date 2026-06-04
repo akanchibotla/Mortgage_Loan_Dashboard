@@ -157,7 +157,7 @@ export default function MethodologyPage() {
         <ul>
           <li>No intraday data. Rates can move 0.25 percentage points between morning and afternoon; this dashboard is daily-resolution.</li>
           <li>No ARM, refinance, FHA-specific, or VA-specific breakdowns yet. All views are 15-year or 30-year fixed conventional purchase.</li>
-          <li>HMDA public LAR strips some fields for privacy (e.g., the exact origination date and credit score). All percentile ranges are calendar-year-2024 aggregates.</li>
+          <li>HMDA public LAR strips some fields for privacy (e.g., the exact origination date and credit score). All percentile ranges are calendar-year-2024 aggregates — there's no monthly granularity at the state or county level. For month-by-month rate movement, see the rate chart on any state dashboard.</li>
           <li>Bankrate's quoted rates are a panel survey, not actual closed-loan rates. They typically run about 0.10–0.30 percentage points above or below HMDA closings depending on point/credit dynamics.</li>
           <li>The rate sources (FRED PMMS lender survey, Bankrate lender-aggregate quote, MND lock-flow, NerdWallet state average, Rocket Mortgage national quote) use different methodologies and typically disagree by about 0.10–0.30 percentage points even on the same date. Don't expect the lines on each state chart to agree.</li>
           <li>The "today" Bankrate value is whatever the rendered page shows at refresh time. Their methodology can shift; we capture what's there.</li>
