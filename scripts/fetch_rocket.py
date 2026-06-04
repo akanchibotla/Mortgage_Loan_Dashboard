@@ -2,24 +2,35 @@
 append to a daily JSONL accumulator.
 
 Rocket Mortgage publishes a single national rate-quote page at
-https://www.rocketmortgage.com/mortgage-rates — there is no per-state page
-(every /mortgage-rates/<slug> URL returns 404). So this fetcher takes no
---state argument; it writes one row per day to data/daily/rocket.jsonl and
-emits src/data/rocket_today.json as the "current value" snapshot.
+https://www.rocketmortgage.com/mortgage-rates. The same rate values are
+mirrored on three other URL patterns we discovered in their sitemap.xml,
+which gives us a four-fold fetch fallback before we have to escalate to a
+headless browser:
 
-Two-tier fetch strategy:
-  Tier 1 — static urllib GET with retry-with-backoff (fast path, ~1s).
-           Works when Rocket's CDN isn't in bot-challenge mode.
-  Tier 2 — Playwright headless Chromium with stealth flags and a /homepage
-           warmup hop to seed cookies before navigating to /mortgage-rates.
-           Catches intermittent Akamai 403s that block urllib but let a
-           browser through. (Persistent 403s still fail both — Rocket has
-           tightened detection in 2026 Q2 to the point where neither tier
-           is reliable from a residential or datacenter IP. Surfaced via
-           the FAIL_LOG so the validator can flag the gap.)
+  Tier 1a — /mortgage-rates                       (both terms, ~1.7 MB)
+  Tier 1b — /mortgage-rates/15-year-mortgage-rates (15yr only, ~1.6 MB)
+  Tier 1c — /mortgage-rates/30-year-mortgage-rates (30yr only, ~1.6 MB)
+  Tier 1d — /mortgage-rates/<state>-mortgage-rates (SEO landing, ~1.7 MB)
+            All states show the *national* rate value, so any state works.
+            Useful because these SEO pages get less bot traffic and Akamai
+            often lets them through when the main page is challenge-walled.
+
+  Tier 2  — Playwright headless Chromium with stealth flags and a homepage
+            warmup hop. Last-resort path for when every urllib URL bounces.
+            Frequently Akamai-blocked from datacenter IPs (GH Actions) and
+            from "hot" residential IPs, but occasionally squeaks through.
+
+The fetcher tries Tier 1a first. If it 403s or returns a page without rate
+values, it falls through to 1b and 1c in parallel-conceptual sequence
+(merging single-term results into a combined row), then 1d, then Tier 2.
+Each row records which tier produced it via `source_method`.
+
+Per-state pages: every /mortgage-rates/<slug>-mortgage-rates URL on Rocket
+shows the same national rate value, not a real state average. So this
+fetcher remains national-only — there is no per-state row to write.
 
 robots.txt is permissive (only /reset-account is disallowed), so a polite
-once-per-day fetch is well within crawl norms.
+sequential fallback (worst case ~4 requests) is well within crawl norms.
 """
 import argparse
 import datetime as dt
@@ -33,8 +44,19 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _http import fetch_html  # noqa: E402
 from _paths import rocket_jsonl, rocket_today_view  # noqa: E402
 
-URL = "https://www.rocketmortgage.com/mortgage-rates"
-HOMEPAGE_URL = "https://www.rocketmortgage.com/"
+BASE = "https://www.rocketmortgage.com"
+URL_PRIMARY = f"{BASE}/mortgage-rates"
+URL_15_ONLY = f"{BASE}/mortgage-rates/15-year-mortgage-rates"
+URL_30_ONLY = f"{BASE}/mortgage-rates/30-year-mortgage-rates"
+# We rotate through several SEO landing pages because Akamai sometimes
+# rate-limits a single URL while letting siblings through. All three return
+# the same national rate values — confirmed by side-by-side probe.
+URL_STATE_SEO_CANDIDATES = [
+    f"{BASE}/mortgage-rates/north-carolina-mortgage-rates",
+    f"{BASE}/mortgage-rates/california-mortgage-rates",
+    f"{BASE}/mortgage-rates/illinois-mortgage-rates",
+]
+HOMEPAGE_URL = f"{BASE}/"
 
 HEADERS = {
     "User-Agent": (
@@ -70,27 +92,61 @@ def _strip_html(html: str) -> str:
     return s
 
 
-def extract(text: str) -> dict | None:
-    m15 = _row_pattern(15).search(text)
-    m30 = _row_pattern(30).search(text)
-    if not m15 and not m30:
+def extract(text: str, terms: tuple[int, ...] = (15, 30)) -> dict:
+    """Pull rate+APR for the requested terms. Returns a dict with whatever
+    matched; keys for un-matched terms are present as None.
+
+    Single-term URLs (Tier 1b/1c) only carry their own term, so passing a
+    constrained `terms` argument keeps the page-mismatch noise out of logs.
+    """
+    out = {"term_15": None, "term_15_apr": None, "term_30": None, "term_30_apr": None}
+    for term in terms:
+        m = _row_pattern(term).search(text)
+        if m:
+            out[f"term_{term}"] = float(m.group(1))
+            out[f"term_{term}_apr"] = float(m.group(2))
+    return out
+
+
+def _has_value(found: dict, term: int) -> bool:
+    return found.get(f"term_{term}") is not None
+
+
+def _merge(into: dict, other: dict, terms: tuple[int, ...]) -> None:
+    """Copy any term-* values from `other` into `into` if the target slot is
+    empty. Lets us bolt 30-yr from a 30-yr-only page onto a row that already
+    has 15-yr from the 15-yr-only page."""
+    for term in terms:
+        if into.get(f"term_{term}") is None and other.get(f"term_{term}") is not None:
+            into[f"term_{term}"] = other[f"term_{term}"]
+            into[f"term_{term}_apr"] = other.get(f"term_{term}_apr")
+
+
+def fetch_static(url: str, label: str) -> dict | None:
+    """Tier 1*: one static urllib fetch. Returns extracted dict or None on
+    failure (403, network error, or no rate values on the page)."""
+    print(f"  Tier 1 [{label}] GET {url}")
+    html = fetch_html(url, HEADERS, timeout=30)
+    if html is None:
+        print(f"  Tier 1 [{label}] HTTP failed", file=sys.stderr)
         return None
-    return {
-        "term_15": float(m15.group(1)) if m15 else None,
-        "term_30": float(m30.group(1)) if m30 else None,
-        "term_15_apr": float(m15.group(2)) if m15 else None,
-        "term_30_apr": float(m30.group(2)) if m30 else None,
-    }
+    text = _strip_html(html)
+    found = extract(text)
+    if not _has_value(found, 15) and not _has_value(found, 30):
+        print(f"  Tier 1 [{label}] page returned but no rate values matched", file=sys.stderr)
+        return None
+    return found
 
 
-def fetch_browser() -> str | None:
-    """Tier 2: Playwright with stealth + homepage warmup. Returns the
-    /mortgage-rates page HTML or None if the browser path also bounces."""
+def fetch_browser() -> dict | None:
+    """Tier 2: Playwright with stealth + homepage warmup. Used only when
+    every urllib fallback returned no rate values."""
     try:
         from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
     except ImportError:
         print("  Tier 2: playwright not installed; skipping browser fallback", file=sys.stderr)
         return None
+    print("  Tier 2: launching Playwright with stealth profile + homepage warmup")
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -126,17 +182,13 @@ def fetch_browser() -> str | None:
                     "window.chrome = window.chrome || {runtime: {}};"
                 )
                 page = context.new_page()
-                # Hit the homepage first so the session has Akamai cookies
-                # before the rate-card request. Without this warmup hop the
-                # /mortgage-rates request lands cold and gets the challenge
-                # page every time.
                 try:
                     page.goto(HOMEPAGE_URL, wait_until="domcontentloaded", timeout=GOTO_TIMEOUT_MS)
                     time.sleep(WARMUP_SLEEP_S)
                 except PlaywrightTimeout:
-                    print("  Tier 2: homepage warmup timed out; continuing to rates page", file=sys.stderr)
+                    print("  Tier 2: homepage warmup timed out; continuing", file=sys.stderr)
                 try:
-                    page.goto(URL, wait_until="domcontentloaded", timeout=GOTO_TIMEOUT_MS)
+                    page.goto(URL_PRIMARY, wait_until="domcontentloaded", timeout=GOTO_TIMEOUT_MS)
                 except PlaywrightTimeout:
                     print("  Tier 2: rates page goto timed out; reading partial DOM", file=sys.stderr)
                 try:
@@ -147,18 +199,81 @@ def fetch_browser() -> str | None:
                 except PlaywrightTimeout:
                     print("  Tier 2: rate hydration did not complete", file=sys.stderr)
                 html = page.content()
-                # The Akamai challenge page is small (~12KB) and titled
-                # "Unable to Process Request". Bail explicitly so the caller
-                # can record a real failure rather than a partial extract.
                 if "Unable to Process Request" in html:
                     print("  Tier 2: Akamai block page returned", file=sys.stderr)
                     return None
-                return html
+                text = _strip_html(html)
+                found = extract(text)
+                if not _has_value(found, 15) and not _has_value(found, 30):
+                    print("  Tier 2: page rendered but no rate values matched", file=sys.stderr)
+                    return None
+                return found
             finally:
                 browser.close()
     except Exception as e:  # broad: any Playwright launch / runtime failure
         print(f"  Tier 2 raised: {e}", file=sys.stderr)
         return None
+
+
+def gather_rates() -> tuple[dict, str] | None:
+    """Run the fallback chain. Returns (rates_dict, source_method) or None
+    when every tier failed.
+
+    The method label encodes *which* tier filled the row:
+      "static"          — Tier 1a (primary /mortgage-rates URL)
+      "static_split"    — combination of Tier 1b + 1c (single-term pages)
+      "static_seo"      — Tier 1d (per-state SEO landing page)
+      "static_mixed"    — Tier 1a partial + a single-term page filling the gap
+      "browser"         — Tier 2 (Playwright)
+    """
+    # Tier 1a — both terms on the canonical page.
+    primary = fetch_static(URL_PRIMARY, "primary")
+    if primary and _has_value(primary, 15) and _has_value(primary, 30):
+        return primary, "static"
+
+    found: dict = primary or {"term_15": None, "term_15_apr": None, "term_30": None, "term_30_apr": None}
+
+    # Tier 1b / 1c — single-term pages. Try whichever side is still missing.
+    if not _has_value(found, 15):
+        side = fetch_static(URL_15_ONLY, "15yr-only")
+        if side:
+            _merge(found, side, terms=(15,))
+    if not _has_value(found, 30):
+        side = fetch_static(URL_30_ONLY, "30yr-only")
+        if side:
+            _merge(found, side, terms=(30,))
+    if _has_value(found, 15) and _has_value(found, 30):
+        method = "static_split" if primary is None else "static_mixed"
+        return found, method
+
+    # Tier 1d — SEO landing pages. Rotate through candidates so Akamai
+    # rate-limiting on one URL doesn't kill the whole fallback.
+    for seo_url in URL_STATE_SEO_CANDIDATES:
+        seo = fetch_static(seo_url, "state-seo")
+        if seo:
+            _merge(found, seo, terms=(15, 30))
+            if _has_value(found, 15) and _has_value(found, 30):
+                return found, "static_seo"
+            # Even partial: keep going to next SEO URL to fill the gap.
+
+    # Last resort — browser. Will likely lose from datacenter IPs but
+    # occasionally wins on residential ones during Akamai churn.
+    print("  All urllib tiers exhausted; escalating to Tier 2 (browser)", file=sys.stderr)
+    br = fetch_browser()
+    if br:
+        _merge(found, br, terms=(15, 30))
+        if _has_value(found, 15) or _has_value(found, 30):
+            return found, "browser"
+
+    # Partial-data salvage: if any prior tier filled at least one term
+    # before the chain bottomed out, surface it rather than reporting a
+    # total failure. A 30yr-only row is still chart-useful and keeps the
+    # JSONL accumulator's trail going. The validator can still flag the
+    # missing term separately.
+    if _has_value(found, 15) or _has_value(found, 30):
+        return found, "static_partial"
+
+    return None
 
 
 def write_jsonl_idempotent(path: str, new_row: dict) -> None:
@@ -208,26 +323,12 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    print(f"Fetching Rocket Mortgage national rates from {URL} ...")
-    source_method = "static"
-    html = fetch_html(URL, HEADERS, timeout=30)
-    found: dict | None = None
-    if html is not None:
-        found = extract(_strip_html(html))
-
-    if not found:
-        # Tier 1 either errored (403) or returned a page where neither term
-        # matched. Try the browser path.
-        print("  Tier 1 (static) yielded no values; trying Tier 2 (browser)", file=sys.stderr)
-        html2 = fetch_browser()
-        if html2 is not None:
-            found = extract(_strip_html(html2))
-            if found:
-                source_method = "browser"
-
-    if not found:
+    print("Fetching Rocket Mortgage national rates (multi-URL fallback) ...")
+    result = gather_rates()
+    if result is None:
         print("ERROR: all tiers failed for Rocket national page", file=sys.stderr)
         return 3
+    found, source_method = result
 
     date_iso = args.date_iso or dt.date.today().isoformat()
     row = {
