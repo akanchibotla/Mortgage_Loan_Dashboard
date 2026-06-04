@@ -40,7 +40,10 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
   if (!data.counties) {
     return (
       <div>
-        <h1>County data not bundled</h1>
+        <Link to={`/state/${slug}`} className="county-back-link">
+          <span aria-hidden="true">←</span> Back to {data.meta.name} dashboard
+        </Link>
+        <h1 className="county-page-h1">County data not bundled</h1>
         <p>
           {data.meta.name} doesn't have county-level HMDA bundled yet. (Currently only NC is
           partitioned; other states require the FFIEC bulk download.)
@@ -49,14 +52,17 @@ function CountyBody({ slug, countyFips }: { slug: string; countyFips: string }) 
     );
   }
   if (!county) {
-    return notFound(slug, countyFips);
+    return notFound(slug, countyFips, data.meta.name);
   }
 
   const stateHmda = data.hmda15;
 
   return (
     <>
-      <h1>
+      <Link to={`/state/${slug}`} className="county-back-link">
+        <span aria-hidden="true">←</span> Back to {data.meta.name} dashboard
+      </Link>
+      <h1 className="county-page-h1">
         {county.name} County, {data.meta.postal}
       </h1>
       <p className="sub">
@@ -256,10 +262,15 @@ function countyAggregateBlurb(c: CountyEntry): string {
   return `${n30.toLocaleString()} closed 30-year loans + ${n15.toLocaleString()} 15-year, 2024.`;
 }
 
-function notFound(_slug: string, fips?: string) {
+function notFound(slug: string, fips?: string, stateName?: string) {
   return (
     <div>
-      <h1>County not found</h1>
+      {stateName && (
+        <Link to={`/state/${slug}`} className="county-back-link">
+          <span aria-hidden="true">←</span> Back to {stateName} dashboard
+        </Link>
+      )}
+      <h1 className="county-page-h1">County not found</h1>
       <p>{fips ? `FIPS ${fips} not in this state's HMDA data.` : "Unknown state."}</p>
     </div>
   );

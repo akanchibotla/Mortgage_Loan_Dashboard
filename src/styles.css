@@ -2089,6 +2089,41 @@ code {
   text-transform: uppercase;
   color: var(--c-brand);
 }
+
+/* Back-link sitting above the county-page H1 so the user can step back
+   to the parent state dashboard without going all the way home via the
+   topnav brand link. */
+.county-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-ink-mute, #6b7280);
+  text-decoration: none;
+  padding: 4px 8px 4px 4px;
+  border-radius: 6px;
+  transition: color 0.12s, background 0.12s;
+}
+.county-back-link:hover,
+.county-back-link:focus-visible {
+  color: var(--c-brand);
+  background: rgba(31, 95, 168, 0.08);
+  text-decoration: none;
+}
+.county-back-link:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 1px;
+}
+.county-page-h1 {
+  margin: 0 0 8px;
+}
+:root.dark .county-back-link:hover,
+:root.dark .county-back-link:focus-visible {
+  background: rgba(121, 178, 237, 0.12);
+  color: #79b2ed;
+}
 .state-hero-h1 {
   display: flex;
   align-items: center;
