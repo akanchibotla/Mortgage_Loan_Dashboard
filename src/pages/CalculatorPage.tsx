@@ -986,25 +986,87 @@ function LoanCardForm({
         </div>
       </label>
 
-      {ARM_PRODUCTS.has(loan.productType) && (
-        <label>
-          <span>Rate after adjustment</span>
-          <input
-            type="number"
-            min={0}
-            max={30}
-            step={0.05}
-            placeholder={`auto: ${(parseCustomRate(loan.rateText) ?? anchorRate ?? 0).toFixed(2)}%`}
-            value={loan.hasCustomArmAdjustedRate ? loan.armAdjustedRateText : ""}
-            onChange={(e) =>
-              onChange({
-                armAdjustedRateText: e.target.value,
-                hasCustomArmAdjustedRate: true,
-              })
-            }
-          />
-        </label>
-      )}
+      {ARM_PRODUCTS.has(loan.productType) && (() => {
+        const armRateInputId = `loan-arm-rate-${loan.id}`;
+        const baseRate = parseCustomRate(loan.rateText) ?? anchorRate ?? 0;
+        const armUseCustom = loan.hasCustomArmAdjustedRate;
+        const armRateDisplay = armUseCustom
+          ? loan.armAdjustedRateText
+          : baseRate.toFixed(2);
+        const stepArmRate = (dir: 1 | -1) => {
+          const current = armUseCustom
+            ? parseCustomRate(loan.armAdjustedRateText) ?? baseRate
+            : baseRate;
+          const next = Math.max(0, Math.min(30, current + dir * RATE_STEP));
+          onChange({
+            armAdjustedRateText: next.toFixed(2),
+            hasCustomArmAdjustedRate: true,
+          });
+        };
+        return (
+          <label htmlFor={armRateInputId}>
+            <div className="loan-form-rate-header">
+              <span>Rate after adjustment</span>
+              {armUseCustom && (
+                <button
+                  type="button"
+                  className="rate-reset-btn-inline"
+                  onClick={() =>
+                    onChange({
+                      armAdjustedRateText: "",
+                      hasCustomArmAdjustedRate: false,
+                    })
+                  }
+                  title={`Reset to follow the main rate (${baseRate.toFixed(2)}%)`}
+                  aria-label="Reset adjusted rate to follow main rate"
+                >
+                  ↺
+                </button>
+              )}
+            </div>
+            <div className="rate-field-combo">
+              <input
+                id={armRateInputId}
+                type="number"
+                className="rate-field-input"
+                min={0}
+                max={30}
+                step={0.05}
+                value={armRateDisplay}
+                onChange={(e) =>
+                  onChange({
+                    armAdjustedRateText: e.target.value,
+                    hasCustomArmAdjustedRate: true,
+                  })
+                }
+              />
+              <div className="rate-spin-buttons">
+                <button
+                  type="button"
+                  className="rate-spin-button"
+                  onClick={() => stepArmRate(1)}
+                  aria-label="Increase rate by 0.05%"
+                  title="Increase by 0.05%"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  className="rate-spin-button"
+                  onClick={() => stepArmRate(-1)}
+                  aria-label="Decrease rate by 0.05%"
+                  title="Decrease by 0.05%"
+                >
+                  ▼
+                </button>
+              </div>
+              {!armUseCustom && (
+                <span className="rate-field-suffix">follows main rate</span>
+              )}
+            </div>
+          </label>
+        );
+      })()}
     </div>
   );
 }
