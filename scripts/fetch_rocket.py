@@ -22,10 +22,9 @@ import json
 import os
 import re
 import sys
-import urllib.error
-import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _http import fetch_html  # noqa: E402
 from _paths import rocket_jsonl, rocket_today_view  # noqa: E402
 
 URL = "https://www.rocketmortgage.com/mortgage-rates"
@@ -120,12 +119,8 @@ def main() -> int:
     args = parser.parse_args()
 
     print(f"Fetching Rocket Mortgage national rates from {URL} ...")
-    req = urllib.request.Request(URL, headers=HEADERS)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            html = r.read().decode("utf-8", errors="ignore")
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+    html = fetch_html(URL, HEADERS, timeout=30)
+    if html is None:
         return 2
     text = _strip_html(html)
     found = extract(text)

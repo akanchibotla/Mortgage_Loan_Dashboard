@@ -28,10 +28,9 @@ import os
 import re
 import sys
 import time
-import urllib.error
-import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _http import fetch_html  # noqa: E402
 from _paths import nerdwallet_jsonl, nerdwallet_today_view  # noqa: E402
 from states import by_slug  # noqa: E402
 
@@ -225,12 +224,8 @@ def write_today_view(path: str, row: dict) -> None:
 def run_one(slug: str) -> int:
     state = by_slug(slug)
     print(f"Fetching NerdWallet {state['name']} ...")
-    req = urllib.request.Request(url_for(slug), headers=HEADERS)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            html = r.read().decode("utf-8", errors="ignore")
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+    html = fetch_html(url_for(slug), HEADERS, timeout=30)
+    if html is None:
         return 2
     text = _strip_html(html)
     found = extract(text)

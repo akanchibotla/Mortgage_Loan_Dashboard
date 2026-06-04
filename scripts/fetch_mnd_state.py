@@ -10,10 +10,9 @@ import json
 import os
 import re
 import sys
-import urllib.error
-import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _http import fetch_html  # noqa: E402
 from _paths import mnd_jsonl, mnd_today_view  # noqa: E402
 from states import by_slug  # noqa: E402
 
@@ -77,12 +76,8 @@ def write_today_view(path: str, row: dict) -> None:
 def run_one(slug: str) -> int:
     state = by_slug(slug)
     print(f"Fetching MND {state['name']} ...")
-    req = urllib.request.Request(url_for(slug), headers=HEADERS)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            text = r.read().decode("utf-8", errors="ignore")
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+    text = fetch_html(url_for(slug), HEADERS, timeout=30)
+    if text is None:
         return 2
     rates_m = DEFAULTS_PAT.search(text)
     date_m = DATE_PAT.search(text)

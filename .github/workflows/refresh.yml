@@ -19,6 +19,10 @@ env:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # Hard ceiling so a hung Playwright Chromium or wedged urllib socket
+    # can't burn an entire 6-hour default budget — and quietly drain the
+    # Actions monthly minutes allowance with it.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -128,9 +132,14 @@ jobs:
           bk_stale=()
           mnd_missing=()
           mnd_stale=()
+          nw_missing=()
+          nw_stale=()
           for s in ${{ steps.states.outputs.slugs }}; do
             bf="src/data/states/$s/bankrate_30yr_daily.json"
             mf="src/data/states/$s/mnd_30yr_daily.json"
+            # NerdWallet doesn't have a *_daily.json view (no daily-trail in
+            # the chart); validate the JSONL accumulator's last row instead.
+            nwf="data/daily/nerdwallet_$s.jsonl"
             if [ -f "$bf" ]; then
               last=$(jq -r '.[-1].date // ""' "$bf" 2>/dev/null)
               if [ -z "$last" ]; then
@@ -151,7 +160,35 @@ jobs:
             else
               mnd_missing+=("$s")
             fi
+            if [ -f "$nwf" ]; then
+              last=$(tail -1 "$nwf" | jq -r '.date_iso // ""' 2>/dev/null)
+              if [ -z "$last" ]; then
+                nw_missing+=("$s")
+              elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
+                nw_stale+=("$s=$last")
+              fi
+            else
+              # No NW JSONL yet: tolerated for states where today's first
+              # fetch hasn't written one (e.g. Nevada, where NW publishes
+              # no state average — see commit b90fc40 coverage finding).
+              :
+            fi
           done
+
+          # Rocket is national (single JSONL, no per-state loop).
+          rk_status="ok"
+          rkf="data/daily/rocket.jsonl"
+          if [ -f "$rkf" ]; then
+            last=$(tail -1 "$rkf" | jq -r '.date_iso // ""' 2>/dev/null)
+            if [ -z "$last" ]; then
+              rk_status="missing (no rows)"
+            elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
+              rk_status="stale (last=$last)"
+            fi
+          else
+            rk_status="missing (no file)"
+          fi
+
           ok=true
           if [ ${#bk_missing[@]} -gt 0 ]; then
             echo "::warning::Bankrate daily files missing/empty: ${bk_missing[*]}"
@@ -169,8 +206,20 @@ jobs:
             echo "::warning::MND daily files stale (last row >1 day old): ${mnd_stale[*]}"
             ok=false
           fi
+          if [ ${#nw_missing[@]} -gt 0 ]; then
+            echo "::warning::NerdWallet JSONLs missing/empty (had row, now blank): ${nw_missing[*]}"
+            ok=false
+          fi
+          if [ ${#nw_stale[@]} -gt 0 ]; then
+            echo "::warning::NerdWallet JSONLs stale (last row >1 day old): ${nw_stale[*]}"
+            ok=false
+          fi
+          if [ "$rk_status" != "ok" ]; then
+            echo "::warning::Rocket Mortgage JSONL: $rk_status"
+            ok=false
+          fi
           if $ok; then
-            echo "Daily coverage check passed: every active state has recent Bankrate + MND data."
+            echo "Daily coverage check passed: every tracked source has a recent row."
           fi
 
       - name: Commit refreshed data
