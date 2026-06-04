@@ -43,6 +43,15 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
+# States where NerdWallet's /mortgages/mortgage-rates/<slug> page exists but
+# the state-average rate widgets are *never* populated — confirmed structural
+# (commit b90fc40 coverage finding). For these we exit 0 with a note instead
+# of exit 3, so the workflow's fail-log doesn't grow a nerdwallet:<slug> row
+# every day and the coverage validator doesn't flag them as stale. The
+# matching skip-list lives in .github/workflows/refresh.yml's Validate step
+# (search NW_NO_COVERAGE) — keep both in sync.
+KNOWN_NO_COVERAGE: set[str] = {"nevada"}
+
 # Headline APR line — anchored on the exact "1w" delta marker that follows
 # each rate, so we don't false-match a 30-year-fixed APR from a comparison row.
 # Modern layout only (the "X-Year Fixed APR" headline doesn't exist in pre-2024 archives).
@@ -230,6 +239,9 @@ def run_one(slug: str) -> int:
     text = _strip_html(html)
     found = extract(text)
     if not found:
+        if slug in KNOWN_NO_COVERAGE:
+            print(f"  no NerdWallet coverage for {slug} (known structural gap) — skipping")
+            return 0
         print("ERROR: rate values not found", file=sys.stderr)
         return 3
     date_iso = _parse_as_of(found["as_of_raw"]) or dt.date.today().isoformat()

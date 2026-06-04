@@ -72,14 +72,43 @@ def intro_pattern(term: int) -> re.Pattern[str]:
 
 def _fetch_html_once(slug: str) -> str:
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        # Stealth flags: --disable-blink-features=AutomationControlled is the
+        # single most-impactful evasion — it stops the browser from declaring
+        # itself a webdriver in the navigator.webdriver getter, which is the
+        # check most of Bankrate's anti-bot vendors look at first. The
+        # init script below removes the residual signal that some vendors
+        # still poke at by reflecting on the descriptor.
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--disable-dev-shm-usage",
+                "--no-sandbox",
+            ],
+        )
         try:
             context = browser.new_context(
                 user_agent=(
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36 MortgageDashboard/1.0"
+                    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
                 ),
                 locale="en-US",
+                viewport={"width": 1366, "height": 900},
+                timezone_id="America/New_York",
+                extra_http_headers={
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-User": "?1",
+                },
+            )
+            context.add_init_script(
+                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+                "Object.defineProperty(navigator, 'languages', {get: () => ['en-US','en']});"
+                "Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3,4,5]});"
+                "window.chrome = window.chrome || {runtime: {}};"
             )
             page = context.new_page()
             try:

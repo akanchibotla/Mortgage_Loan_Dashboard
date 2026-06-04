@@ -176,6 +176,11 @@ jobs:
           nw_missing=()
           nw_stale=()
           state_count=0
+          # NerdWallet's per-state page exists for every state but the rate
+          # widgets never populate for these. The fetcher exits 0 for them
+          # (scripts/fetch_nerdwallet_state.py KNOWN_NO_COVERAGE) — keep this
+          # list in sync so the validator stops warning about their old rows.
+          NW_NO_COVERAGE=" nevada "
           for s in ${{ steps.states.outputs.slugs }}; do
             state_count=$((state_count + 1))
             bf="src/data/states/$s/bankrate_30yr_daily.json"
@@ -204,19 +209,52 @@ jobs:
               mnd_missing+=("$s")
             fi
             if [ -f "$nwf" ]; then
-              last=$(tail -1 "$nwf" | jq -r '.date_iso // ""' 2>/dev/null)
-              if [ -z "$last" ]; then
-                nw_missing+=("$s")
-              elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
-                nw_stale+=("$s=$last")
+              # Skip known-no-coverage states — their JSONL is a Wayback
+              # backfill artifact, not something today's fetcher updates.
+              if [[ "$NW_NO_COVERAGE" == *" $s "* ]]; then
+                :
+              else
+                last=$(tail -1 "$nwf" | jq -r '.date_iso // ""' 2>/dev/null)
+                if [ -z "$last" ]; then
+                  nw_missing+=("$s")
+                elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
+                  nw_stale+=("$s=$last")
+                fi
               fi
             else
               # No NW JSONL yet: tolerated for states where today's first
-              # fetch hasn't written one (e.g. Nevada, where NW publishes
-              # no state average — see commit b90fc40 coverage finding).
+              # fetch hasn't written one.
               :
             fi
           done
+
+          # ----- Per-source fetcher-failure count from FAIL_LOG -----
+          # The fail log carries one line per failed component invocation:
+          # `rocket`, `fred`, `bankrate:<slug>`, `mnd:<slug>`,
+          # `nerdwallet:<slug>`, `aggregate-*`, etc. A non-zero count here
+          # means *today's fetch step itself errored* — separate signal
+          # from "the JSONL last row is yesterday" (which the file-mtime
+          # checks above measure). The "Fetched today" column in the
+          # summary uses these counts.
+          rocket_failed_today=0
+          fred_failed_today=0
+          bk_failed_today=0
+          mnd_failed_today=0
+          nw_failed_today=0
+          if [ -s "$FAIL_LOG" ]; then
+            # grep -c always prints the count to stdout (even "0") and exits
+            # 1 when no matches. `|| true` swallows the exit-1 without
+            # appending a second "0" line to the captured value, which would
+            # otherwise break the arithmetic substitutions below.
+            rocket_failed_today=$(grep -c '^rocket$' "$FAIL_LOG" 2>/dev/null || true)
+            fred_failed_today=$(grep -c '^fred$' "$FAIL_LOG" 2>/dev/null || true)
+            bk_failed_today=$(grep -c '^bankrate:' "$FAIL_LOG" 2>/dev/null || true)
+            mnd_failed_today=$(grep -c '^mnd:' "$FAIL_LOG" 2>/dev/null || true)
+            nw_failed_today=$(grep -c '^nerdwallet:' "$FAIL_LOG" 2>/dev/null || true)
+          fi
+          bk_fetched_today=$((state_count - bk_failed_today))
+          mnd_fetched_today=$((state_count - mnd_failed_today))
+          nw_fetched_today=$((state_count - nw_failed_today))
 
           # Rocket is national (single JSONL, no per-state loop).
           rk_status="ok"
@@ -293,6 +331,20 @@ jobs:
             echo "::warning::PMMS 15-yr monthly: $pmms_status_15"
             ok=false
           fi
+          # Loud signal for nationals when *today's* fetcher failed even
+          # though the JSONL still has yesterday's row passing the staleness
+          # rule. Without this the run page reports "Rocket ok" while
+          # tomorrow's run will find the same row stale. Same logic for
+          # FRED — a missed weekly drop today doesn't immediately show in
+          # the monthly file if the prior week already landed.
+          if [ "$rocket_failed_today" -gt 0 ]; then
+            echo "::warning::Rocket Mortgage fetcher failed today (JSONL last row=$rk_status); next run will mark it stale"
+            ok=false
+          fi
+          if [ "$fred_failed_today" -gt 0 ]; then
+            echo "::warning::FRED PMMS fetcher failed today (PMMS 30=$pmms_status_30 / 15=$pmms_status_15)"
+            ok=false
+          fi
           if $ok; then
             echo "Daily coverage check passed: every tracked source has a recent row."
           fi
@@ -315,14 +367,20 @@ jobs:
               echo "**Component failures:** 0"
             fi
             echo ""
-            echo "| Source | Scope | Missing | Stale (>1d) | Status |"
-            echo "|---|---|---:|---:|---|"
-            echo "| Bankrate | per state | $bk_m | $bk_s | $( [ $bk_m -eq 0 ] && [ $bk_s -eq 0 ] && echo OK || echo WARN ) |"
-            echo "| MND | per state | $mnd_m | $mnd_s | $( [ $mnd_m -eq 0 ] && [ $mnd_s -eq 0 ] && echo OK || echo WARN ) |"
-            echo "| NerdWallet | per state | $nw_m | $nw_s | $( [ $nw_m -eq 0 ] && [ $nw_s -eq 0 ] && echo OK || echo WARN ) |"
-            echo "| Rocket | national | - | - | $rk_status |"
-            echo "| PMMS 30-yr | national-monthly | - | - | $pmms_status_30 |"
-            echo "| PMMS 15-yr | national-monthly | - | - | $pmms_status_15 |"
+            # "Fetched today" — what *today's* fetcher step actually
+            # accomplished. Distinct from the on-disk staleness columns
+            # which can pass on yesterday's row even when today's fetcher
+            # failed outright.
+            rk_today=$( [ "$rocket_failed_today" -eq 0 ] && echo "yes" || echo "NO" )
+            fred_today=$( [ "$fred_failed_today" -eq 0 ] && echo "yes" || echo "NO" )
+            echo "| Source | Scope | Fetched today | Missing | Stale (>1d) | Status |"
+            echo "|---|---|:--:|---:|---:|---|"
+            echo "| Bankrate | per state | $bk_fetched_today/$state_count | $bk_m | $bk_s | $( [ $bk_m -eq 0 ] && [ $bk_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| MND | per state | $mnd_fetched_today/$state_count | $mnd_m | $mnd_s | $( [ $mnd_m -eq 0 ] && [ $mnd_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| NerdWallet | per state | $nw_fetched_today/$state_count | $nw_m | $nw_s | $( [ $nw_m -eq 0 ] && [ $nw_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| Rocket | national | $rk_today | - | - | $rk_status |"
+            echo "| PMMS 30-yr | national-monthly | $fred_today | - | - | $pmms_status_30 |"
+            echo "| PMMS 15-yr | national-monthly | $fred_today | - | - | $pmms_status_15 |"
             echo ""
             if [ $bk_m -gt 0 ] || [ $bk_s -gt 0 ]; then
               echo "**Bankrate problem states:** ${bk_missing[*]} ${bk_stale[*]}"
@@ -347,6 +405,12 @@ jobs:
             [ "$rk_status" != "ok" ] && broken=$((broken + 1))
             [ "$pmms_status_30" != "ok" ] && broken=$((broken + 1))
             [ "$pmms_status_15" != "ok" ] && broken=$((broken + 1))
+            # National-fetcher-failed-today is its own breakage, regardless
+            # of JSONL staleness — count it so a 100% blocked Rocket day
+            # actually counts toward the threshold instead of getting
+            # absorbed by yesterday's row passing the recency check.
+            [ "$rocket_failed_today" -gt 0 ] && [ "$rk_status" = "ok" ] && broken=$((broken + 1))
+            [ "$fred_failed_today" -gt 0 ] && [ "$pmms_status_30" = "ok" ] && broken=$((broken + 1))
             if [ "$total_cells" -gt 0 ]; then
               pct=$(( broken * 100 / total_cells ))
               echo "STRICT_COVERAGE: $broken / $total_cells cells broken ($pct%); threshold $STRICT_THRESHOLD%"
