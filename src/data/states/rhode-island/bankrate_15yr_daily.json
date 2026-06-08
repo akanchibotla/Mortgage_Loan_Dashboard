@@ -33,5 +33,11 @@
     "rate": 6.04,
     "src": "Bankrate",
     "method": "browser"
+  },
+  {
+    "date": "2026-06-08",
+    "rate": 6.04,
+    "src": "Bankrate",
+    "method": "browser"
   }
 ]
