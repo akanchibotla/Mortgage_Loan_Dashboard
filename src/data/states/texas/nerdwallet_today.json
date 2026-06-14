@@ -1,15 +1,15 @@
 {
-  "fetched_at_utc": "2026-06-13T14:25:36+00:00",
-  "as_of_raw": "June 13, 2026 10:20 AM EDT",
-  "as_of_iso": "2026-06-13",
+  "fetched_at_utc": "2026-06-14T14:29:21+00:00",
+  "as_of_raw": "June 14, 2026 10:20 AM EDT",
+  "as_of_iso": "2026-06-14",
   "term_15": {
-    "rate_pct": 5.76,
-    "apr_pct": 5.79,
-    "as_of_iso": "2026-06-13"
+    "rate_pct": 5.8,
+    "apr_pct": 5.82,
+    "as_of_iso": "2026-06-14"
   },
   "term_30": {
-    "rate_pct": 6.37,
-    "apr_pct": 6.38,
-    "as_of_iso": "2026-06-13"
+    "rate_pct": 6.44,
+    "apr_pct": 6.44,
+    "as_of_iso": "2026-06-14"
   }
 }
