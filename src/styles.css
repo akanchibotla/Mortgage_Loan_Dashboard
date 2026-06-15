@@ -3360,10 +3360,52 @@ code {
    "See month-by-month amortization" buttons land at different y's.
    Suppressed, the summary stays right after the P&I block (already
    height-equalized via --card-pi-min) and the leftover row-height space
-   accumulates at the bottom of the card instead. All summary buttons land
-   at the same y in any mix of open/closed states across loan types. */
+   is consumed by the open amort chain (rules below). */
 .calc-compare-grid:has(.loan-amort-details[open]) .loan-card-spacer {
   flex: 0 0 0;
+  min-height: 0;
+}
+
+/* Eliminate the whitespace between the bottom of the amortization table
+   and the bottom of the card. With grid stretch making every card equal to
+   the tallest card's natural height, shorter cards (fixed, smaller-buydown
+   variants) have leftover vertical space. The default layout leaves that
+   space below the .amort-months-wrap so the user sees the table's bottom
+   border, then a gap of card padding, then the card's edge. This rule
+   chain lets the disclosure → panel → wrap absorb the leftover space so
+   the table's box extends to the card's bottom. The 360 schedule rows
+   still render at their natural sizes from the top of the wrap; any
+   leftover space stays inside the wrap, hidden visually because the wrap's
+   white background blends with the card background and the only delimiter
+   (the wrap's border) continues uninterrupted to the card edge.
+
+   Only the wrap stretches — the explainer note / chart / chart legend
+   stay at their natural sizes so they don't distort (the chart uses
+   preserveAspectRatio="none" and would warp visually if its wrapper
+   stretched). */
+.loan-card > .loan-amort-details[open] {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.loan-amort-details[open] > summary {
+  flex: 0 0 auto;
+}
+.loan-amort-details[open] > .amort-panel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.amort-panel > .amort-buydown-note,
+.amort-panel > .amort-arm-note,
+.amort-panel > .amort-chart-wrap,
+.amort-panel > .amort-chart-legend {
+  flex: 0 0 auto;
+}
+.amort-panel > .amort-months-wrap {
+  flex: 1 1 auto;
   min-height: 0;
 }
 .calc-compare-grid.cols-1 {
