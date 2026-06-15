@@ -3361,6 +3361,21 @@ code {
 .loan-card:has(.loan-amort-details[open]) {
   min-height: var(--card-min-open, auto);
 }
+/* Suppress the flex-grow on the spacer whenever ANY card in the grid has its
+   amortization open. The spacer sits between the P&I block and the
+   amortization disclosure — when min-height pads a short card taller than
+   its natural content, the spacer's `flex: 1 1 0` absorbs that extra space
+   and pushes the summary button (and everything below it) DOWN by the pad
+   amount. Different cards get padded by different amounts, so different
+   summaries end up at different y-coordinates → misalignment. With the
+   spacer suppressed here, the summary stays right after the P&I block, and
+   the leftover min-height space accumulates at the bottom of the card
+   instead. All summary buttons land at the same y (header + top + PI,
+   each height-equalized via the variables above). */
+.calc-compare-grid:has(.loan-amort-details[open]) .loan-card-spacer {
+  flex: 0 0 0;
+  min-height: 0;
+}
 .calc-compare-grid.cols-1 {
   grid-template-columns: 1fr;
 }

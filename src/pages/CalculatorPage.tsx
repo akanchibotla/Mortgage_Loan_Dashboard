@@ -512,8 +512,7 @@ export default function CalculatorPage() {
   // Re-measure whenever any amort disclosure toggles. The native `toggle`
   // event on a <details> element does NOT bubble, so we have to attach in
   // capture phase at the grid level — that still catches it during the
-  // descent. Without this hook, expanding a card after mount would leave
-  // --card-min-open stale and the cards wouldn't equalize.
+  // descent. Provides the instant response on click.
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -521,6 +520,39 @@ export default function CalculatorPage() {
     grid.addEventListener("toggle", onToggle, true);
     return () => grid.removeEventListener("toggle", onToggle, true);
   }, []);
+
+  // Re-measure whenever any card's size changes for ANY reason. The
+  // critical case is the lazy-loaded AmortPanel: when the user first opens
+  // an amortization, the panel's chunk hasn't loaded yet — the toggle event
+  // fires while the card still shows the tiny "Loading amortization…"
+  // fallback. The toggle-triggered measurement captures that small height
+  // and writes a too-small --card-min-open. Then the chunk loads ~50-200ms
+  // later, the card grows to its real height, and nothing re-triggers the
+  // measurement — so shorter cards never get padded up to the real max.
+  // This observer catches that post-load resize. rAF-gated to coalesce the
+  // multi-pulse the observer naturally emits when measureSections itself
+  // resets and re-applies the CSS vars; without the gate the cycle would
+  // spin for two extra frames per change instead of converging in one.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    let rafId: number | null = null;
+    const schedule = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setResizeTick((t) => t + 1);
+      });
+    };
+    const ro = new ResizeObserver(schedule);
+    grid
+      .querySelectorAll<HTMLElement>(".loan-card")
+      .forEach((card) => ro.observe(card));
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
+  }, [loans.length]);
 
   return (
     <>
