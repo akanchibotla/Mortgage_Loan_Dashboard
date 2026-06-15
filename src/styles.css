@@ -844,6 +844,15 @@ h1 {
   border-radius: 8px;
   background: #fff;
   overflow: hidden;
+  /* Flex column so the scrollable ol inside can flex-grow into the wrap's
+     available height. Without this the ol's `max-height: 480px` (below)
+     would cap it short of the wrap when the wrap is stretched by the
+     open-amort fill chain (CSS Grid stretches every comparison card to
+     the tallest card's height — the leftover space then bubbles down
+     details → panel → wrap, and previously sat as empty whitespace
+     inside the wrap below the 480px-tall ol). */
+  display: flex;
+  flex-direction: column;
 }
 
 .amort-months-header {
@@ -949,7 +958,18 @@ h1 {
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 480px;
+  /* `flex: 1 1 480px` replaces the prior `max-height: 480px`. The 480px is
+     now the flex-basis — the ol's natural size when the wrap isn't being
+     stretched (preserves the prior look on the homepage / state-page
+     calculators where the disclosure is at natural size). When the wrap
+     IS being stretched (multi-card calculator with grid stretch), the
+     `flex-grow: 1` lets the ol absorb the wrap's extra height so there's
+     no empty space below the rows inside the wrap. The scrollbar still
+     appears because the 360 rows overflow the available height either
+     way; what changes is whether that scrollable area uses 480px or the
+     full wrap height. */
+  flex: 1 1 480px;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1052,7 +1072,9 @@ h1 {
     height: 160px;
   }
   .amort-months {
-    max-height: 360px;
+    /* Mobile shrinks the natural scroll area; see .amort-months base rule
+       above for why this is a flex-basis change instead of max-height. */
+    flex-basis: 360px;
   }
   .amort-month {
     padding: 8px 10px;
