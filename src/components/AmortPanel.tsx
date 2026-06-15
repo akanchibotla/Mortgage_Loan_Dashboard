@@ -18,11 +18,21 @@ interface AmortRow {
   balance: number;
 }
 
+// Optional discriminator the caller can pass so the panel surfaces the
+// right explainer note above the chart. We can't reliably infer "this is
+// an ARM" from the schedule shape alone — when the user leaves the
+// rate-after-adjustment field at its default it equals the note rate, and
+// the resulting schedule looks identical to a fixed loan. The buydown
+// detection still falls back to the subsidy field when this hint is absent,
+// for backward compat with any external caller.
+export type ProductHint = "fixed" | "arm" | "buydown";
+
 interface Props {
   loanAmount: number;
   annualRatePct: number;
   termYears: number;
   schedule?: AmortRow[];
+  productHint?: ProductHint;
 }
 
 export type { AmortRow };
@@ -66,6 +76,7 @@ export function AmortPanel({
   annualRatePct,
   termYears,
   schedule: providedSchedule,
+  productHint,
 }: Props) {
   const schedule = useMemo(
     () => providedSchedule ?? computeSchedule(loanAmount, annualRatePct, termYears),
@@ -76,10 +87,32 @@ export function AmortPanel({
   }
   const crossoverIdx = schedule.findIndex((r) => r.principal > r.interest);
   const crossoverMonth = crossoverIdx >= 0 ? crossoverIdx + 1 : -1;
-  // Detect a buydown schedule by checking whether ANY row carries a non-zero
-  // subsidy. We can't trust productType to be in scope here (this component
-  // is generic over schedules), but the subsidy field is self-describing.
-  const hasBuydown = schedule.some((r) => (r.subsidy ?? 0) > 0);
+  // Detect a buydown schedule. Prefer the explicit productHint when the
+  // caller provides one; fall back to checking whether ANY row carries a
+  // non-zero subsidy (legacy callers / standalone usage).
+  const hasBuydown =
+    productHint === "buydown" || schedule.some((r) => (r.subsidy ?? 0) > 0);
+  // ARMs can only be flagged via the explicit hint — when the user leaves
+  // the rate-after-adjustment field at the default, it equals the note
+  // rate and the schedule rows look identical to a fixed loan.
+  const hasArm = productHint === "arm" && !hasBuydown;
+  // Find the fixed-period boundary so the explainer can name "first 5 years"
+  // or "first 7 years" precisely instead of hardcoding. For ARMs that genuinely
+  // re-amortize at a new rate, the payment value changes between consecutive
+  // rows at the adjustment month — that's the cleanest landmark we can
+  // detect from the schedule shape. Falls back to 0 if rates match (e.g.,
+  // user kept the default), in which case the note shows a generic message.
+  let armFixedYears = 0;
+  let armHasVisibleAdjustment = false;
+  if (hasArm) {
+    const changeIdx = schedule.findIndex(
+      (r, i) => i > 0 && Math.abs(r.payment - schedule[i - 1].payment) > 0.005,
+    );
+    if (changeIdx > 0) {
+      armFixedYears = Math.floor(changeIdx / 12);
+      armHasVisibleAdjustment = true;
+    }
+  }
   const subsidyTotal = hasBuydown
     ? schedule.reduce((s, r) => s + (r.subsidy ?? 0), 0)
     : 0;
@@ -92,6 +125,34 @@ export function AmortPanel({
           how your balance pays down. During the buydown years, you write a
           smaller check and a separately-funded subsidy account covers the
           difference. Hover any month for the "you pay" vs "subsidy" split.
+        </p>
+      )}
+      {hasArm && (
+        <p className="amort-arm-note">
+          <b>Adjustable-rate mortgage.</b>{" "}
+          {armHasVisibleAdjustment ? (
+            <>
+              Your rate is fixed at the note rate for the first{" "}
+              {armFixedYears} year{armFixedYears !== 1 ? "s" : ""} — the chart
+              through that period is your loan's exact amortization. After
+              that, the loan re-amortizes at the adjusted rate on the
+              remaining balance, so the principal/interest split and balance
+              curve visibly change at the adjustment boundary.
+            </>
+          ) : (
+            <>
+              Your rate is fixed for the initial period, then adjusts. Right
+              now your "rate after adjustment" is set to the same value as
+              the note rate, so the chart looks like a fixed loan — change
+              that field to stress-test a different reset.
+            </>
+          )}{" "}
+          <b>Important caveat:</b> real ARMs reset annually based on a
+          benchmark index (typically SOFR or 1-year CMT) plus a margin
+          written in your note, bounded by per-adjustment and lifetime caps.
+          This chart simplifies by holding the adjusted rate constant — it's
+          useful for "what's my payment if my rate resets to X%" planning,
+          not a forecast of the real reset path.
         </p>
       )}
       <AmortChart schedule={schedule} crossoverMonth={crossoverMonth} />

@@ -915,6 +915,23 @@ h1 {
   color: #143a66;
 }
 
+/* ARM explainer — distinct amber/warm tint so it doesn't read as the same
+   note as the buydown one. ARMs aren't structurally similar; the message is
+   "this chart is a simplification of a more dynamic real-world product". */
+.amort-arm-note {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  background: #fbf6ec;
+  border: 1px solid #e6d5b3;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4a3a1f;
+}
+.amort-arm-note b {
+  color: #2f2410;
+}
+
 /* Loan-card aside lines (footnotes under the buydown phase list).
    Styled lighter to read as supporting context, not primary numbers. */
 .loan-stats-aside {
@@ -3942,6 +3959,15 @@ code {
 }
 :root.dark .amort-buydown-note b {
   color: #e8f0fb;
+}
+
+:root.dark .amort-arm-note {
+  background: #2a2316;
+  border-color: #4a3d28;
+  color: #e6d8c0;
+}
+:root.dark .amort-arm-note b {
+  color: #f5ead4;
 }
 
 :root.dark .amort-month-meta-buydown {

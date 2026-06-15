@@ -912,6 +912,16 @@ function LoanAmortDisclosure({
     armRate,
     loan.term,
   );
+  // Translate the product-type vocabulary used by the calculator into the
+  // narrower "what kind of explainer note" hint the panel needs. Buydowns
+  // can also be detected from the subsidy field, but ARMs require this hint
+  // to surface their explainer (their default schedule looks like a fixed
+  // loan when the user hasn't customized the adjusted rate).
+  const productHint: "fixed" | "arm" | "buydown" = isBuydown(loan.productType)
+    ? "buydown"
+    : ARM_PRODUCTS.has(loan.productType)
+      ? "arm"
+      : "fixed";
   return (
     <details
       className="loan-amort-details"
@@ -928,6 +938,7 @@ function LoanAmortDisclosure({
             annualRatePct={centralRate}
             termYears={loan.term}
             schedule={schedule}
+            productHint={productHint}
           />
         </Suspense>
       )}
