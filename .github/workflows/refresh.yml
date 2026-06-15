@@ -181,6 +181,11 @@ jobs:
           # (scripts/fetch_nerdwallet_state.py KNOWN_NO_COVERAGE) — keep this
           # list in sync so the validator stops warning about their old rows.
           NW_NO_COVERAGE=" nevada "
+          # Bankrate returns HTTP 404 for these slugs (no per-state page
+          # exists). The fetcher exits 0 for them
+          # (scripts/fetch_bankrate_state.py KNOWN_NO_COVERAGE) — keep this
+          # list in sync so the validator stops warning about the empty file.
+          BANKRATE_NO_COVERAGE=" district-of-columbia "
           for s in ${{ steps.states.outputs.slugs }}; do
             state_count=$((state_count + 1))
             bf="src/data/states/$s/bankrate_30yr_daily.json"
@@ -188,7 +193,9 @@ jobs:
             # NerdWallet doesn't have a *_daily.json view (no daily-trail in
             # the chart); validate the JSONL accumulator's last row instead.
             nwf="data/daily/nerdwallet_$s.jsonl"
-            if [ -f "$bf" ]; then
+            if [[ "$BANKRATE_NO_COVERAGE" == *" $s "* ]]; then
+              :
+            elif [ -f "$bf" ]; then
               last=$(jq -r '.[-1].date // ""' "$bf" 2>/dev/null)
               if [ -z "$last" ]; then
                 bk_missing+=("$s")

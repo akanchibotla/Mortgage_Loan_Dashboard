@@ -33,6 +33,11 @@ except ImportError:
     print("ERROR: playwright not installed", file=sys.stderr)
     sys.exit(2)
 
+# Bankrate serves a 404 for these state slugs (no per-state page exists).
+# We exit early with success so the daily refresh validator can skip the
+# bk_missing/bk_stale checks for them — mirrors NerdWallet's KNOWN_NO_COVERAGE.
+KNOWN_NO_COVERAGE: set[str] = {"district-of-columbia"}
+
 GOTO_TIMEOUT_MS = 60_000  # bumped from 45s for slow runner network
 HYDRATION_TIMEOUT_MS = 45_000  # bumped from 30s; gives slow states more room
 RETRY_BACKOFFS_S = [4, 12]  # 3 attempts total: try, +4s, retry, +12s, retry
@@ -60,9 +65,23 @@ DATE_INTRO_PAT = re.compile(
 
 
 def table_pattern(term: int) -> re.Pattern[str]:
+    """Legacy Bankrate format (pre-2026 redesign): kept as fallback in case any
+    server still serves the old DOM. The new layout matched by
+    `table_pattern_v2` is the current one as of June 2026."""
     return re.compile(
         rf"{term}-year-mortgage-rates/[^>]*>[^<]*</a>\s*</div>\s*</td>\s*<td[^>]*>\s*(\d\.\d{{2,3}})\s*%",
         re.IGNORECASE,
+    )
+
+
+def table_pattern_v2(term: int) -> re.Pattern[str]:
+    """Current Bankrate format (June 2026 redesign): the rate-label cell uses
+    <strong> instead of a <div>, and the adjacent value cell carries the rate
+    as a `data-value="X.XX"` attribute on the <td>. Extracting from the
+    attribute avoids unicode/whitespace fragility around the inner text."""
+    return re.compile(
+        rf"{term}-year-mortgage-rates/[^>]*>(?:<strong>)?[^<]*(?:</strong>)?</a>\s*</td>\s*<td[^>]*data-value=\"(\d\.\d{{1,3}})\"",
+        re.IGNORECASE | re.DOTALL,
     )
 
 
@@ -130,9 +149,9 @@ def _fetch_html_once(slug: str) -> str:
 
 def _html_has_real_values(html: str) -> bool:
     """An attempt is real only if at least one term yields a non-placeholder value
-    from either the table or the intro band."""
+    from any of the table (v2 or v1) or the intro band."""
     for term in (15, 30):
-        for pat in (table_pattern(term), intro_pattern(term)):
+        for pat in (table_pattern_v2(term), table_pattern(term), intro_pattern(term)):
             m = pat.search(html)
             if m and real(float(m.group(1))) is not None:
                 return True
@@ -212,7 +231,10 @@ def extract_values(html: str) -> dict:
     as_of = DATE_INTRO_PAT.search(html)
     out: dict = {"as_of": as_of.group(1) if as_of else None}
     for term in (15, 30):
-        tm = table_pattern(term).search(html)
+        # Try the current (v2) format first; fall back to the legacy DOM if a
+        # cached or partially-rendered page is still serving the old structure.
+        tm2 = table_pattern_v2(term).search(html)
+        tm = tm2 or table_pattern(term).search(html)
         im = intro_pattern(term).search(html)
         out[f"table_{term}"] = real(float(tm.group(1)) if tm else None)
         out[f"intro_{term}"] = real(float(im.group(1)) if im else None)
@@ -273,6 +295,12 @@ def fetch_wayback(slug: str) -> tuple[str, str] | None:
 
 def run_one(slug: str) -> int:
     state = by_slug(slug)
+    if slug in KNOWN_NO_COVERAGE:
+        print(
+            f"Skipping Bankrate {state['name']} ({state['postal']}): no per-state page exists "
+            f"(KNOWN_NO_COVERAGE)."
+        )
+        return 0
     print(f"Fetching Bankrate {state['name']} ({state['postal']}) ...")
 
     # Tier 1: Playwright headless browser
