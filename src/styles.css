@@ -958,18 +958,18 @@ h1 {
   list-style: none;
   padding: 0;
   margin: 0;
-  /* `flex: 1 1 480px` replaces the prior `max-height: 480px`. The 480px is
-     now the flex-basis — the ol's natural size when the wrap isn't being
-     stretched (preserves the prior look on the homepage / state-page
-     calculators where the disclosure is at natural size). When the wrap
-     IS being stretched (multi-card calculator with grid stretch), the
-     `flex-grow: 1` lets the ol absorb the wrap's extra height so there's
-     no empty space below the rows inside the wrap. The scrollbar still
-     appears because the 360 rows overflow the available height either
-     way; what changes is whether that scrollable area uses 480px or the
-     full wrap height. */
-  flex: 1 1 480px;
-  min-height: 0;
+  /* `flex: 1 1 0` + `min-height: 480px` replaces the prior `max-height: 480px`.
+     The previous attempt used `flex: 1 1 480px` (basis 480), but that
+     interacted with `flex-basis: auto` further up the chain in ways that
+     left the ol stuck at its basis on some loan types (the fixed card
+     specifically — its panel has the fewest natural children, so the
+     "extra space to absorb" computation reached the ol with zero left
+     to give). Switching to basis 0 makes the ol greedily take ALL
+     available space in the wrap. The 480px minimum is retained as a
+     min-height so the non-stretched (homepage / state-page calc) contexts
+     still get the prior 480px scroll area. */
+  flex: 1 1 0;
+  min-height: 480px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1072,9 +1072,9 @@ h1 {
     height: 160px;
   }
   .amort-months {
-    /* Mobile shrinks the natural scroll area; see .amort-months base rule
-       above for why this is a flex-basis change instead of max-height. */
-    flex-basis: 360px;
+    /* Mobile shrinks the natural scroll area floor — matches the
+       min-height approach in the base rule above. */
+    min-height: 360px;
   }
   .amort-month {
     padding: 8px 10px;
