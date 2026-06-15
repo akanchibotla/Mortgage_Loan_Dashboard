@@ -3322,15 +3322,15 @@ code {
   gap: 14px;
   align-items: stretch;
 }
-/* When any comparison card's amortization disclosure is open, switch the
-   grid from "all cards stretch to row height" to "each card sizes to its
-   own content." Result: opening one card grows ONLY that card; siblings
-   stay at their natural height instead of being dragged taller by the
-   grid row. With every disclosure closed, the default stretch rule
-   above takes over again so the cards re-equalize on close. */
-.calc-compare-grid:has(.loan-amort-details[open]) {
-  align-items: start;
-}
+/* `align-items: stretch` stays on regardless of whether any amortization
+   disclosure is open. CSS Grid then equalizes every card in a row to the
+   tallest card's natural height — handling the open-amort equal-height
+   requirement for free, with no JS measurement of the card-level minimum.
+   (Previously this rule flipped to `align-items: start` when any amort
+   was open so opening one card wouldn't drag closed siblings taller; the
+   product preference is now the opposite — every card should bottom-align
+   in any mix of open/closed states, even when one is a buydown with its
+   much taller per-month subsidy breakdown.) */
 
 /* Two horizontal lines should stay aligned across every comparison card
    regardless of loan structure, state, or ARM selection:
@@ -3349,29 +3349,19 @@ code {
 .loan-card .loan-block.loan-block-output {
   min-height: var(--card-pi-min, auto);
 }
-/* Open-amort equal-height floor. The CalculatorPage measureSections hook
-   measures the tallest card whose amortization disclosure is currently open
-   and writes --card-min-open. Only cards with their OWN disclosure open get
-   the floor applied — closed siblings keep their natural shorter height so
-   opening one card doesn't drag closed neighbors taller. This is what makes
-   a fixed-loan card and a 3-2-1 buydown card bottom-align when both are
-   expanded, even though their internal content differs significantly
-   (different phase rows, different explainer notes, per-month buydown
-   breakdown only present during buydown years). */
-.loan-card:has(.loan-amort-details[open]) {
-  min-height: var(--card-min-open, auto);
-}
-/* Suppress the flex-grow on the spacer whenever ANY card in the grid has its
-   amortization open. The spacer sits between the P&I block and the
-   amortization disclosure — when min-height pads a short card taller than
-   its natural content, the spacer's `flex: 1 1 0` absorbs that extra space
-   and pushes the summary button (and everything below it) DOWN by the pad
-   amount. Different cards get padded by different amounts, so different
-   summaries end up at different y-coordinates → misalignment. With the
-   spacer suppressed here, the summary stays right after the P&I block, and
-   the leftover min-height space accumulates at the bottom of the card
-   instead. All summary buttons land at the same y (header + top + PI,
-   each height-equalized via the variables above). */
+/* Suppress the flex-grow on the spacer whenever ANY card in the grid has
+   its amortization open. The spacer sits between the P&I block and the
+   amortization disclosure. With grid stretch enforcing equal card heights,
+   shorter open cards have extra vertical space relative to the tallest
+   card. If the spacer were allowed to flex-grow, it would absorb that
+   extra space and push the summary button (and the amort panel beneath it)
+   DOWN by different amounts in different cards — the fixed card pads
+   more than the ARM card, which pads more than the buydown card, so the
+   "See month-by-month amortization" buttons land at different y's.
+   Suppressed, the summary stays right after the P&I block (already
+   height-equalized via --card-pi-min) and the leftover row-height space
+   accumulates at the bottom of the card instead. All summary buttons land
+   at the same y in any mix of open/closed states across loan types. */
 .calc-compare-grid:has(.loan-amort-details[open]) .loan-card-spacer {
   flex: 0 0 0;
   min-height: 0;

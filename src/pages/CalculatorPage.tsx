@@ -462,41 +462,37 @@ export default function CalculatorPage() {
   const measureSections = useCallback(() => {
     const grid = gridRef.current;
     if (!grid) return;
-    // Reset CSS variables so the next measurement sees the natural height,
-    // not the previously-applied min-height floor.
-    grid.style.setProperty("--card-top-min", "auto");
-    grid.style.setProperty("--card-pi-min", "auto");
-    grid.style.setProperty("--card-min-open", "auto");
-    // Force a synchronous reflow before reading offsetHeight.
-    void grid.offsetHeight;
-    const tops = grid.querySelectorAll<HTMLElement>(".loan-card-top");
-    const pis = grid.querySelectorAll<HTMLElement>(".loan-block-output");
-    const cards = grid.querySelectorAll<HTMLElement>(".loan-card");
+    // Measure natural heights via inner elements rather than the
+    // .loan-card-top / .loan-block-output containers themselves. The
+    // containers carry the --card-top-min / --card-pi-min floors via CSS,
+    // so their own offsetHeight already reflects the applied floor and
+    // can't tell us the natural max. The form (.loan-card-form, the only
+    // child of .loan-card-top) and the children of the P&I block carry no
+    // floor of their own — their offsetHeights ARE the natural heights.
+    // Going this route avoids the prior reset-to-auto → reflow → measure →
+    // reapply pattern, which caused two extra ResizeObserver fires per
+    // measurement cycle. With no shrink/grow during measurement, there's
+    // no cycle for the observer to chase.
     let topMax = 0;
-    tops.forEach((el) => {
+    grid.querySelectorAll<HTMLElement>(".loan-card-form").forEach((el) => {
       if (el.offsetHeight > topMax) topMax = el.offsetHeight;
     });
     let piMax = 0;
-    pis.forEach((el) => {
-      if (el.offsetHeight > piMax) piMax = el.offsetHeight;
-    });
-    // Among cards whose amortization disclosure is currently open, take the
-    // tallest. That becomes the min-height floor applied to every open card
-    // so different loan types (fixed / ARM / buydown — each with different
-    // phase rows, explainer notes, and per-month buydown breakdowns) all
-    // bottom-align when expanded. Closed cards are NOT constrained — they
-    // stay at their natural shorter height, matching the existing behavior
-    // where opening one card doesn't drag closed siblings taller.
-    let openCardMax = 0;
-    cards.forEach((card) => {
-      const details = card.querySelector<HTMLDetailsElement>(".loan-amort-details");
-      if (details?.open && card.offsetHeight > openCardMax) {
-        openCardMax = card.offsetHeight;
+    grid.querySelectorAll<HTMLElement>(".loan-block-output").forEach((el) => {
+      let sum = 0;
+      for (let i = 0; i < el.children.length; i++) {
+        sum += (el.children[i] as HTMLElement).offsetHeight;
       }
+      if (sum > piMax) piMax = sum;
     });
     if (topMax > 0) grid.style.setProperty("--card-top-min", `${topMax}px`);
     if (piMax > 0) grid.style.setProperty("--card-pi-min", `${piMax}px`);
-    if (openCardMax > 0) grid.style.setProperty("--card-min-open", `${openCardMax}px`);
+    // Card-level equal-height is handled by CSS Grid's align-items: stretch
+    // (the row stretches every card to the tallest card's natural height,
+    // including the open-amort case). No JS measurement of the card
+    // minimum is needed anymore — and removing it eliminates the lazy-
+    // load race that left --card-min-open stale when a buydown card was
+    // mixed into a multi-card open state.
   }, []);
 
   useLayoutEffect(() => {
@@ -509,10 +505,16 @@ export default function CalculatorPage() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Re-measure whenever any amort disclosure toggles. The native `toggle`
-  // event on a <details> element does NOT bubble, so we have to attach in
-  // capture phase at the grid level — that still catches it during the
-  // descent. Provides the instant response on click.
+  // Re-measure the sectional minimums whenever any amort disclosure
+  // toggles. The native `toggle` event on a <details> element does NOT
+  // bubble, so we have to attach in capture phase at the grid level — that
+  // still catches it during the descent. Toggle can change the natural
+  // form / P&I block heights indirectly (no; those are unaffected by amort
+  // open state) but more importantly, when CSS Grid re-stretches all cards
+  // to the newly-tallest card's height, the within-card sectional
+  // alignments stay correct only if --card-top-min / --card-pi-min still
+  // reflect the natural maxima. Cheap to recompute, cheaper than tracking
+  // when it's actually needed.
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -520,39 +522,6 @@ export default function CalculatorPage() {
     grid.addEventListener("toggle", onToggle, true);
     return () => grid.removeEventListener("toggle", onToggle, true);
   }, []);
-
-  // Re-measure whenever any card's size changes for ANY reason. The
-  // critical case is the lazy-loaded AmortPanel: when the user first opens
-  // an amortization, the panel's chunk hasn't loaded yet — the toggle event
-  // fires while the card still shows the tiny "Loading amortization…"
-  // fallback. The toggle-triggered measurement captures that small height
-  // and writes a too-small --card-min-open. Then the chunk loads ~50-200ms
-  // later, the card grows to its real height, and nothing re-triggers the
-  // measurement — so shorter cards never get padded up to the real max.
-  // This observer catches that post-load resize. rAF-gated to coalesce the
-  // multi-pulse the observer naturally emits when measureSections itself
-  // resets and re-applies the CSS vars; without the gate the cycle would
-  // spin for two extra frames per change instead of converging in one.
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
-    let rafId: number | null = null;
-    const schedule = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        setResizeTick((t) => t + 1);
-      });
-    };
-    const ro = new ResizeObserver(schedule);
-    grid
-      .querySelectorAll<HTMLElement>(".loan-card")
-      .forEach((card) => ro.observe(card));
-    return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      ro.disconnect();
-    };
-  }, [loans.length]);
 
   return (
     <>
