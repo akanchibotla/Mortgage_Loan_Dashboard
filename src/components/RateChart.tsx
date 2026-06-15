@@ -152,13 +152,26 @@ export function RateChart({
   ): boolean =>
     timescale === "monthly" && range !== null && date >= range[0] && date <= range[1];
 
+  // Marker style with pointRadius: 0 — used for null-rate points (which
+  // would otherwise pick up the default-branch marker from styleFor("")
+  // and render a visible diamond at an undefined y) and for monthly
+  // points suppressed by daily-trail coverage. Style fields are written
+  // as undefined where they don't matter so Chart.js doesn't pick up
+  // stray colors for a non-existent marker.
+  const noMarkerStyle: NcStyle = {
+    pointStyle: "circle",
+    pointBackgroundColor: "transparent",
+    pointBorderColor: "transparent",
+    pointBorderWidth: 0,
+    pointRadius: 0,
+  };
   const ncPoints: ChartPoint[] = ncSeries.map((p) => ({ x: p.date, y: p.rate, src: p.src }));
   const ncStyles = ncSeries.map((p) => {
-    const base = p.rate == null ? styleFor("") : styleFor(p.src);
-    if (p.rate != null && inMonthlySuppressRange(p.date, ncDailyRange)) {
-      return { ...base, pointRadius: 0 };
+    if (p.rate == null) return noMarkerStyle;
+    if (inMonthlySuppressRange(p.date, ncDailyRange)) {
+      return { ...styleFor(p.src), pointRadius: 0 };
     }
-    return base;
+    return styleFor(p.src);
   });
 
   const { isVisible, visibleSet, toggle } = useChartToggles();

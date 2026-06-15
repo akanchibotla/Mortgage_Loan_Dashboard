@@ -21,12 +21,24 @@ export function DemographicsPanel({ data, stateName, term }: Props) {
 
   const buckets = (term === 15 ? data.term_15 : data.term_30)[dim] ?? [];
   if (buckets.length === 0) return null;
-  const visible = buckets.filter((b) => b.n_loans >= 30);
-  const overall = visible.reduce(
-    (acc, b) => acc + (b.simple_mean_pct ?? 0) * b.n_loans,
-    0,
-  ) / visible.reduce((acc, b) => acc + b.n_loans, 0);
-  // y-axis: cluster around mean
+  // Filter for both n_loans threshold AND a non-null mean — a bucket
+  // with a populated n_loans but a null simple_mean_pct was previously
+  // treated as 0% in the weighted average and silently dragged the
+  // overall rate downward. Treat it as "no usable rate" instead.
+  const visible = buckets.filter(
+    (b) => b.n_loans >= 30 && b.simple_mean_pct != null,
+  );
+  const totalN = visible.reduce((acc, b) => acc + b.n_loans, 0);
+  const overall =
+    totalN > 0
+      ? visible.reduce(
+          (acc, b) => acc + (b.simple_mean_pct as number) * b.n_loans,
+          0,
+        ) / totalN
+      : 0;
+  // y-axis: cluster around mean. All buckets now have non-null
+  // simple_mean_pct (filtered above), so the ?? overall fallback is
+  // only defensive.
   const minR = Math.min(...visible.map((b) => b.simple_mean_pct ?? overall)) - 0.05;
   const maxR = Math.max(...visible.map((b) => b.simple_mean_pct ?? overall)) + 0.05;
   const RANGE_LO = Math.min(4, minR);

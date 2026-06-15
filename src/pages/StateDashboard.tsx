@@ -77,8 +77,15 @@ function StateBody({ slug }: { slug: string }) {
 
   function onResizeStart(e: PointerEvent<HTMLDivElement>) {
     e.preventDefault();
+    // Set the drag flag AFTER successful pointer capture — if capture
+    // throws (e.g. element detached mid-render), we never enter a
+    // dragging state we can't exit from.
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      return;
+    }
     draggingRef.current = true;
-    e.currentTarget.setPointerCapture(e.pointerId);
   }
   function onResizeMove(e: PointerEvent<HTMLDivElement>) {
     if (!draggingRef.current) return;
@@ -90,12 +97,15 @@ function StateBody({ slug }: { slug: string }) {
     setPanelWidth(next);
   }
   function onResizeEnd(e: PointerEvent<HTMLDivElement>) {
-    if (!draggingRef.current) return;
-    draggingRef.current = false;
+    // Always reset the drag flag in a finally so a release-capture
+    // failure can't leave us stuck "dragging" forever — any subsequent
+    // pointer move would continue resizing without the user intending it.
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
       // capture may already be gone
+    } finally {
+      draggingRef.current = false;
     }
   }
   usePageMeta({
@@ -353,6 +363,9 @@ function StateBody({ slug }: { slug: string }) {
                     </div>
                     <span className="county-top-volume">
                       {dist.n_loans.toLocaleString()} closings
+                      {dist.low_n && (
+                        <span className="county-top-low-n"> · small sample</span>
+                      )}
                     </span>
                   </Link>
                 );
@@ -369,7 +382,11 @@ function StateBody({ slug }: { slug: string }) {
                     <Link to={`/state/${data.meta.slug}/county/${c.fips}`}>
                       {c.name}
                       {dist.n_loans > 0 && (
-                        <span className="muted"> · {dist.n_loans.toLocaleString()} {term}-yr closings</span>
+                        <span className="muted">
+                          {" "}
+                          · {dist.n_loans.toLocaleString()} {term}-yr closings
+                          {dist.low_n && " · small sample"}
+                        </span>
                       )}
                     </Link>
                   </li>

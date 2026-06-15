@@ -596,6 +596,11 @@ export default function CalculatorPage() {
   // back into the measureSections + adjustOlHeights pipeline. rAF-gated
   // so the multi-pulse from setting CSS vars during measurement coalesces
   // into a single re-run.
+  //
+  // Stored in a ref + disconnected before re-init so a rapid add/remove
+  // loan sequence can't accumulate observers in the gap between the old
+  // effect's cleanup running and the new one's create.
+  const roRef = useRef<ResizeObserver | null>(null);
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -607,13 +612,20 @@ export default function CalculatorPage() {
         setResizeTick((t) => t + 1);
       });
     };
+    // Disconnect any previously-attached observer before creating a new
+    // one — defensive against the same effect being torn down and rebuilt
+    // mid-frame (React 19 strict mode dev double-invoke, or rapid state
+    // changes from useCalculator updates).
+    roRef.current?.disconnect();
     const ro = new ResizeObserver(schedule);
+    roRef.current = ro;
     grid
       .querySelectorAll<HTMLElement>(".loan-card")
       .forEach((card) => ro.observe(card));
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
       ro.disconnect();
+      if (roRef.current === ro) roRef.current = null;
     };
   }, [loans.length]);
 
@@ -757,11 +769,18 @@ function StateLoanContent({
   const p75 = countyDist?.p75_pct ?? stateHmda?.p75_pct;
   const p90 = countyDist?.p90_pct ?? stateHmda?.p90_pct;
 
+  // If the selected county has a low_n flag, mark the label so the user
+  // knows the anchor rate is from a small (and therefore noisy) sample.
+  // Falls back to state HMDA which is by definition a large sample.
+  const countyLowN = countyDist?.low_n === true;
+
   let anchorRate: number | null;
   let anchorSourceLabel: string;
   if (countyDist?.simple_mean_pct != null) {
     anchorRate = countyDist.simple_mean_pct;
-    anchorSourceLabel = `${county!.name} County HMDA (${loan.term}-yr)`;
+    anchorSourceLabel = countyLowN
+      ? `${county!.name} County HMDA (${loan.term}-yr, small sample)`
+      : `${county!.name} County HMDA (${loan.term}-yr)`;
   } else if (stateHmda?.simple_mean_pct != null) {
     anchorRate = stateHmda.simple_mean_pct;
     anchorSourceLabel = `${data.meta.name} HMDA (${loan.term}-yr mean)`;
@@ -1259,7 +1278,16 @@ function LoanCardForm({
           max={3_000_000}
           step={5_000}
           value={loan.loanAmount}
-          onChange={(e) => onChange({ loanAmount: Math.max(0, Number(e.target.value)) })}
+          onChange={(e) => {
+            // Clamp to the same range advertised by the input's min/max
+            // attributes. Typed input ignores the stepper limits, so a
+            // user can type "99999999" and have the calculator compute
+            // with an out-of-band value otherwise.
+            const v = Number(e.target.value);
+            if (!Number.isFinite(v)) return;
+            const clamped = Math.max(0, Math.min(3_000_000, v));
+            onChange({ loanAmount: clamped });
+          }}
         />
       </label>
 

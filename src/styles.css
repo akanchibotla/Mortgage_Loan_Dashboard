@@ -3018,6 +3018,13 @@ code {
   color: var(--c-ink-mute, #6b7280);
   font-variant-numeric: tabular-nums;
 }
+.county-top-low-n {
+  color: #b8721a;
+  font-weight: 600;
+}
+:root.dark .county-top-low-n {
+  color: #f0b566;
+}
 @media (max-width: 720px) {
   .county-top-grid {
     grid-template-columns: 1fr;
