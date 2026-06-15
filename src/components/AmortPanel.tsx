@@ -18,14 +18,12 @@ interface AmortRow {
   balance: number;
 }
 
-// Optional discriminator the caller can pass so the panel surfaces the
-// right explainer note above the chart. We can't reliably infer "this is
-// an ARM" from the schedule shape alone — when the user leaves the
-// rate-after-adjustment field at its default it equals the note rate, and
-// the resulting schedule looks identical to a fixed loan. The buydown
-// detection still falls back to the subsidy field when this hint is absent,
-// for backward compat with any external caller.
-export type ProductHint = "fixed" | "arm" | "buydown";
+// Caller passes this so the panel surfaces the right product header and
+// description. The buydown variant is also detectable from a non-zero
+// subsidy in the schedule rows, but ARM cannot be inferred from rows
+// alone (the schedule looks identical to a fixed loan when the user
+// leaves "rate after adjustment" at the default).
+type ProductHint = "fixed" | "arm" | "buydown";
 
 interface Props {
   loanAmount: number;
@@ -34,8 +32,6 @@ interface Props {
   schedule?: AmortRow[];
   productHint?: ProductHint;
 }
-
-export type { AmortRow };
 
 function computeSchedule(P: number, annualRatePct: number, termYears: number): AmortRow[] {
   if (
