@@ -1,3 +1,44 @@
+.error-boundary-fallback {
+  border: 1px solid #e4c4c4;
+  background: #fbf2f2;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: #5b2222;
+}
+.error-boundary-fallback p {
+  margin: 0 0 8px;
+}
+.error-boundary-fallback b {
+  color: #401414;
+}
+.error-boundary-retry {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid #b87878;
+  background: #fff;
+  color: #5b2222;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+.error-boundary-retry:hover {
+  background: #f5e5e5;
+}
+:root.dark .error-boundary-fallback {
+  background: #2a1818;
+  border-color: #4f2a2a;
+  color: #e8c8c8;
+}
+:root.dark .error-boundary-fallback b {
+  color: #f7e2e2;
+}
+:root.dark .error-boundary-retry {
+  background: #1a1010;
+  border-color: #6f3f3f;
+  color: #e8c8c8;
+}
+
 :root {
   color-scheme: light;
   --c-bg: #f7f9fc;

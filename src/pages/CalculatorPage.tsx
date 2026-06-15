@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { loadPmms, loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const AmortPanel = lazy(() =>
   import("../components/AmortPanel").then((m) => ({ default: m.AmortPanel })),
@@ -695,9 +696,11 @@ function LoanCard({
       </div>
 
       {loan.slug ? (
-        <Suspense fallback={<p className="loading">Loading {loan.slug}…</p>}>
-          <StateLoanContent loan={loan} states={states} onChange={onChange} />
-        </Suspense>
+        <ErrorBoundary label={`data for ${loan.slug}`}>
+          <Suspense fallback={<p className="loading">Loading {loan.slug}…</p>}>
+            <StateLoanContent loan={loan} states={states} onChange={onChange} />
+          </Suspense>
+        </ErrorBoundary>
       ) : (
         <NationalLoanContent loan={loan} states={states} onChange={onChange} />
       )}
@@ -1065,15 +1068,17 @@ function LoanAmortDisclosure({
         <span className="loan-amort-meta">{loan.term * 12} payments</span>
       </summary>
       {open && (
-        <Suspense fallback={<p className="loading">Loading amortization…</p>}>
-          <AmortPanel
-            loanAmount={loan.loanAmount}
-            annualRatePct={centralRate}
-            termYears={loan.term}
-            schedule={schedule}
-            productHint={productHint}
-          />
-        </Suspense>
+        <ErrorBoundary label="amortization">
+          <Suspense fallback={<p className="loading">Loading amortization…</p>}>
+            <AmortPanel
+              loanAmount={loan.loanAmount}
+              annualRatePct={centralRate}
+              termYears={loan.term}
+              schedule={schedule}
+              productHint={productHint}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </details>
   );

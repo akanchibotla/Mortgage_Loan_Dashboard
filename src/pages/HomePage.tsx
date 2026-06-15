@@ -5,6 +5,7 @@ import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
 import { fmtMoney, fmtRate, monthlyPayment } from "../lib/payment";
 import { useTermPreference } from "../lib/useTermPreference";
 import { useCalculator } from "../lib/useCalculator";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const UsChoropleth = lazy(() =>
   import("../components/UsChoropleth").then((m) => ({ default: m.UsChoropleth })),
@@ -371,13 +372,15 @@ export default function HomePage() {
             </span>
           </summary>
           {amortOpen && (
-            <Suspense fallback={<p className="loading">Building schedule…</p>}>
-              <AmortPanel
-                loanAmount={loanAmount}
-                annualRatePct={effectiveRate}
-                termYears={term}
-              />
-            </Suspense>
+            <ErrorBoundary label="amortization">
+              <Suspense fallback={<p className="loading">Building schedule…</p>}>
+                <AmortPanel
+                  loanAmount={loanAmount}
+                  annualRatePct={effectiveRate}
+                  termYears={term}
+                />
+              </Suspense>
+            </ErrorBoundary>
           )}
         </details>
       )}

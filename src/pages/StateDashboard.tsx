@@ -6,6 +6,7 @@ import { useTermPreference } from "../lib/useTermPreference";
 import { useCalculator } from "../lib/useCalculator";
 import { fmtMoney, monthlyPayment } from "../lib/payment";
 import type { CountyEntry } from "../types";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const RateChart = lazy(() =>
   import("../components/RateChart").then((m) => ({ default: m.RateChart })),
@@ -41,9 +42,11 @@ function getStatePromise(slug: string): Promise<StateData | null> {
 export default function StateDashboard() {
   const { slug = "" } = useParams<{ slug: string }>();
   return (
-    <Suspense fallback={<p className="loading">Loading {slug}…</p>}>
-      <StateBody slug={slug} />
-    </Suspense>
+    <ErrorBoundary label={`data for ${slug}`}>
+      <Suspense fallback={<p className="loading">Loading {slug}…</p>}>
+        <StateBody slug={slug} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -585,13 +588,15 @@ function StateCalculator({
           </span>
         </summary>
         {amortOpen && (
-          <Suspense fallback={<p className="loading">Loading amortization…</p>}>
-            <AmortPanel
-              loanAmount={loanAmount}
-              annualRatePct={effectiveRate}
-              termYears={term}
-            />
-          </Suspense>
+          <ErrorBoundary label="amortization">
+            <Suspense fallback={<p className="loading">Loading amortization…</p>}>
+              <AmortPanel
+                loanAmount={loanAmount}
+                annualRatePct={effectiveRate}
+                termYears={term}
+              />
+            </Suspense>
+          </ErrorBoundary>
         )}
       </details>
     </section>
