@@ -116,45 +116,65 @@ export function AmortPanel({
   const subsidyTotal = hasBuydown
     ? schedule.reduce((s, r) => s + (r.subsidy ?? 0), 0)
     : 0;
+  // Resolve the product header label + description body that appears at the
+  // top of the panel. The header is always shown; the description is hidden
+  // inside a <details> disclosure (click the header to expand). One header
+  // per product type — fixed / ARM / buydown — replacing the previously
+  // always-on amber/blue note blocks.
+  const productLabel = hasBuydown
+    ? "Buydown loan"
+    : hasArm
+      ? "Adjustable-rate mortgage"
+      : "Fixed-rate mortgage";
+  const productDescription = hasBuydown ? (
+    <p>
+      The chart below shows the loan's actual amortization at the note rate
+      — that's what the lender collects and how your balance pays down.
+      During the buydown years, you write a smaller check and a separately-
+      funded subsidy account covers the difference. Hover any month for the
+      "you pay" vs "subsidy" split.
+    </p>
+  ) : hasArm ? (
+    <p>
+      {armHasVisibleAdjustment ? (
+        <>
+          Your rate is fixed at the note rate for the first {armFixedYears}{" "}
+          year{armFixedYears !== 1 ? "s" : ""} — the chart through that
+          period is your loan's exact amortization. After that, the loan
+          re-amortizes at the adjusted rate on the remaining balance, so the
+          principal/interest split and balance curve visibly change at the
+          adjustment boundary.{" "}
+        </>
+      ) : (
+        <>
+          Your rate is fixed for the initial period, then adjusts. Right now
+          your "rate after adjustment" is set to the same value as the note
+          rate, so the chart looks like a fixed loan — change that field to
+          stress-test a different reset.{" "}
+        </>
+      )}
+      <b>Important caveat:</b> real ARMs reset annually based on a benchmark
+      index (typically SOFR or 1-year CMT) plus a margin written in your
+      note, bounded by per-adjustment and lifetime caps. This chart
+      simplifies by holding the adjusted rate constant — it's useful for
+      "what's my payment if my rate resets to X%" planning, not a forecast
+      of the real reset path.
+    </p>
+  ) : (
+    <p>
+      A fixed-rate mortgage keeps the same interest rate for the entire loan
+      term. Your monthly P&amp;I payment is constant from month 1 to the
+      final payment, and the loan amortizes on a single smooth curve at the
+      note rate — exactly what the chart and schedule below show.
+    </p>
+  );
+
   return (
     <div className="amort-panel">
-      {hasBuydown && (
-        <p className="amort-buydown-note">
-          <b>Buydown loan.</b> The chart below shows the loan's actual
-          amortization at the note rate — that's what the lender collects and
-          how your balance pays down. During the buydown years, you write a
-          smaller check and a separately-funded subsidy account covers the
-          difference. Hover any month for the "you pay" vs "subsidy" split.
-        </p>
-      )}
-      {hasArm && (
-        <p className="amort-arm-note">
-          <b>Adjustable-rate mortgage.</b>{" "}
-          {armHasVisibleAdjustment ? (
-            <>
-              Your rate is fixed at the note rate for the first{" "}
-              {armFixedYears} year{armFixedYears !== 1 ? "s" : ""} — the chart
-              through that period is your loan's exact amortization. After
-              that, the loan re-amortizes at the adjusted rate on the
-              remaining balance, so the principal/interest split and balance
-              curve visibly change at the adjustment boundary.
-            </>
-          ) : (
-            <>
-              Your rate is fixed for the initial period, then adjusts. Right
-              now your "rate after adjustment" is set to the same value as
-              the note rate, so the chart looks like a fixed loan — change
-              that field to stress-test a different reset.
-            </>
-          )}{" "}
-          <b>Important caveat:</b> real ARMs reset annually based on a
-          benchmark index (typically SOFR or 1-year CMT) plus a margin
-          written in your note, bounded by per-adjustment and lifetime caps.
-          This chart simplifies by holding the adjusted rate constant — it's
-          useful for "what's my payment if my rate resets to X%" planning,
-          not a forecast of the real reset path.
-        </p>
-      )}
+      <details className="amort-product-header">
+        <summary>{productLabel}</summary>
+        <div className="amort-product-description">{productDescription}</div>
+      </details>
       <AmortChart schedule={schedule} crossoverMonth={crossoverMonth} />
       <div className="amort-chart-legend">
         <span>

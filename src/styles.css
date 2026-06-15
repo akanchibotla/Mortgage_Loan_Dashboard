@@ -941,6 +941,62 @@ h1 {
   color: #2f2410;
 }
 
+/* Product header disclosure that replaces the always-visible amber/blue
+   note blocks. The header is always shown; click to expand the
+   description. One header per product type — fixed / ARM / buydown —
+   shown at the top of the amortization panel. */
+.amort-product-header {
+  margin: 0 0 8px;
+}
+.amort-product-header > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-ink);
+  padding: 4px 8px;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background: var(--c-surface);
+  user-select: none;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.amort-product-header > summary::-webkit-details-marker {
+  display: none;
+}
+.amort-product-header > summary::after {
+  content: "▾";
+  font-size: 9px;
+  color: var(--c-ink-soft);
+  margin-left: 2px;
+}
+.amort-product-header[open] > summary::after {
+  content: "▴";
+}
+.amort-product-header > summary:hover {
+  background: #f5f7fb;
+  border-color: var(--c-brand);
+}
+.amort-product-description {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f5f7fb;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-ink-soft);
+}
+.amort-product-description p {
+  margin: 0;
+}
+.amort-product-description b {
+  color: var(--c-ink);
+}
+
 /* Loan-card aside lines (footnotes under the buydown phase list).
    Styled lighter to read as supporting context, not primary numbers. */
 .loan-stats-aside {
@@ -3420,6 +3476,7 @@ code {
   flex-direction: column;
   min-height: 0;
 }
+.amort-panel > .amort-product-header,
 .amort-panel > .amort-buydown-note,
 .amort-panel > .amort-arm-note,
 .amort-panel > .amort-chart-wrap,
@@ -4049,6 +4106,24 @@ code {
 }
 :root.dark .amort-arm-note b {
   color: #f5ead4;
+}
+
+:root.dark .amort-product-header > summary {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-ink);
+}
+:root.dark .amort-product-header > summary:hover {
+  background: #20242a;
+  border-color: #79b2ed;
+}
+:root.dark .amort-product-description {
+  background: #14161b;
+  border-color: var(--c-border);
+  color: var(--c-ink-soft);
+}
+:root.dark .amort-product-description b {
+  color: var(--c-ink);
 }
 
 :root.dark .amort-month-meta-buydown {
