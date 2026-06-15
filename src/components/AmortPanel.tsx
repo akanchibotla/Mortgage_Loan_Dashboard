@@ -3,7 +3,16 @@ import { fmtMoney } from "../lib/payment";
 
 interface AmortRow {
   month: number;
+  // `payment` is what the lender collects this month — drives the interest/
+  // principal split shown in the chart. For buydown loans this is the full
+  // note-rate payment, NOT the borrower's reduced check.
   payment: number;
+  // Optional fields populated for buydown products. When `borrowerPayment`
+  // and `subsidy` are present and `subsidy > 0`, the panel surfaces a
+  // separate "you pay" / "subsidy" view on top of the lender's amortization.
+  // Non-buydown schedules can omit these (or set them equal to `payment`).
+  borrowerPayment?: number;
+  subsidy?: number;
   interest: number;
   principal: number;
   balance: number;
@@ -39,7 +48,15 @@ function computeSchedule(P: number, annualRatePct: number, termYears: number): A
     const interest = balance * r;
     const principal = Math.min(payment - interest, balance);
     balance = Math.max(0, balance - principal);
-    rows.push({ month: m, payment, interest, principal, balance });
+    rows.push({
+      month: m,
+      payment,
+      borrowerPayment: payment,
+      subsidy: 0,
+      interest,
+      principal,
+      balance,
+    });
   }
   return rows;
 }
@@ -59,8 +76,24 @@ export function AmortPanel({
   }
   const crossoverIdx = schedule.findIndex((r) => r.principal > r.interest);
   const crossoverMonth = crossoverIdx >= 0 ? crossoverIdx + 1 : -1;
+  // Detect a buydown schedule by checking whether ANY row carries a non-zero
+  // subsidy. We can't trust productType to be in scope here (this component
+  // is generic over schedules), but the subsidy field is self-describing.
+  const hasBuydown = schedule.some((r) => (r.subsidy ?? 0) > 0);
+  const subsidyTotal = hasBuydown
+    ? schedule.reduce((s, r) => s + (r.subsidy ?? 0), 0)
+    : 0;
   return (
     <div className="amort-panel">
+      {hasBuydown && (
+        <p className="amort-buydown-note">
+          <b>Buydown loan.</b> The chart below shows the loan's actual
+          amortization at the note rate — that's what the lender collects and
+          how your balance pays down. During the buydown years, you write a
+          smaller check and a separately-funded subsidy account covers the
+          difference. Hover any month for the "you pay" vs "subsidy" split.
+        </p>
+      )}
       <AmortChart schedule={schedule} crossoverMonth={crossoverMonth} />
       <div className="amort-chart-legend">
         <span>
@@ -77,7 +110,12 @@ export function AmortPanel({
         )}
         <span className="amort-chart-hint">Hover for month details</span>
       </div>
-      <AmortMonthSliders schedule={schedule} loanAmount={loanAmount} />
+      <AmortMonthSliders
+        schedule={schedule}
+        loanAmount={loanAmount}
+        hasBuydown={hasBuydown}
+        subsidyTotal={subsidyTotal}
+      />
     </div>
   );
 }
@@ -267,10 +305,29 @@ function AmortChart({
             <span>Interest</span>
             <b>{fmtMoney(hoverRow.interest)}</b>
           </div>
-          <div className="amort-tt-row amort-tt-row-meta">
-            <span>Payment</span>
-            <b>{fmtMoney(hoverRow.payment)}</b>
-          </div>
+          {(hoverRow.subsidy ?? 0) > 0 ? (
+            <>
+              {/* Buydown month: split the lender's payment into the
+                  borrower's check and the subsidy draw. */}
+              <div className="amort-tt-row amort-tt-row-meta">
+                <span>Lender collects</span>
+                <b>{fmtMoney(hoverRow.payment)}</b>
+              </div>
+              <div className="amort-tt-row amort-tt-row-meta">
+                <span>You pay</span>
+                <b>{fmtMoney(hoverRow.borrowerPayment ?? hoverRow.payment)}</b>
+              </div>
+              <div className="amort-tt-row amort-tt-row-meta">
+                <span>Subsidy draw</span>
+                <b>{fmtMoney(hoverRow.subsidy ?? 0)}</b>
+              </div>
+            </>
+          ) : (
+            <div className="amort-tt-row amort-tt-row-meta">
+              <span>Payment</span>
+              <b>{fmtMoney(hoverRow.payment)}</b>
+            </div>
+          )}
           <div className="amort-tt-row amort-tt-row-meta">
             <span>Balance</span>
             <b>{fmtMoney(hoverRow.balance)}</b>
@@ -284,9 +341,13 @@ function AmortChart({
 function AmortMonthSliders({
   schedule,
   loanAmount,
+  hasBuydown,
+  subsidyTotal,
 }: {
   schedule: AmortRow[];
   loanAmount: number;
+  hasBuydown: boolean;
+  subsidyTotal: number;
 }) {
   const augmented = useMemo(() => {
     let cumP = 0;
@@ -299,7 +360,15 @@ function AmortMonthSliders({
   }, [schedule]);
 
   if (augmented.length === 0) return null;
-  const totalRepayment = augmented[0].payment * augmented.length;
+  // Total repayment now sums across rows. Previously assumed
+  // schedule[0].payment * n, which silently underflowed for ARMs (later
+  // phases at higher rates) and overflowed for buydowns once the model
+  // moved to single note-rate amortization.
+  const totalRepayment = augmented.reduce((s, r) => s + r.payment, 0);
+  const totalBorrowerCost = augmented.reduce(
+    (s, r) => s + (r.borrowerPayment ?? r.payment),
+    0,
+  );
 
   return (
     <div className="amort-months-wrap">
@@ -308,9 +377,24 @@ function AmortMonthSliders({
           Month-by-month breakdown · <b>{augmented.length}</b> payments
         </span>
         <span>
-          Total expected repayment: <b>{fmtMoney(totalRepayment)}</b>
+          {hasBuydown ? (
+            <>Your contribution: <b>{fmtMoney(totalBorrowerCost)}</b></>
+          ) : (
+            <>Total expected repayment: <b>{fmtMoney(totalRepayment)}</b></>
+          )}
         </span>
       </div>
+      {hasBuydown && (
+        <div className="amort-months-subhdr">
+          <span>
+            Lender collects over life of loan: <b>{fmtMoney(totalRepayment)}</b>
+          </span>
+          <span>
+            Buydown subsidy (funded at closing):{" "}
+            <b>{fmtMoney(subsidyTotal)}</b>
+          </span>
+        </div>
+      )}
       <ol className="amort-months">
         {augmented.map((row) => {
           const principalPct =
@@ -321,6 +405,8 @@ function AmortMonthSliders({
               ? Math.max(0, Math.min(100, (row.cumPrincipal / loanAmount) * 100))
               : 0;
           const yearEnd = row.month % 12 === 0;
+          const monthSubsidy = row.subsidy ?? 0;
+          const monthBorrower = row.borrowerPayment ?? row.payment;
           return (
             <li
               key={row.month}
@@ -359,6 +445,17 @@ function AmortMonthSliders({
                   <b>{fmtMoney(row.principal)}</b>
                 </span>
               </div>
+
+              {monthSubsidy > 0 && (
+                <div className="amort-month-meta amort-month-meta-buydown">
+                  <span>
+                    You pay <b>{fmtMoney(monthBorrower)}</b>
+                  </span>
+                  <span>
+                    Subsidy draw <b>{fmtMoney(monthSubsidy)}</b>
+                  </span>
+                </div>
+              )}
 
               <div className="amort-month-bar amort-month-bar-cum">
                 <div

@@ -72,13 +72,17 @@ interface RatePhase {
   label: string;
 }
 
+// Buildup of payment phases for products where the loan itself genuinely
+// changes rate (ARMs) or has no phase structure (fixed). Buydown products
+// do NOT use this — their amortization is single-rate at the note rate, and
+// "phases" only describe the borrower's reduced check, not the loan's actual
+// behavior. See buildBuydownPlan + computeBuydownSchedule below.
 function buildPhases(
   productType: ProductType,
   noteRate: number,
   armAdjustedRate: number,
   totalMonths: number,
 ): RatePhase[] {
-  const clamp = (r: number) => Math.max(0, r);
   switch (productType) {
     case "fixed":
       return [{ months: totalMonths, rate: noteRate, label: "Fixed" }];
@@ -102,51 +106,90 @@ function buildPhases(
           : []),
       ];
     }
+    case "buydown-2-1":
+    case "buydown-1-0":
+    case "buydown-3-2-1":
+      // Buydowns don't have phased *loan* amortization — they amortize as a
+      // single fixed-rate loan at the note rate. The schedule path for them
+      // goes through buildBuydownPlan + computeBuydownSchedule, not here.
+      return [{ months: totalMonths, rate: noteRate, label: "Note rate" }];
+  }
+}
+
+// A buydown "phase" is purely about the borrower's monthly check — the loan
+// itself amortizes at the note rate throughout. `rateReduction` is the
+// percentage points subtracted from the note rate when computing the
+// borrower's bought-down payment per Fannie Mae Selling Guide B5-5.1-04.
+interface BuydownPhase {
+  months: number;
+  rateReduction: number;
+  label: string;
+}
+
+function buildBuydownPlan(productType: ProductType, totalMonths: number): BuydownPhase[] {
+  switch (productType) {
     case "buydown-2-1": {
       const tail = Math.max(0, totalMonths - 24);
       return [
-        { months: Math.min(12, totalMonths), rate: clamp(noteRate - 2), label: "Year 1" },
-        {
-          months: Math.min(12, Math.max(0, totalMonths - 12)),
-          rate: clamp(noteRate - 1),
-          label: "Year 2",
-        },
-        ...(tail > 0 ? [{ months: tail, rate: noteRate, label: "Year 3+" }] : []),
+        { months: Math.min(12, totalMonths), rateReduction: 2, label: "Year 1" },
+        { months: Math.min(12, Math.max(0, totalMonths - 12)), rateReduction: 1, label: "Year 2" },
+        ...(tail > 0 ? [{ months: tail, rateReduction: 0, label: "Year 3+" }] : []),
       ];
     }
     case "buydown-1-0": {
       const tail = Math.max(0, totalMonths - 12);
       return [
-        { months: Math.min(12, totalMonths), rate: clamp(noteRate - 1), label: "Year 1" },
-        ...(tail > 0 ? [{ months: tail, rate: noteRate, label: "Year 2+" }] : []),
+        { months: Math.min(12, totalMonths), rateReduction: 1, label: "Year 1" },
+        ...(tail > 0 ? [{ months: tail, rateReduction: 0, label: "Year 2+" }] : []),
       ];
     }
     case "buydown-3-2-1": {
       const tail = Math.max(0, totalMonths - 36);
       return [
-        { months: Math.min(12, totalMonths), rate: clamp(noteRate - 3), label: "Year 1" },
-        {
-          months: Math.min(12, Math.max(0, totalMonths - 12)),
-          rate: clamp(noteRate - 2),
-          label: "Year 2",
-        },
-        {
-          months: Math.min(12, Math.max(0, totalMonths - 24)),
-          rate: clamp(noteRate - 1),
-          label: "Year 3",
-        },
-        ...(tail > 0 ? [{ months: tail, rate: noteRate, label: "Year 4+" }] : []),
+        { months: Math.min(12, totalMonths), rateReduction: 3, label: "Year 1" },
+        { months: Math.min(12, Math.max(0, totalMonths - 12)), rateReduction: 2, label: "Year 2" },
+        { months: Math.min(12, Math.max(0, totalMonths - 24)), rateReduction: 1, label: "Year 3" },
+        ...(tail > 0 ? [{ months: tail, rateReduction: 0, label: "Year 4+" }] : []),
       ];
     }
+    default:
+      return [{ months: totalMonths, rateReduction: 0, label: "Note rate" }];
   }
 }
 
 interface ScheduleRow {
   month: number;
+  // `payment` is what the LENDER collects this month. For fixed and ARM this
+  // equals the borrower's check; for buydowns it is the constant full
+  // note-rate payment regardless of phase.
   payment: number;
+  // `borrowerPayment` is what the BORROWER writes a check for. Equal to
+  // `payment` for fixed and ARM. Reduced during buydown years per the
+  // bought-down rate; returns to `payment` once the buydown period ends.
+  borrowerPayment: number;
+  // `subsidy` = payment − borrowerPayment. Funded upfront by seller/builder/
+  // lender; held in a subsidy account; drawn by the servicer each month
+  // during the buydown period to make the lender's payment whole. Zero for
+  // non-buydown products.
+  subsidy: number;
+  // Interest/principal/balance reflect the LOAN's actual amortization, which
+  // for buydowns is at the note rate (NOT the bought-down rate). This is the
+  // critical correctness fix: prior version re-amortized at the discounted
+  // rate during buydown years, which overstated principal paydown and
+  // understated the balance carried forward.
   interest: number;
   principal: number;
   balance: number;
+}
+
+const BUYDOWN_PRODUCTS = new Set<ProductType>([
+  "buydown-2-1",
+  "buydown-1-0",
+  "buydown-3-2-1",
+]);
+
+function isBuydown(p: ProductType): boolean {
+  return BUYDOWN_PRODUCTS.has(p);
 }
 
 function computeProductSchedule(
@@ -159,6 +202,11 @@ function computeProductSchedule(
   if (!Number.isFinite(loanAmount) || loanAmount <= 0) return [];
   const totalMonths = Math.round(termYears * 12);
   if (totalMonths <= 0) return [];
+  if (isBuydown(productType)) {
+    return computeBuydownSchedule(loanAmount, productType, noteRate, termYears, totalMonths);
+  }
+  // Fixed and ARM share the multi-phase amortization model — the loan
+  // genuinely re-amortizes at each phase boundary (ARM adjustment).
   const phases = buildPhases(productType, noteRate, armAdjustedRate, totalMonths);
   const rows: ScheduleRow[] = [];
   let balance = loanAmount;
@@ -178,12 +226,73 @@ function computeProductSchedule(
       rows.push({
         month: rows.length + 1,
         payment: phasePayment,
+        borrowerPayment: phasePayment,
+        subsidy: 0,
         interest,
         principal,
         balance,
       });
     }
     monthsRemaining -= phase.months;
+  }
+  return rows;
+}
+
+function computeBuydownSchedule(
+  loanAmount: number,
+  productType: ProductType,
+  noteRate: number,
+  termYears: number,
+  totalMonths: number,
+): ScheduleRow[] {
+  // The loan itself is a standard fixed-rate mortgage at `noteRate` over the
+  // full term. The lender amortizes that one schedule — never re-amortizes
+  // for the discounted rate. The borrower's check during buydown years is
+  // computed *as if* it were a fixed loan at (noteRate − reduction) on the
+  // ORIGINAL balance for the FULL term (Fannie convention) — this gives the
+  // dollar-flat per-year buydown payment that appears on the buydown
+  // agreement at closing.
+  const notePayment = monthlyPayment(loanAmount, noteRate, termYears);
+  const plan = buildBuydownPlan(productType, totalMonths);
+  const phaseBorrowerPayments = plan.map((p) => ({
+    months: p.months,
+    label: p.label,
+    borrowerPayment: monthlyPayment(
+      loanAmount,
+      Math.max(0, noteRate - p.rateReduction),
+      termYears,
+    ),
+  }));
+
+  const r = noteRate / 100 / 12;
+  const rows: ScheduleRow[] = [];
+  let balance = loanAmount;
+  let phaseIdx = 0;
+  let monthsInPhase = 0;
+  for (let m = 1; m <= totalMonths; m++) {
+    // Advance to the next phase that still has months left.
+    while (
+      phaseIdx < phaseBorrowerPayments.length &&
+      monthsInPhase >= phaseBorrowerPayments[phaseIdx].months
+    ) {
+      phaseIdx++;
+      monthsInPhase = 0;
+    }
+    const currentBorrower =
+      phaseBorrowerPayments[phaseIdx]?.borrowerPayment ?? notePayment;
+    const interest = balance * r;
+    const principal = Math.min(notePayment - interest, balance);
+    balance = Math.max(0, balance - principal);
+    rows.push({
+      month: m,
+      payment: notePayment,
+      borrowerPayment: currentBorrower,
+      subsidy: Math.max(0, notePayment - currentBorrower),
+      interest,
+      principal,
+      balance,
+    });
+    monthsInPhase++;
   }
   return rows;
 }
@@ -203,6 +312,27 @@ function computePhasePayments(
 ): PhasePayment[] {
   const totalMonths = Math.round(termYears * 12);
   if (!Number.isFinite(loanAmount) || loanAmount <= 0 || totalMonths <= 0) return [];
+
+  if (isBuydown(productType)) {
+    // Buydown "phase payment" = the borrower's monthly check during that
+    // phase, computed at the bought-down effective rate on the original
+    // balance for the full term (Fannie convention). The `rate` field
+    // surfaces that effective rate so the loan card can label it clearly.
+    const plan = buildBuydownPlan(productType, totalMonths);
+    return plan
+      .filter((p) => p.months > 0)
+      .map((p) => {
+        const effectiveRate = Math.max(0, noteRate - p.rateReduction);
+        return {
+          label: p.label,
+          rate: effectiveRate,
+          payment: monthlyPayment(loanAmount, effectiveRate, termYears),
+        };
+      });
+  }
+
+  // Fixed and ARM: payment really does change between phases because the
+  // loan re-amortizes at the new rate on the remaining balance.
   const phases = buildPhases(productType, noteRate, armAdjustedRate, totalMonths);
   const out: PhasePayment[] = [];
   let balance = loanAmount;
@@ -216,7 +346,6 @@ function computePhasePayments(
           (Math.pow(1 + phaseRate, monthsRemaining) - 1)
         : balance / monthsRemaining;
     out.push({ label: phase.label, rate: phase.rate, payment: phasePayment });
-    // advance balance by amortizing this phase
     let phaseBalance = balance;
     for (let m = 0; m < phase.months; m++) {
       const interest = phaseBalance * phaseRate;
@@ -227,6 +356,32 @@ function computePhasePayments(
     monthsRemaining -= phase.months;
   }
   return out;
+}
+
+// Total upfront cost of the buydown — the dollar amount that must be
+// deposited into the subsidy account at closing. Sum of the per-month
+// (notePayment − borrowerPayment) across the buydown period. Zero for
+// non-buydown products. Used by the loan card to surface the real cost
+// that the seller/builder/lender is paying.
+function computeBuydownSubsidyTotal(
+  loanAmount: number,
+  productType: ProductType,
+  noteRate: number,
+  termYears: number,
+): number {
+  if (!isBuydown(productType)) return 0;
+  const totalMonths = Math.round(termYears * 12);
+  if (!Number.isFinite(loanAmount) || loanAmount <= 0 || totalMonths <= 0) return 0;
+  const notePayment = monthlyPayment(loanAmount, noteRate, termYears);
+  const plan = buildBuydownPlan(productType, totalMonths);
+  let total = 0;
+  for (const p of plan) {
+    if (p.months <= 0) continue;
+    const effectiveRate = Math.max(0, noteRate - p.rateReduction);
+    const borrowerPayment = monthlyPayment(loanAmount, effectiveRate, termYears);
+    total += Math.max(0, notePayment - borrowerPayment) * p.months;
+  }
+  return total;
 }
 
 const ARM_PRODUCTS = new Set<ProductType>(["arm-7-1", "arm-5-1"]);
@@ -661,10 +816,27 @@ function PhasePaymentBlock({
     loan.term,
   );
   const isFixed = loan.productType === "fixed";
+  const buydown = isBuydown(loan.productType);
+  // Pre-compute the buydown-specific extras once. The lender's collected
+  // payment is the full P&I at the note rate — constant for the whole term,
+  // including the buydown years. The subsidy total is the upfront pool the
+  // seller/builder/lender deposits at closing.
+  const buydownLenderPayment = buydown
+    ? monthlyPayment(loan.loanAmount, centralRate, loan.term)
+    : 0;
+  const buydownSubsidyTotal = buydown
+    ? computeBuydownSubsidyTotal(loan.loanAmount, loan.productType, centralRate, loan.term)
+    : 0;
+  // For buydown loans the headline shifts from "Monthly P&I" (which would be
+  // misleading — the borrower's check varies by year) to "Your monthly
+  // payment". A footnote restores the loan's true amortization view.
+  const headline = buydown
+    ? "Your monthly payment"
+    : "Monthly P&I";
   return (
     <div className="loan-block loan-block-output">
       <h4 className="loan-block-h">
-        Monthly P&amp;I — ${loan.loanAmount.toLocaleString()}
+        {headline} — ${loan.loanAmount.toLocaleString()}
       </h4>
       <ul className="loan-stats loan-stats-output">
         {isFixed ? (
@@ -685,6 +857,18 @@ function PhasePaymentBlock({
               <span className="v">${Math.round(ph.payment).toLocaleString()}</span>
             </li>
           ))
+        )}
+        {buydown && (
+          <>
+            <li className="loan-stats-aside">
+              <span className="k">Lender amortizes at {centralRate.toFixed(2)}% throughout</span>
+              <span className="v">${Math.round(buydownLenderPayment).toLocaleString()}/mo</span>
+            </li>
+            <li className="loan-stats-aside">
+              <span className="k">Upfront subsidy (seller/builder/lender funds)</span>
+              <span className="v">${Math.round(buydownSubsidyTotal).toLocaleString()}</span>
+            </li>
+          </>
         )}
         {p10 != null && (
           <li>

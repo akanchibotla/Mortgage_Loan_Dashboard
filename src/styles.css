@@ -869,6 +869,65 @@ h1 {
   text-transform: none;
 }
 
+/* Secondary header row for buydown loans: surfaces the lender's total
+   collection and the upfront subsidy alongside the borrower's contribution. */
+.amort-months-subhdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 12px 8px;
+  background: #f9fbff;
+  border-bottom: 1px solid var(--c-border);
+  font-size: 11px;
+  color: var(--c-ink-soft);
+}
+.amort-months-subhdr b {
+  color: var(--c-ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Per-month buydown breakdown row inside an .amort-month: shows "you pay"
+   and "subsidy draw" only during the buydown years. */
+.amort-month-meta-buydown {
+  font-size: 10.5px;
+  color: #1f5fa8;
+  padding-top: 2px;
+}
+.amort-month-meta-buydown b {
+  color: #143a66;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Buydown explainer above the chart. */
+.amort-buydown-note {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  background: #f4f8fd;
+  border: 1px solid #c8d8eb;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #243a55;
+}
+.amort-buydown-note b {
+  color: #143a66;
+}
+
+/* Loan-card aside lines (footnotes under the buydown phase list).
+   Styled lighter to read as supporting context, not primary numbers. */
+.loan-stats-aside {
+  font-size: 11.5px !important;
+  color: var(--c-ink-soft) !important;
+  border-top: 1px dashed var(--c-border);
+  padding-top: 4px !important;
+  margin-top: 2px;
+}
+.loan-stats-aside .v {
+  font-weight: 600 !important;
+}
+
 .amort-months {
   list-style: none;
   padding: 0;
@@ -3868,6 +3927,33 @@ code {
   background: #14161b;
   border-bottom-color: var(--c-border);
   color: var(--c-ink-soft);
+}
+
+:root.dark .amort-months-subhdr {
+  background: #11151c;
+  border-bottom-color: var(--c-border);
+  color: var(--c-ink-soft);
+}
+
+:root.dark .amort-buydown-note {
+  background: #16202c;
+  border-color: #2a3a4f;
+  color: #c0d4ea;
+}
+:root.dark .amort-buydown-note b {
+  color: #e8f0fb;
+}
+
+:root.dark .amort-month-meta-buydown {
+  color: #8fb6e0;
+}
+:root.dark .amort-month-meta-buydown b {
+  color: #cce0f7;
+}
+
+:root.dark .loan-stats-aside {
+  color: var(--c-ink-mute) !important;
+  border-top-color: var(--c-border);
 }
 
 :root.dark .amort-month {

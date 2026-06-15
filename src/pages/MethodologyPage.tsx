@@ -131,6 +131,58 @@ export default function MethodologyPage() {
       </section>
 
       <section className="section">
+        <h2>How buydown loans are modeled</h2>
+        <p>
+          Temporary buydowns (3-2-1, 2-1, 1-0) confuse a lot of borrower
+          calculators because they look like the loan changes rate each year
+          when it actually doesn't. Here's the right mental model.
+        </p>
+        <p>
+          The promissory note is written at the full <b>note rate</b> for the
+          whole term — typically 30 years. The lender amortizes that one
+          schedule, never re-amortizes, never sees a discounted rate. Every
+          month for 360 months, the lender collects the full P&amp;I payment
+          and books interest and principal at the note rate.
+        </p>
+        <p>
+          The "buydown" is a separate pool of money funded at closing by the
+          seller, builder, or lender. It sits in a custodial subsidy account.
+          Each month during the buydown years, the servicer draws from that
+          account to cover the gap between the full note-rate payment and the
+          reduced check the borrower writes. The lender's collection never
+          changes; only the source of the money does.
+        </p>
+        <p>
+          For a 2-1 buydown, the borrower's monthly check is computed{" "}
+          <em>as if</em> the loan were a fixed-rate mortgage at{" "}
+          <b>note rate − 2%</b> for Year 1 and <b>note rate − 1%</b> for Year
+          2, on the original balance over the full term. That's the Fannie Mae
+          Selling Guide convention and what appears on the buydown agreement
+          at closing as a fixed dollar amount per year.
+        </p>
+        <p>
+          <b>What this means for the chart.</b> The amortization view shows
+          the loan's actual interest/principal split and balance curve — at
+          the note rate, smooth and monotonic, exactly as the lender's
+          servicing system sees it. Hovering on a buydown-year month shows
+          three numbers: what the lender collects (constant note-rate
+          payment), what you write a check for (reduced), and the subsidy
+          draw that closes the gap. The "Upfront subsidy" line in the loan
+          card is the total funded at closing — the true cost of the buydown,
+          paid by whoever funded it.
+        </p>
+        <p>
+          <b>What happens on refinance or sale during the buydown period.</b>{" "}
+          The unused subsidy still sitting in the custodial account at payoff
+          is typically credited to the borrower's principal balance (Fannie/
+          Freddie conforming convention). The borrower doesn't forfeit those
+          dollars to the lender. Lender-funded buydowns structured as
+          closing-cost credits behave differently — the actual treatment is
+          written in the buydown agreement signed at closing.
+        </p>
+      </section>
+
+      <section className="section">
         <h2>Refresh cadence</h2>
         <ul>
           <li>
