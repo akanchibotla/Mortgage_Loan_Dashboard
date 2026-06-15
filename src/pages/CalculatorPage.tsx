@@ -462,6 +462,16 @@ export default function CalculatorPage() {
   const measureSections = useCallback(() => {
     const grid = gridRef.current;
     if (!grid) return;
+    // CRITICAL: clear any inline ol height AND wrap height we wrote on
+    // the previous pass before measuring. Otherwise the cards' natural
+    // heights still include those stretched values and --card-min-open
+    // gets ratcheted upward on every cycle.
+    grid.querySelectorAll<HTMLElement>(".amort-months").forEach((ol) => {
+      ol.style.height = "";
+    });
+    grid.querySelectorAll<HTMLElement>(".amort-months-wrap").forEach((w) => {
+      w.style.height = "";
+    });
     // Measure natural heights via inner elements (form for top section,
     // children-sum for the P&I block) so we don't trigger a shrink/grow
     // cycle by resetting the section min-heights. For the card-level
@@ -504,29 +514,44 @@ export default function CalculatorPage() {
   }, []);
 
   // Compute and apply each open card's amortization-table height directly.
-  // The CSS flex chain inside the panel doesn't always propagate to the
-  // scrollable ol reliably; reading the card's bottom edge and the ol's
-  // current top is robust and converges in 1-2 frames.
+  // Sets BOTH the wrap's height (so its `overflow: hidden` border extends
+  // to the card bottom) AND the ol's height inside (so the scrollable
+  // viewport fills to the same point). The CSS flex chain proved
+  // unreliable across product combinations; reading offsets from the
+  // already-painted DOM is robust.
   const adjustOlHeights = useCallback(() => {
     const grid = gridRef.current;
     if (!grid) return;
     grid.querySelectorAll<HTMLElement>(".loan-card").forEach((card) => {
+      const wrap = card.querySelector<HTMLElement>(".amort-months-wrap");
       const ol = card.querySelector<HTMLElement>(".amort-months");
-      if (!ol) return;
+      if (!wrap || !ol) return;
       const details = card.querySelector<HTMLDetailsElement>(".loan-amort-details");
       if (!details?.open) {
+        if (wrap.style.height) wrap.style.height = "";
         if (ol.style.height) ol.style.height = "";
         return;
       }
       const cardRect = card.getBoundingClientRect();
-      const olRect = ol.getBoundingClientRect();
+      const wrapRect = wrap.getBoundingClientRect();
       const styles = getComputedStyle(card);
       const padBottom = parseFloat(styles.paddingBottom) || 0;
-      const target = Math.floor(cardRect.bottom - padBottom - olRect.top);
-      const next = Math.max(480, target);
-      const currentH = ol.offsetHeight;
-      if (Math.abs(currentH - next) > 1) {
-        ol.style.height = `${next}px`;
+      // Wrap should end at the card's content-bottom (inside padding).
+      const wrapTarget = Math.floor(cardRect.bottom - padBottom - wrapRect.top);
+      const wrapNext = Math.max(520, wrapTarget);
+      // OL should fill wrap minus its header (and optional buydown subhdr).
+      const headerH =
+        wrap.querySelector<HTMLElement>(".amort-months-header")?.offsetHeight ??
+        0;
+      const subhdrH =
+        wrap.querySelector<HTMLElement>(".amort-months-subhdr")?.offsetHeight ??
+        0;
+      const olNext = Math.max(480, wrapNext - headerH - subhdrH);
+      if (Math.abs(wrap.offsetHeight - wrapNext) > 1) {
+        wrap.style.height = `${wrapNext}px`;
+      }
+      if (Math.abs(ol.offsetHeight - olNext) > 1) {
+        ol.style.height = `${olNext}px`;
       }
     });
   }, []);
