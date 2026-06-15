@@ -570,7 +570,13 @@ function StateCalculator({
 
       <details
         className="state-calc-amort"
-        onToggle={(e) => setAmortOpen((e.target as HTMLDetailsElement).open)}
+        onToggle={(e) => {
+          // Guard against nested-details toggle events (the new product-
+          // header disclosure inside AmortPanel). Without this, closing
+          // the description would also collapse the entire amortization.
+          if (e.target !== e.currentTarget) return;
+          setAmortOpen(e.currentTarget.open);
+        }}
       >
         <summary>
           <span className="sca-summary-label">See month-by-month amortization</span>

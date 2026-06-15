@@ -956,7 +956,16 @@ function LoanAmortDisclosure({
   return (
     <details
       className="loan-amort-details"
-      onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
+      onToggle={(e) => {
+        // Only react when THIS details element toggled — not when a nested
+        // details inside the amort panel (the product-header disclosure)
+        // toggles. Reading e.target.open would pick up the nested element's
+        // state and incorrectly collapse the whole amortization when the
+        // user closes the header description. e.currentTarget is always the
+        // element the listener is attached to.
+        if (e.target !== e.currentTarget) return;
+        setOpen(e.currentTarget.open);
+      }}
     >
       <summary>
         <span className="loan-amort-label">See month-by-month amortization</span>
