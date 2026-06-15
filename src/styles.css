@@ -3400,15 +3400,23 @@ code {
   gap: 14px;
   align-items: stretch;
 }
-/* `align-items: stretch` stays on regardless of whether any amortization
-   disclosure is open. CSS Grid then equalizes every card in a row to the
-   tallest card's natural height — handling the open-amort equal-height
-   requirement for free, with no JS measurement of the card-level minimum.
-   (Previously this rule flipped to `align-items: start` when any amort
-   was open so opening one card wouldn't drag closed siblings taller; the
-   product preference is now the opposite — every card should bottom-align
-   in any mix of open/closed states, even when one is a buydown with its
-   much taller per-month subsidy breakdown.) */
+/* When any comparison card's amortization disclosure is open, switch the
+   grid from "all cards stretch to row height" to "each card sizes to its
+   own content." Result: opening amort on one card grows ONLY that card;
+   siblings with closed amort stay at their natural shorter height instead
+   of being dragged taller by the grid row. Among multiple cards that DO
+   have amort open, equalization happens via --card-min-open (JS-measured,
+   applied via the .loan-card:has() rule below). With every disclosure
+   closed, the default stretch rule above re-equalizes the closed cards. */
+.calc-compare-grid:has(.loan-amort-details[open]) {
+  align-items: start;
+}
+/* Open cards equalize to each other via this floor; closed cards are NOT
+   constrained, so they stay at natural shorter height. --card-min-open is
+   set by the measureSections useLayoutEffect to the tallest open card. */
+.loan-card:has(.loan-amort-details[open]) {
+  min-height: var(--card-min-open, auto);
+}
 
 /* Two horizontal lines should stay aligned across every comparison card
    regardless of loan structure, state, or ARM selection:
