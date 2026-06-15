@@ -69,5 +69,11 @@
     "rate": 6.68,
     "src": "Bankrate",
     "method": "browser"
+  },
+  {
+    "date": "2026-06-15",
+    "rate": 6.67,
+    "src": "Bankrate",
+    "method": "browser"
   }
 ]
