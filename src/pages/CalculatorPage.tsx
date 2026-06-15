@@ -523,6 +523,80 @@ export default function CalculatorPage() {
     return () => grid.removeEventListener("toggle", onToggle, true);
   }, []);
 
+  // JS fallback for "make the amortization table fill to the bottom of the
+  // card" — the pure-CSS flex chain (.loan-amort-details[open] → .amort-panel
+  // → .amort-months-wrap → .amort-months) reliably equalizes the cards
+  // themselves via grid-stretch, but the chain DOWN from the stretched card
+  // to the scrollable ol's height doesn't always propagate (the multi-step
+  // flex distribution can leave the ol stuck at its basis depending on
+  // browser layout quirks and the specific mix of products open). This
+  // measures each open card's ol position and the card's bottom directly
+  // and writes an explicit height. Converges in 1-2 rAF cycles per change.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    let rafId: number | null = null;
+    const adjustOls = () => {
+      rafId = null;
+      let changed = false;
+      grid.querySelectorAll<HTMLElement>(".loan-card").forEach((card) => {
+        const ol = card.querySelector<HTMLElement>(".amort-months");
+        if (!ol) return;
+        const details = card.querySelector<HTMLDetailsElement>(".loan-amort-details");
+        if (!details?.open) {
+          // Closed: clear any height we previously set so the natural
+          // 480px (via the .amort-months base CSS) takes over.
+          if (ol.style.height) {
+            ol.style.height = "";
+            changed = true;
+          }
+          return;
+        }
+        const cardRect = card.getBoundingClientRect();
+        const olRect = ol.getBoundingClientRect();
+        const styles = getComputedStyle(card);
+        const padBottom = parseFloat(styles.paddingBottom) || 0;
+        // Distance from ol's top to where it should end = card bottom
+        // (inside the card's padding-bottom).
+        const target = Math.floor(
+          cardRect.bottom - padBottom - olRect.top,
+        );
+        const next = Math.max(480, target);
+        const currentH = ol.offsetHeight;
+        if (Math.abs(currentH - next) > 1) {
+          ol.style.height = `${next}px`;
+          changed = true;
+        }
+      });
+      // If we changed anything, layout may shift again — recompute on next
+      // frame. After the second pass nothing should change (we've converged
+      // to the equilibrium height), and rAF won't schedule again.
+      if (changed) {
+        rafId = requestAnimationFrame(adjustOls);
+      }
+    };
+    const schedule = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(adjustOls);
+    };
+    // Re-measure on any card resize. ResizeObserver coalesces; rAF caps
+    // the recompute rate.
+    const ro = new ResizeObserver(schedule);
+    grid
+      .querySelectorAll<HTMLElement>(".loan-card")
+      .forEach((card) => ro.observe(card));
+    // Re-measure on toggle (handles the user opening/closing amort).
+    const onToggle = () => schedule();
+    grid.addEventListener("toggle", onToggle, true);
+    // Initial pass.
+    schedule();
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      ro.disconnect();
+      grid.removeEventListener("toggle", onToggle, true);
+    };
+  }, [loans.length]);
+
   return (
     <>
       <h1>Borrower expectation calculator</h1>
