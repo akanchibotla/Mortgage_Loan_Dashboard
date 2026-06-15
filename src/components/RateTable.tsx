@@ -32,8 +32,17 @@ function shortMd(dateIso: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
+function lastDayOfMonth(ym: string): string {
+  // ym = "YYYY-MM". Day-0 of next month is the last day of this month.
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m, 0)); // month is 1-based here on purpose
+  return d.toISOString().slice(0, 10);
+}
+
 function weeklyAvgsForMonth(daily: DailyRatePoint[] | undefined, ym: string): WeekRow[] {
   if (!daily) return [];
+  const monthStart = `${ym}-01`;
+  const monthEnd = lastDayOfMonth(ym);
   const byWeek = new Map<string, number[]>();
   for (const p of daily) {
     if (p.rate == null) continue;
@@ -48,9 +57,19 @@ function weeklyAvgsForMonth(daily: DailyRatePoint[] | undefined, ym: string): We
     .map(([weekStart, vals]) => {
       const sundayMs = new Date(weekStart + "T00:00:00Z").getTime() + 6 * 24 * 60 * 60 * 1000;
       const sundayIso = new Date(sundayMs).toISOString().slice(0, 10);
+      // Clamp the displayed range to the current month so a week
+      // straddling a month boundary reads as the partial week the user
+      // actually sees in their column. Without these clamps a week that
+      // started Dec 30 and ended Jan 5 would render as "Dec 30 – Jan 5"
+      // under the January column header, which is confusing — and a
+      // week starting Jan 28 would render as "Jan 28 – Feb 3" under
+      // January with the days from February that aren't actually being
+      // counted (the for-loop above already filters to ym).
+      const labelStart = weekStart < monthStart ? monthStart : weekStart;
+      const labelEnd = sundayIso > monthEnd ? monthEnd : sundayIso;
       return {
-        weekStart,
-        weekLabel: `${shortMd(weekStart)} – ${shortMd(sundayIso)}`,
+        weekStart: labelStart,
+        weekLabel: `${shortMd(labelStart)} – ${shortMd(labelEnd)}`,
         avg: vals.reduce((a, b) => a + b, 0) / vals.length,
         n: vals.length,
       };
