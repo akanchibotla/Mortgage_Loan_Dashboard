@@ -3349,6 +3349,18 @@ code {
 .loan-card .loan-block.loan-block-output {
   min-height: var(--card-pi-min, auto);
 }
+/* Open-amort equal-height floor. The CalculatorPage measureSections hook
+   measures the tallest card whose amortization disclosure is currently open
+   and writes --card-min-open. Only cards with their OWN disclosure open get
+   the floor applied — closed siblings keep their natural shorter height so
+   opening one card doesn't drag closed neighbors taller. This is what makes
+   a fixed-loan card and a 3-2-1 buydown card bottom-align when both are
+   expanded, even though their internal content differs significantly
+   (different phase rows, different explainer notes, per-month buydown
+   breakdown only present during buydown years). */
+.loan-card:has(.loan-amort-details[open]) {
+  min-height: var(--card-min-open, auto);
+}
 .calc-compare-grid.cols-1 {
   grid-template-columns: 1fr;
 }

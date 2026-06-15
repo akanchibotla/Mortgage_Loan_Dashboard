@@ -466,10 +466,12 @@ export default function CalculatorPage() {
     // not the previously-applied min-height floor.
     grid.style.setProperty("--card-top-min", "auto");
     grid.style.setProperty("--card-pi-min", "auto");
+    grid.style.setProperty("--card-min-open", "auto");
     // Force a synchronous reflow before reading offsetHeight.
     void grid.offsetHeight;
     const tops = grid.querySelectorAll<HTMLElement>(".loan-card-top");
     const pis = grid.querySelectorAll<HTMLElement>(".loan-block-output");
+    const cards = grid.querySelectorAll<HTMLElement>(".loan-card");
     let topMax = 0;
     tops.forEach((el) => {
       if (el.offsetHeight > topMax) topMax = el.offsetHeight;
@@ -478,8 +480,23 @@ export default function CalculatorPage() {
     pis.forEach((el) => {
       if (el.offsetHeight > piMax) piMax = el.offsetHeight;
     });
+    // Among cards whose amortization disclosure is currently open, take the
+    // tallest. That becomes the min-height floor applied to every open card
+    // so different loan types (fixed / ARM / buydown — each with different
+    // phase rows, explainer notes, and per-month buydown breakdowns) all
+    // bottom-align when expanded. Closed cards are NOT constrained — they
+    // stay at their natural shorter height, matching the existing behavior
+    // where opening one card doesn't drag closed siblings taller.
+    let openCardMax = 0;
+    cards.forEach((card) => {
+      const details = card.querySelector<HTMLDetailsElement>(".loan-amort-details");
+      if (details?.open && card.offsetHeight > openCardMax) {
+        openCardMax = card.offsetHeight;
+      }
+    });
     if (topMax > 0) grid.style.setProperty("--card-top-min", `${topMax}px`);
     if (piMax > 0) grid.style.setProperty("--card-pi-min", `${piMax}px`);
+    if (openCardMax > 0) grid.style.setProperty("--card-min-open", `${openCardMax}px`);
   }, []);
 
   useLayoutEffect(() => {
@@ -490,6 +507,19 @@ export default function CalculatorPage() {
     const onResize = () => setResizeTick((t) => t + 1);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Re-measure whenever any amort disclosure toggles. The native `toggle`
+  // event on a <details> element does NOT bubble, so we have to attach in
+  // capture phase at the grid level — that still catches it during the
+  // descent. Without this hook, expanding a card after mount would leave
+  // --card-min-open stale and the cards wouldn't equalize.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const onToggle = () => setResizeTick((t) => t + 1);
+    grid.addEventListener("toggle", onToggle, true);
+    return () => grid.removeEventListener("toggle", onToggle, true);
   }, []);
 
   return (
