@@ -28,6 +28,11 @@ MONTH_NAME = {
 
 
 def parse_as_of(as_of_str: str | None) -> str | None:
+    """Parse a Bankrate "as_of" string like "Tuesday, January 7, 2026" into
+    an ISO date. Logs to stderr when the parse fails so silent format
+    changes upstream don't quietly fall back to a fabricated 15th-of-month
+    placeholder downstream.
+    """
     if not as_of_str:
         return None
     try:
@@ -36,7 +41,11 @@ def parse_as_of(as_of_str: str | None) -> str | None:
         day_str, year_str = day_year.replace(",", "").split(" ")
         month_num = next(n for n, name in MONTH_NAME.items() if name == month_name)
         return f"{int(year_str):04d}-{month_num:02d}-{int(day_str):02d}"
-    except Exception:
+    except Exception as e:
+        print(
+            f"  parse_as_of: failed to parse {as_of_str!r}: {e}",
+            file=sys.stderr,
+        )
         return None
 
 
@@ -46,14 +55,18 @@ def load_latest_live(slug: str) -> dict | None:
         return None
     rows: list[dict] = []
     with open(path, "r", encoding="utf-8") as f:
-        for line in f:
+        for lineno, line in enumerate(f, start=1):
             line = line.strip()
             if not line:
                 continue
             try:
                 rows.append(json.loads(line))
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                print(
+                    f"  load_latest_live({path}): skipped malformed JSON "
+                    f"on line {lineno}: {e}",
+                    file=sys.stderr,
+                )
     if not rows:
         return None
     rows.sort(key=lambda r: r.get("date_iso", ""))
@@ -74,7 +87,20 @@ def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None) ->
         m_label = f"{y}-{m:02d}"
         src_row = by_month.get(m_label)
         if src_row and src_row.get("bankrate_table_pct") is not None:
-            date_iso = parse_as_of(src_row.get("as_of")) or f"{y}-{m:02d}-15"
+            parsed = parse_as_of(src_row.get("as_of"))
+            if parsed is None:
+                # No usable as_of — fall back to mid-month, but log so a
+                # systematic format change upstream is visible at refresh
+                # time rather than quietly misaligning the daily/monthly
+                # marker logic in RateChart.
+                print(
+                    f"  reconcile {slug} {term}-yr {m_label}: no parsable "
+                    f"as_of in {src_row!r}; defaulting to {y}-{m:02d}-15",
+                    file=sys.stderr,
+                )
+                date_iso = f"{y}-{m:02d}-15"
+            else:
+                date_iso = parsed
             rows.append({
                 "m": m_label,
                 "date": date_iso,

@@ -35,8 +35,11 @@ def load_rows(path: str) -> list[dict]:
                 continue
             try:
                 out.append(json.loads(line))
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                print(
+                    f"  load_rows({path}): skipped malformed JSON: {e}",
+                    file=sys.stderr,
+                )
     return out
 
 

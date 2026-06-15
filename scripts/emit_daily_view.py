@@ -38,8 +38,11 @@ def load_jsonl(path: str) -> list[dict]:
                 continue
             try:
                 rows.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
+            except json.JSONDecodeError as e:
+                print(
+                    f"  load_jsonl({path}): skipped malformed JSON: {e}",
+                    file=sys.stderr,
+                )
     return rows
 
 
