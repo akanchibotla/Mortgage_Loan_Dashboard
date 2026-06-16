@@ -3,5 +3,17 @@
     "date": "2026-06-01",
     "rate": 6.63,
     "src": "Bankrate"
+  },
+  {
+    "date": "2026-06-15",
+    "rate": 6.56,
+    "src": "Bankrate",
+    "method": "browser"
+  },
+  {
+    "date": "2026-06-16",
+    "rate": 6.46,
+    "src": "Bankrate",
+    "method": "browser"
   }
 ]
