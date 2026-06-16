@@ -20,10 +20,17 @@ headless browser:
             Frequently Akamai-blocked from datacenter IPs (GH Actions) and
             from "hot" residential IPs, but occasionally squeaks through.
 
+  Tier 3  — Wayback Machine: most-recent CDX snapshot of any rocketmortgage
+            /mortgage-rates* URL in the last 30 days. Since the chart only
+            consumes a monthly mean (`aggregate_rocket.py`), even one
+            Wayback hit per month keeps the bar non-null. The Wayback row
+            is recorded under the *snapshot's* date_iso (not today's), so
+            it lands in the correct calendar month for the aggregator.
+
 The fetcher tries Tier 1a first. If it 403s or returns a page without rate
 values, it falls through to 1b and 1c in parallel-conceptual sequence
-(merging single-term results into a combined row), then 1d, then Tier 2.
-Each row records which tier produced it via `source_method`.
+(merging single-term results into a combined row), then 1d, then Tier 2,
+then Tier 3. Each row records which tier produced it via `source_method`.
 
 Per-state pages: every /mortgage-rates/<slug>-mortgage-rates URL on Rocket
 shows the same national rate value, not a real state average. So this
@@ -34,11 +41,14 @@ sequential fallback (worst case ~4 requests) is well within crawl norms.
 """
 import argparse
 import datetime as dt
+import gzip
 import json
 import os
 import re
 import sys
 import time
+import urllib.error
+import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _http import fetch_html  # noqa: E402
@@ -70,6 +80,18 @@ HEADERS = {
 GOTO_TIMEOUT_MS = 45_000
 HYDRATION_TIMEOUT_MS = 25_000
 WARMUP_SLEEP_S = 3
+
+# Wayback: snapshots of rocketmortgage.com/mortgage-rates are sparse
+# (~2/month observed). Look back 30 days so a fallback during a multi-week
+# block drought still has something to grab.
+WAYBACK_LOOKBACK_DAYS = 30
+WAYBACK_CDX_TIMEOUT_S = 30
+WAYBACK_SNAPSHOT_TIMEOUT_S = 60
+# We probe at most this many snapshots before giving up — each one is
+# ~200 KB compressed and the polite delay is 2s, so capping prevents the
+# fallback from dominating run time when most snapshots are stub URLs.
+WAYBACK_MAX_PROBES = 5
+WAYBACK_INTER_PROBE_SLEEP_S = 2
 
 
 # Rate-row pattern. The headline rate-card block, after HTML is stripped, reads:
@@ -215,9 +237,89 @@ def fetch_browser() -> dict | None:
         return None
 
 
-def gather_rates() -> tuple[dict, str] | None:
-    """Run the fallback chain. Returns (rates_dict, source_method) or None
-    when every tier failed.
+def fetch_wayback() -> tuple[dict, str] | None:
+    """Tier 3: most-recent Wayback CDX snapshot of any rocketmortgage
+    /mortgage-rates* URL in the last `WAYBACK_LOOKBACK_DAYS`. Returns
+    (rates_dict, snapshot_yyyymmdd) or None.
+
+    The wildcard URL pattern matches both the canonical /mortgage-rates
+    and the SEO landing pages — Rocket displays the same national rate
+    on all of them, so any captured snapshot is usable. Snapshots are
+    probed newest-first; each is gzip-decoded (the `id_` flag returns
+    the original Content-Encoding) and run through the shared extractor.
+    Stops once both terms are filled or we exhaust the probe budget.
+    """
+    today = dt.date.today()
+    from_ymd = (today - dt.timedelta(days=WAYBACK_LOOKBACK_DAYS)).strftime("%Y%m%d")
+    to_ymd = today.strftime("%Y%m%d")
+    cdx = (
+        f"http://web.archive.org/cdx/search/cdx?url=rocketmortgage.com/mortgage-rates*"
+        f"&from={from_ymd}&to={to_ymd}&filter=statuscode:200&output=json&limit=30"
+    )
+    print(f"  Tier 3 [wayback] CDX query: last {WAYBACK_LOOKBACK_DAYS}d")
+    try:
+        req = urllib.request.Request(cdx, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=WAYBACK_CDX_TIMEOUT_S) as r:
+            data = json.loads(r.read().decode("utf-8", errors="replace") or "[]")
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+        print(f"  Tier 3 CDX raised: {e}", file=sys.stderr)
+        return None
+    if not data or len(data) < 2:
+        print(f"  Tier 3: no Wayback snapshots in last {WAYBACK_LOOKBACK_DAYS}d", file=sys.stderr)
+        return None
+    # CDX returns header row at index 0, then snapshots in chronological order.
+    # Newest-first probe order lets us return on the freshest snapshot that
+    # carries values, rather than picking up a stale partial first.
+    snapshots = sorted(data[1:], key=lambda row: row[1], reverse=True)
+    found: dict = {"term_15": None, "term_15_apr": None, "term_30": None, "term_30_apr": None}
+    snapshot_date: str | None = None
+    for i, row in enumerate(snapshots[:WAYBACK_MAX_PROBES]):
+        ts = row[1]
+        original = row[2]
+        snap_url = f"https://web.archive.org/web/{ts}id_/{original}"
+        print(f"  Tier 3 [wayback {ts[:8]}] GET {original[:70]}")
+        try:
+            req = urllib.request.Request(
+                snap_url,
+                headers={**HEADERS, "Accept-Encoding": "gzip, deflate"},
+            )
+            with urllib.request.urlopen(req, timeout=WAYBACK_SNAPSHOT_TIMEOUT_S) as r:
+                raw = r.read()
+                if r.headers.get("Content-Encoding") == "gzip":
+                    html = gzip.decompress(raw).decode("utf-8", errors="replace")
+                else:
+                    html = raw.decode("utf-8", errors="replace")
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError) as e:
+            print(f"  Tier 3 [wayback {ts[:8]}] fetch raised: {e}", file=sys.stderr)
+            continue
+        text = _strip_html(html)
+        new_found = extract(text)
+        before = (found["term_15"], found["term_30"])
+        _merge(found, new_found, terms=(15, 30))
+        # The snapshot_date attribution is the *first* snapshot that
+        # contributed a non-null term — if later snapshots only fill the
+        # other term, we still report the freshest contributor's date.
+        if snapshot_date is None and (
+            (_has_value(found, 15) and before[0] is None)
+            or (_has_value(found, 30) and before[1] is None)
+        ):
+            snapshot_date = ts[:8]
+        if _has_value(found, 15) and _has_value(found, 30):
+            break
+        # Polite delay before the next Wayback request.
+        if i + 1 < min(WAYBACK_MAX_PROBES, len(snapshots)):
+            time.sleep(WAYBACK_INTER_PROBE_SLEEP_S)
+    if not _has_value(found, 15) and not _has_value(found, 30):
+        print(f"  Tier 3: probed {min(WAYBACK_MAX_PROBES, len(snapshots))} snapshots, no rate values found", file=sys.stderr)
+        return None
+    return found, snapshot_date or "unknown"
+
+
+def gather_rates() -> tuple[dict, str, str | None] | None:
+    """Run the fallback chain. Returns (rates_dict, source_method, date_iso_override)
+    or None when every tier failed. The date_iso_override is set only for
+    Wayback hits (so the row lands in the snapshot's calendar month, not
+    today's, which keeps the monthly aggregator honest).
 
     The method label encodes *which* tier filled the row:
       "static"          — Tier 1a (primary /mortgage-rates URL)
@@ -225,11 +327,12 @@ def gather_rates() -> tuple[dict, str] | None:
       "static_seo"      — Tier 1d (per-state SEO landing page)
       "static_mixed"    — Tier 1a partial + a single-term page filling the gap
       "browser"         — Tier 2 (Playwright)
+      "wayback_<YYYYMMDD>" — Tier 3 (Wayback CDX snapshot)
     """
     # Tier 1a — both terms on the canonical page.
     primary = fetch_static(URL_PRIMARY, "primary")
     if primary and _has_value(primary, 15) and _has_value(primary, 30):
-        return primary, "static"
+        return primary, "static", None
 
     found: dict = primary or {"term_15": None, "term_15_apr": None, "term_30": None, "term_30_apr": None}
 
@@ -244,7 +347,7 @@ def gather_rates() -> tuple[dict, str] | None:
             _merge(found, side, terms=(30,))
     if _has_value(found, 15) and _has_value(found, 30):
         method = "static_split" if primary is None else "static_mixed"
-        return found, method
+        return found, method, None
 
     # Tier 1d — SEO landing pages. Rotate through candidates so Akamai
     # rate-limiting on one URL doesn't kill the whole fallback.
@@ -253,17 +356,35 @@ def gather_rates() -> tuple[dict, str] | None:
         if seo:
             _merge(found, seo, terms=(15, 30))
             if _has_value(found, 15) and _has_value(found, 30):
-                return found, "static_seo"
+                return found, "static_seo", None
             # Even partial: keep going to next SEO URL to fill the gap.
 
-    # Last resort — browser. Will likely lose from datacenter IPs but
+    # Tier 2 — Playwright. Will likely lose from datacenter IPs but
     # occasionally wins on residential ones during Akamai churn.
     print("  All urllib tiers exhausted; escalating to Tier 2 (browser)", file=sys.stderr)
     br = fetch_browser()
     if br:
         _merge(found, br, terms=(15, 30))
+        if _has_value(found, 15) and _has_value(found, 30):
+            return found, "browser", None
+        # If browser only filled one term, fall through to Tier 3 to try
+        # for the missing side rather than committing to a partial row.
+
+    # Tier 3 — Wayback Machine. Sparse coverage (~2 snapshots/month) but
+    # the monthly aggregator only needs one hit per month, so even a stale
+    # snapshot keeps the chart bar non-null. The snapshot's own date is
+    # threaded back so the row lands in the correct calendar month.
+    print("  Tier 2 didn't fully resolve; escalating to Tier 3 (Wayback)", file=sys.stderr)
+    wb = fetch_wayback()
+    if wb:
+        wb_found, snapshot_date = wb
+        _merge(found, wb_found, terms=(15, 30))
         if _has_value(found, 15) or _has_value(found, 30):
-            return found, "browser"
+            snapshot_iso = (
+                f"{snapshot_date[0:4]}-{snapshot_date[4:6]}-{snapshot_date[6:8]}"
+                if len(snapshot_date) == 8 else None
+            )
+            return found, f"wayback_{snapshot_date}", snapshot_iso
 
     # Partial-data salvage: if any prior tier filled at least one term
     # before the chain bottomed out, surface it rather than reporting a
@@ -271,7 +392,7 @@ def gather_rates() -> tuple[dict, str] | None:
     # JSONL accumulator's trail going. The validator can still flag the
     # missing term separately.
     if _has_value(found, 15) or _has_value(found, 30):
-        return found, "static_partial"
+        return found, "static_partial", None
 
     return None
 
@@ -328,9 +449,11 @@ def main() -> int:
     if result is None:
         print("ERROR: all tiers failed for Rocket national page", file=sys.stderr)
         return 3
-    found, source_method = result
+    found, source_method, snapshot_iso = result
 
-    date_iso = args.date_iso or dt.date.today().isoformat()
+    # Wayback hits report the snapshot's own date so the row lands in the
+    # correct calendar month for the monthly aggregator. Live hits use today.
+    date_iso = args.date_iso or snapshot_iso or dt.date.today().isoformat()
     row = {
         "date_iso": date_iso,
         "term_15": found["term_15"],
