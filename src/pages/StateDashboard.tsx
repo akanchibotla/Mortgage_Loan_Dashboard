@@ -289,8 +289,8 @@ function StateBody({ slug }: { slug: string }) {
           title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}
           usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
           rocketLabel={`Rocket Mortgage ${term}-yr fixed (national)`}
-          ncLabel={`${name} ${term}-yr fixed (Bankrate, ${timescale})`}
-          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily, ${timescale})`}
+          ncLabel={`${name} ${term}-yr fixed (Bankrate)`}
+          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily)`}
           nwLabel={`${name} ${term}-yr fixed (NerdWallet state average)`}
           yMin={yMin}
           yMax={7.5}
