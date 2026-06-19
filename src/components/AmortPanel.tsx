@@ -228,7 +228,12 @@ function AmortChart({
   };
 
   // Interest area: from baseline up to the per-month-normalized interest curve.
-  let interestPath = `M ${PAD_X} ${PAD_Y + innerH}`;
+  // The leftmost edge is anchored at month 1's interest height (not baseline)
+  // so the column representing month 1 has the correct interest share all the
+  // way to x=PAD_X. Anchoring at the baseline instead produced a thin
+  // triangular wedge between x=PAD_X and x=x(1) where interest linearly
+  // climbed from zero, which read visually as "month 1 has extra principal."
+  let interestPath = `M ${PAD_X} ${PAD_Y + innerH} L ${PAD_X} ${yShare(schedule[0])}`;
   for (let i = 0; i < n; i++) {
     interestPath += ` L ${x(i + 1)} ${yShare(schedule[i])}`;
   }
