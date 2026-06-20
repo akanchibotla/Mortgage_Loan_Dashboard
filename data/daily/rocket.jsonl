@@ -13,5 +13,5 @@
 {"date_iso": "2026-02-18", "term_15": 5.5, "term_30": 6.375, "term_15_apr": 5.958, "term_30_apr": 6.638, "wayback_timestamp": "20260218190309", "fetched_at_utc": "2026-06-03T23:28:31+00:00", "source": "rocket_wayback"}
 {"date_iso": "2026-03-30", "term_15": 6.125, "term_30": 6.99, "term_15_apr": 6.555, "term_30_apr": 7.279, "wayback_timestamp": "20260330120651", "fetched_at_utc": "2026-06-03T23:28:31+00:00", "source": "rocket_wayback"}
 {"date_iso": "2026-04-10", "term_15": 5.875, "term_30": 6.625, "term_15_apr": 6.341, "term_30_apr": 6.906, "wayback_timestamp": "20260410093006", "fetched_at_utc": "2026-06-03T23:28:31+00:00", "source": "rocket_wayback"}
-{"date_iso": "2026-05-29", "term_15": 5.99, "term_30": null, "term_15_apr": 6.417, "term_30_apr": null, "fetched_at_utc": "2026-06-19T15:28:57+00:00", "source": "rocket_live", "source_method": "wayback_20260529"}
+{"date_iso": "2026-05-29", "term_15": 5.99, "term_30": null, "term_15_apr": 6.417, "term_30_apr": null, "fetched_at_utc": "2026-06-20T14:13:04+00:00", "source": "rocket_live", "source_method": "wayback_20260529"}
 {"date_iso": "2026-06-03", "term_15": 5.99, "term_30": 6.875, "term_15_apr": 6.417, "term_30_apr": 7.148, "fetched_at_utc": "2026-06-03T23:13:50+00:00", "source": "rocket_live"}
