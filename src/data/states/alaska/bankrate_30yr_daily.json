@@ -102,8 +102,8 @@
   },
   {
     "date": "2026-06-21",
-    "rate": 6.5,
+    "rate": 6.3,
     "src": "Bankrate",
-    "method": "browser"
+    "method": "static_html"
   }
 ]
