@@ -1,5 +1,535 @@
 [
   {
+    "date": "2024-06-06",
+    "rate": 6.99,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-06-13",
+    "rate": 6.95,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-06-20",
+    "rate": 6.87,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-06-27",
+    "rate": 6.86,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-07-03",
+    "rate": 6.95,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-07-11",
+    "rate": 6.89,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-07-18",
+    "rate": 6.77,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-07-25",
+    "rate": 6.78,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-08-01",
+    "rate": 6.73,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-08-08",
+    "rate": 6.47,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-08-15",
+    "rate": 6.49,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-08-22",
+    "rate": 6.46,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-08-29",
+    "rate": 6.35,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-09-05",
+    "rate": 6.35,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-09-12",
+    "rate": 6.2,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-09-19",
+    "rate": 6.09,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-09-26",
+    "rate": 6.08,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-10-03",
+    "rate": 6.12,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-10-10",
+    "rate": 6.32,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-10-17",
+    "rate": 6.44,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-10-24",
+    "rate": 6.54,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-10-31",
+    "rate": 6.72,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-11-07",
+    "rate": 6.79,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-11-14",
+    "rate": 6.78,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-11-21",
+    "rate": 6.84,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-11-27",
+    "rate": 6.81,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-12-05",
+    "rate": 6.69,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-12-12",
+    "rate": 6.6,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-12-19",
+    "rate": 6.72,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2024-12-26",
+    "rate": 6.85,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-01-02",
+    "rate": 6.91,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-01-09",
+    "rate": 6.93,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-01-16",
+    "rate": 7.04,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-01-23",
+    "rate": 6.96,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-01-30",
+    "rate": 6.95,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-02-06",
+    "rate": 6.89,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-02-13",
+    "rate": 6.87,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-02-20",
+    "rate": 6.85,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-02-27",
+    "rate": 6.76,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-03-06",
+    "rate": 6.63,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-03-13",
+    "rate": 6.65,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-03-20",
+    "rate": 6.67,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-03-27",
+    "rate": 6.65,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-04-03",
+    "rate": 6.64,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-04-10",
+    "rate": 6.62,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-04-17",
+    "rate": 6.83,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-04-24",
+    "rate": 6.81,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-05-01",
+    "rate": 6.76,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-05-08",
+    "rate": 6.76,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-05-15",
+    "rate": 6.81,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-05-22",
+    "rate": 6.86,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-05-29",
+    "rate": 6.89,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-06-05",
+    "rate": 6.85,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-06-12",
+    "rate": 6.84,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-06-18",
+    "rate": 6.81,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-06-26",
+    "rate": 6.77,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-07-03",
+    "rate": 6.67,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-07-10",
+    "rate": 6.72,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-07-17",
+    "rate": 6.75,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-07-24",
+    "rate": 6.74,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-07-31",
+    "rate": 6.72,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-08-07",
+    "rate": 6.63,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-08-14",
+    "rate": 6.58,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-08-21",
+    "rate": 6.58,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-08-28",
+    "rate": 6.56,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-09-04",
+    "rate": 6.5,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-09-11",
+    "rate": 6.35,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-09-18",
+    "rate": 6.26,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-09-25",
+    "rate": 6.3,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-10-02",
+    "rate": 6.34,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-10-09",
+    "rate": 6.3,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-10-16",
+    "rate": 6.27,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-10-23",
+    "rate": 6.19,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-10-30",
+    "rate": 6.17,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-11-06",
+    "rate": 6.22,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-11-13",
+    "rate": 6.24,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-11-20",
+    "rate": 6.26,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-11-26",
+    "rate": 6.23,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-12-04",
+    "rate": 6.19,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-12-11",
+    "rate": 6.22,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-12-18",
+    "rate": 6.21,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-12-24",
+    "rate": 6.18,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2025-12-31",
+    "rate": 6.15,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-01-08",
+    "rate": 6.16,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-01-15",
+    "rate": 6.06,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-01-22",
+    "rate": 6.09,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-01-29",
+    "rate": 6.1,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-02-05",
+    "rate": 6.11,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-02-12",
+    "rate": 6.09,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-02-19",
+    "rate": 6.01,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-02-26",
+    "rate": 5.98,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-03-05",
+    "rate": 6.0,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-03-12",
+    "rate": 6.11,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-03-19",
+    "rate": 6.22,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-03-26",
+    "rate": 6.38,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-04-02",
+    "rate": 6.46,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-04-09",
+    "rate": 6.37,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-04-16",
+    "rate": 6.3,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-04-23",
+    "rate": 6.23,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-04-30",
+    "rate": 6.3,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-05-07",
+    "rate": 6.37,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-05-14",
+    "rate": 6.36,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-05-21",
+    "rate": 6.51,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-05-28",
+    "rate": 6.53,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-06-04",
+    "rate": 6.48,
+    "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-06-11",
+    "rate": 6.52,
+    "src": "FRED PMMS"
+  },
+  {
     "date": "2026-06-18",
     "rate": 6.47,
     "src": "FRED PMMS"
