@@ -21,6 +21,7 @@ interface Props {
   nwData?: NcMonthlySnapshot[];
   ncDaily?: DailyRatePoint[];
   mndDaily?: DailyRatePoint[];
+  nwDaily?: DailyRatePoint[];
   timescale?: "monthly" | "weekly";
   hmdaBand?: HmdaSummary;
   title: string;
@@ -109,6 +110,7 @@ export function RateChart({
   nwData,
   ncDaily,
   mndDaily,
+  nwDaily,
   timescale = "monthly",
   hmdaBand,
   title,
@@ -140,6 +142,7 @@ export function RateChart({
   // since on that scale the marker is the anchor among the daily noise.
   const ncDailyValid = (ncDaily ?? []).filter((d) => d.rate != null);
   const mndDailyValid = (mndDaily ?? []).filter((d) => d.rate != null);
+  const nwDailyValid = (nwDaily ?? []).filter((d) => d.rate != null);
   const ncDailyRange: [string, string] | null =
     ncDailyValid.length >= 2
       ? [ncDailyValid[0].date, ncDailyValid[ncDailyValid.length - 1].date]
@@ -147,6 +150,10 @@ export function RateChart({
   const mndDailyRange: [string, string] | null =
     mndDailyValid.length >= 2
       ? [mndDailyValid[0].date, mndDailyValid[mndDailyValid.length - 1].date]
+      : null;
+  const nwDailyRange: [string, string] | null =
+    nwDailyValid.length >= 2
+      ? [nwDailyValid[0].date, nwDailyValid[nwDailyValid.length - 1].date]
       : null;
   const inMonthlySuppressRange = (
     date: string,
@@ -374,7 +381,16 @@ export function RateChart({
     const nwPoints: ChartPoint[] = nwSeries.map((p) => ({
       x: p.date, y: p.rate, src: p.src,
     }));
-    const nwStyles = nwSeries.map((p) => (p.rate == null ? styleForNw("") : styleForNw(p.src)));
+    const nwStyles = nwSeries.map((p) => {
+      if (p.rate == null) return styleForNw("");
+      // Same suppression as Bankrate/MND: hide the monthly anchor marker
+      // when the daily trail already covers this date on Monthly view, so
+      // the trail's "latest only" marker is the canonical "current" dot.
+      if (inMonthlySuppressRange(p.date, nwDailyRange)) {
+        return { ...styleForNw(p.src), pointRadius: 0 };
+      }
+      return styleForNw(p.src);
+    });
     pushDataset("nerdwallet", {
       label: nwLabel ?? "NerdWallet (state average)",
       data: nwPoints,
@@ -449,6 +465,37 @@ export function RateChart({
       order: 0,
     });
   }
+  // NerdWallet daily trail. Mirror of Bankrate/MND — dashed purple line with
+  // markers suppressed on the Monthly view (except the latest reading) and
+  // every marker visible on Weekly. The underlying NW JSONL only goes back
+  // ~50 days, so the trail anchors to recent history only; older months are
+  // still hover-pickable via the monthly anchor dataset above.
+  const nwDailyPts: ChartPoint[] =
+    (nwDaily ?? [])
+      .filter((d) => d.rate != null)
+      .map((d) => ({ x: d.date, y: d.rate, src: `${d.src} (daily)` }));
+  if (nwDailyPts.length >= 2) {
+    const data = withGapBreaks(nwDailyPts);
+    const lastIdx = nwDailyPts.length - 1;
+    pushDataset("nerdwallet", {
+      label: `${nwLabel?.replace(/\s*\(.*\)$/, "") ?? "NerdWallet"} (daily trail)`,
+      data,
+      borderColor: "rgba(124, 58, 237, 0.85)",
+      backgroundColor: "rgba(124, 58, 237, 0.85)",
+      borderWidth: 2,
+      borderDash: [3, 3],
+      pointRadius: radiusArray(data, (i) =>
+        timescale === "monthly" ? (i === lastIdx ? 4.5 : 0) : 3.5,
+      ),
+      pointStyle: "circle",
+      pointHoverRadius: radiusArray(data, (i) =>
+        timescale === "monthly" ? (i === lastIdx ? 7 : 0) : 6,
+      ),
+      tension: 0,
+      spanGaps: false,
+      order: 0,
+    });
+  }
 
   const data: ChartData<"line", ChartPoint[]> = { datasets };
 
@@ -478,7 +525,7 @@ export function RateChart({
         nwHasAny={!!nwHasAny}
         hasHmda={!!hmdaBand && timescale === "monthly"}
         hasExperian={ncSeries.some((p) => (p.src ?? "").startsWith("Experian"))}
-        hasDailyTrail={ncDailyValid.length >= 2 || mndDailyValid.length >= 2}
+        hasDailyTrail={ncDailyValid.length >= 2 || mndDailyValid.length >= 2 || nwDailyValid.length >= 2}
         visibleSet={visibleSet}
         onToggle={toggle}
       />

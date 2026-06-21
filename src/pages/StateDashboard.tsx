@@ -140,6 +140,7 @@ function StateBody({ slug }: { slug: string }) {
   const nwData = (term === 15 ? data.nerdwallet15 : data.nerdwallet30) ?? undefined;
   const ncDaily = (term === 15 ? data.bankrate15Daily : data.bankrate30Daily) ?? undefined;
   const mndDaily = (term === 15 ? data.mnd15Daily : data.mnd30Daily) ?? undefined;
+  const nwDaily = (term === 15 ? data.nerdwallet15Daily : data.nerdwallet30Daily) ?? undefined;
   const hmdaBand = term === 15 ? data.hmda15 : data.hmda30;
   const yMin = term === 15 ? 4.5 : 5.5;
 
@@ -286,6 +287,7 @@ function StateBody({ slug }: { slug: string }) {
           nwData={nwData}
           ncDaily={ncDaily}
           mndDaily={mndDaily}
+          nwDaily={nwDaily}
           timescale={timescale}
           hmdaBand={hmdaBand}
           title={`${term}-year fixed mortgage rate — ${name} vs U.S.`}

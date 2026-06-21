@@ -57,6 +57,8 @@ export interface StateData {
   bankrate30Daily?: DailyRatePoint[] | null;
   mnd15Daily?: DailyRatePoint[] | null;
   mnd30Daily?: DailyRatePoint[] | null;
+  nerdwallet15Daily?: DailyRatePoint[] | null;
+  nerdwallet30Daily?: DailyRatePoint[] | null;
   hmda15?: HmdaSummary;
   hmda30?: HmdaSummary;
   counties?: CountiesFile;
@@ -105,6 +107,8 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     bankrate30Daily,
     mnd15Daily,
     mnd30Daily,
+    nerdwallet15Daily,
+    nerdwallet30Daily,
     hmda15,
     hmda30,
     counties,
@@ -120,6 +124,8 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     loadOptional<DailyRatePoint[]>(slug, "bankrate_30yr_daily.json"),
     loadOptional<DailyRatePoint[]>(slug, "mnd_15yr_daily.json"),
     loadOptional<DailyRatePoint[]>(slug, "mnd_30yr_daily.json"),
+    loadOptional<DailyRatePoint[]>(slug, "nerdwallet_15yr_daily.json"),
+    loadOptional<DailyRatePoint[]>(slug, "nerdwallet_30yr_daily.json"),
     loadOptional<HmdaSummary>(slug, "hmda_2024_15yr.json"),
     loadOptional<HmdaSummary>(slug, "hmda_2024_30yr.json"),
     loadOptional<CountiesFile>(slug, "counties.json"),
@@ -138,6 +144,8 @@ export async function loadStateData(slug: string): Promise<StateData | null> {
     bankrate30Daily,
     mnd15Daily,
     mnd30Daily,
+    nerdwallet15Daily,
+    nerdwallet30Daily,
     hmda15: hmda15 ?? undefined,
     hmda30: hmda30 ?? undefined,
     counties: counties ?? undefined,
