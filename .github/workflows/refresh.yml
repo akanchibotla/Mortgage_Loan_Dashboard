@@ -12,6 +12,12 @@ permissions:
   # a scheduled (cron) run fails, so a silent overnight break leaves a paper
   # trail in the repo issues tab instead of dying invisibly in the Actions log.
   issues: write
+  # Needed for the final "Trigger Pages deploy" step: GITHUB_TOKEN can
+  # dispatch a workflow_dispatch event ONLY if the workflow declares
+  # actions: write. Without this the gh CLI call gets HTTP 403 "Resource
+  # not accessible by integration" and the live site keeps serving the
+  # bundle from the last *human* push (data goes stale).
+  actions: write
 
 # Run JS-based actions on Node 24. Required from June 16, 2026; opting in early
 # eliminates the Node 20 deprecation warning. https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
