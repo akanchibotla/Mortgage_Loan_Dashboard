@@ -14,6 +14,7 @@ import "../chart/registerChart";
 
 interface Props {
   usData: MonthlyRate[];
+  usWeekly?: DailyRatePoint[];
   rocketData?: MonthlyRate[];
   ncData: NcMonthlySnapshot[];
   mndData?: NcMonthlySnapshot[];
@@ -101,6 +102,7 @@ function styleForNw(src: string): NcStyle {
 
 export function RateChart({
   usData,
+  usWeekly,
   rocketData,
   ncData,
   mndData,
@@ -197,6 +199,33 @@ export function RateChart({
     tension: 0.25,
     order: 5,
   });
+
+  // Weekly PMMS hover layer. FRED publishes PMMS every Thursday; the
+  // monthly file above is a mean of those weekly values. The dataset
+  // below exposes every weekly observation as its own data point so:
+  //   - on Monthly view the cursor can scrub the smooth monthly line
+  //     and see the actual weekly rate at any x-position (markers are
+  //     invisible, hover triggers tooltip via the global hitRadius);
+  //   - on Weekly view the marker becomes visible — small blue dots at
+  //     each Thursday — so users can read off the underlying observations.
+  // `showLine: false` keeps Chart.js from drawing a competing line over
+  // the smoothed monthly one; data points hover-only.
+  const usWeeklyPoints: ChartPoint[] = (usWeekly ?? [])
+    .filter((p) => p.rate != null)
+    .map((p) => ({ x: p.date, y: p.rate as number, src: p.src }));
+  if (usWeeklyPoints.length > 0) {
+    pushDataset("pmms", {
+      label: `${usLabel.replace(/\s*\(.*\)$/, "")} (weekly)`,
+      data: usWeeklyPoints,
+      borderColor: "#1f5fa8",
+      backgroundColor: "#1f5fa8",
+      showLine: false,
+      pointRadius: timescale === "weekly" ? 2.5 : 0,
+      pointHoverRadius: timescale === "weekly" ? 5 : 4,
+      pointStyle: "circle",
+      order: 5,
+    });
+  }
 
   // Rocket Mortgage is a single-lender national quote. Same shape as PMMS
   // (MonthlyRate). Renders as an orange solid-circle line — distinct from

@@ -309,6 +309,24 @@ def aggregate(weekly: list[tuple[datetime, float]]) -> list[dict]:
     return results
 
 
+def weekly_in_window(weekly: list[tuple[datetime, float]]) -> list[dict]:
+    """Filter FRED's raw weekly observations to the chart window and emit
+    them as DailyRatePoint-shaped rows. Feeds the chart's weekly-resolution
+    hover layer (invisible markers on monthly view, visible line+markers on
+    weekly view) so users can scrub the PMMS line at week-level precision
+    without us having to display every Thursday tick on the monthly chart."""
+    rows: list[dict] = []
+    for d, v in sorted(weekly, key=lambda dv: dv[0]):
+        if not (WINDOW_START <= d <= WINDOW_END):
+            continue
+        rows.append({
+            "date": d.date().isoformat(),
+            "rate": round(v, 3),
+            "src": "FRED PMMS",
+        })
+    return rows
+
+
 def _append_fail_log(line: str) -> None:
     if not FAIL_LOG:
         return
@@ -341,7 +359,12 @@ def main() -> int:
         out_path = os.path.join(OUT_DIR, f"pmms_{term}yr_monthly.json")  # noqa
         with open(out_path, "w") as f:
             json.dump(monthly, f, indent=2)
-        print(f"  Saved -> {out_path}\n")
+        print(f"  Saved -> {out_path}")
+        weekly_rows = weekly_in_window(weekly)
+        weekly_path = os.path.join(OUT_DIR, f"pmms_{term}yr_weekly.json")
+        with open(weekly_path, "w") as f:
+            json.dump(weekly_rows, f, indent=2)
+        print(f"  Saved -> {weekly_path}  ({len(weekly_rows)} weekly rows)\n")
     if failures:
         # Exit 0 anyway — keep workflow alive. Existing cached PMMS JSONs
         # remain untouched, so the dashboard keeps yesterday's values for

@@ -52,7 +52,7 @@ export default function StateDashboard() {
 
 function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
-  const { pmms15, pmms30 } = loadPmms();
+  const { pmms15, pmms30, pmms15Weekly, pmms30Weekly } = loadPmms();
   const { rocket15, rocket30 } = loadRocket();
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
@@ -133,6 +133,7 @@ function StateBody({ slug }: { slug: string }) {
   const topCounties = sortedCounties.slice(0, 5);
 
   const usData = term === 15 ? pmms15 : pmms30;
+  const usWeekly = (term === 15 ? pmms15Weekly : pmms30Weekly) ?? undefined;
   const rocketData = (term === 15 ? rocket15 : rocket30) ?? undefined;
   const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
   const mndData = (term === 15 ? data.mnd15 : data.mnd30) ?? undefined;
@@ -278,6 +279,7 @@ function StateBody({ slug }: { slug: string }) {
         </div>
         <RateChart
           usData={usData}
+          usWeekly={usWeekly}
           rocketData={rocketData}
           ncData={ncData}
           mndData={mndData}

@@ -15,11 +15,20 @@ const metaFiles = import.meta.glob("../data/states/*/state_meta.json", {
   import: "default",
 }) as Record<string, StateMeta>;
 
-// Eager: national PMMS series shared across all state pages.
+// Eager: national PMMS series shared across all state pages. The monthly
+// file is the mean-aggregated series rendered as the visible blue line.
+// The weekly file carries every Thursday observation in the chart window —
+// rendered as invisible hover anchors on the monthly view (cursor scrubs
+// the line and sees the actual weekly value) and as visible markers on the
+// weekly view.
 const pmmsFiles = import.meta.glob("../data/pmms_*_monthly.json", {
   eager: true,
   import: "default",
 }) as Record<string, MonthlyRate[]>;
+const pmmsWeeklyFiles = import.meta.glob("../data/pmms_*_weekly.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, DailyRatePoint[]>;
 
 // Eager: national Rocket Mortgage series. Same shape as PMMS (MonthlyRate),
 // rendered as a second national line on every state chart and clearly
@@ -155,6 +164,8 @@ export function loadPmms() {
   return {
     pmms15: pmmsFiles["../data/pmms_15yr_monthly.json"],
     pmms30: pmmsFiles["../data/pmms_30yr_monthly.json"],
+    pmms15Weekly: pmmsWeeklyFiles["../data/pmms_15yr_weekly.json"] ?? null,
+    pmms30Weekly: pmmsWeeklyFiles["../data/pmms_30yr_weekly.json"] ?? null,
   };
 }
 
