@@ -1,0 +1,82 @@
+[
+  {
+    "date": "2025-01-18",
+    "rate": 7.25,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-03-19",
+    "rate": 7.125,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-04-17",
+    "rate": 7.125,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-05-14",
+    "rate": 7.125,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-06-23",
+    "rate": 7.125,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-07-31",
+    "rate": 6.875,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-08-11",
+    "rate": 6.75,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-09-04",
+    "rate": 6.75,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-10-09",
+    "rate": 6.5,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-11-12",
+    "rate": 6.625,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2025-12-15",
+    "rate": 6.5,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-01-28",
+    "rate": 6.5,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-02-18",
+    "rate": 6.375,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-03-30",
+    "rate": 6.99,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-04-10",
+    "rate": 6.625,
+    "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-06-03",
+    "rate": 6.875,
+    "src": "Rocket Mortgage"
+  }
+]

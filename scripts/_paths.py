@@ -50,6 +50,10 @@ def rocket_monthly(term: int) -> str:
     return os.path.join(DATA_DIR, f"rocket_{term}yr_monthly.json")
 
 
+def rocket_daily(term: int) -> str:
+    return os.path.join(DATA_DIR, f"rocket_{term}yr_daily.json")
+
+
 # Raw inputs that live outside the repo (only used by one-shot ingest scripts
 # that aren't part of the CI refresh pipeline).
 RAW_PMMS_XLSX = r"C:\Users\akanc\Documents\freddie_pmms.xlsx"

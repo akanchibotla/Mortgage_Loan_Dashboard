@@ -18,7 +18,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _paths import rocket_jsonl, rocket_monthly  # noqa: E402
+from _paths import rocket_daily, rocket_jsonl, rocket_monthly  # noqa: E402
 from _window import window_months  # noqa: E402
 
 
@@ -75,6 +75,30 @@ def aggregate_term(rows: list[dict], term_key: str) -> list[dict]:
     return result
 
 
+def daily_in_window(rows: list[dict], term_key: str) -> list[dict]:
+    """Emit every successful daily observation for a term as a DailyRatePoint
+    row. Sparse on purpose — Rocket's daily JSONL averages ~1 row/month due
+    to Akamai blocks, so this layer surfaces individual capture days as
+    hover-only anchors on the chart (no visible line between them, since
+    spans of weeks between points would imply a slope we never observed)."""
+    months_in_window = set(window_months())
+    out: list[dict] = []
+    for r in sorted(rows, key=lambda x: x.get("date_iso", "")):
+        d = r.get("date_iso")
+        if not d or r.get(term_key) is None:
+            continue
+        try:
+            y, mo = int(d[0:4]), int(d[5:7])
+        except ValueError:
+            continue
+        if (y, mo) not in months_in_window:
+            continue
+        method = r.get("source_method") or "live"
+        src = "Rocket Mortgage (Wayback)" if str(method).startswith("wayback") else "Rocket Mortgage"
+        out.append({"date": d, "rate": r[term_key], "src": src})
+    return out
+
+
 def main() -> int:
     rows = load_rows(rocket_jsonl())
     for term, key in ((15, "term_15"), (30, "term_30")):
@@ -85,6 +109,11 @@ def main() -> int:
         with open(path, "w") as f:
             json.dump(agg, f, indent=2)
         print(f"  Rocket {term}-yr: {n_filled}/{len(agg)} months filled -> {os.path.basename(path)}")
+        daily_rows = daily_in_window(rows, key)
+        daily_path = rocket_daily(term)
+        with open(daily_path, "w") as f:
+            json.dump(daily_rows, f, indent=2)
+        print(f"  Rocket {term}-yr: {len(daily_rows)} daily observations -> {os.path.basename(daily_path)}")
     return 0
 
 

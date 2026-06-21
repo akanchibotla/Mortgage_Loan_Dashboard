@@ -37,6 +37,14 @@ const rocketFiles = import.meta.glob("../data/rocket_*_monthly.json", {
   eager: true,
   import: "default",
 }) as Record<string, MonthlyRate[]>;
+// Rocket daily JSONL is sparse (~1 row/month due to Akamai blocks on the
+// live tiers). Exposing the underlying daily observations as a hover layer
+// lets the chart surface "we have a real Rocket capture on date X" without
+// drawing a misleading line through the long gaps between captures.
+const rocketDailyFiles = import.meta.glob("../data/rocket_*_daily.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, DailyRatePoint[]>;
 
 // Lazy: per-state time-series + HMDA JSON. Each route loader fetches just
 // its own state's files via dynamic import — Vite chunks them per state.
@@ -181,6 +189,8 @@ export function loadRocket() {
   return {
     rocket15: rocketFiles["../data/rocket_15yr_monthly.json"] ?? null,
     rocket30: rocketFiles["../data/rocket_30yr_monthly.json"] ?? null,
+    rocket15Daily: rocketDailyFiles["../data/rocket_15yr_daily.json"] ?? null,
+    rocket30Daily: rocketDailyFiles["../data/rocket_30yr_daily.json"] ?? null,
   };
 }
 

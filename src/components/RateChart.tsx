@@ -16,6 +16,7 @@ interface Props {
   usData: MonthlyRate[];
   usWeekly?: DailyRatePoint[];
   rocketData?: MonthlyRate[];
+  rocketDaily?: DailyRatePoint[];
   ncData: NcMonthlySnapshot[];
   mndData?: NcMonthlySnapshot[];
   nwData?: NcMonthlySnapshot[];
@@ -105,6 +106,7 @@ export function RateChart({
   usData,
   usWeekly,
   rocketData,
+  rocketDaily,
   ncData,
   mndData,
   nwData,
@@ -251,6 +253,28 @@ export function RateChart({
       pointRadius: 3,
       pointHoverRadius: 5,
       tension: 0.25,
+      order: 4,
+    });
+  }
+
+  // Rocket daily observations — sparse (~1/month due to Akamai blocks on
+  // live tiers) so we don't draw a line between them; a line across multi-
+  // week gaps would imply a slope we never observed. Render purely as
+  // hover-only anchors so the user can scrub the monthly Rocket line and
+  // see "we have a real capture on date X" at each historical observation.
+  const rocketDailyPts: ChartPoint[] = (rocketDaily ?? [])
+    .filter((p) => p.rate != null)
+    .map((p) => ({ x: p.date, y: p.rate as number, src: p.src }));
+  if (rocketDailyPts.length > 0) {
+    pushDataset("rocket", {
+      label: `${(rocketLabel ?? "Rocket Mortgage").replace(/\s*\(.*\)$/, "")} (daily captures)`,
+      data: rocketDailyPts,
+      borderColor: ROCKET_ORANGE,
+      backgroundColor: ROCKET_ORANGE,
+      showLine: false,
+      pointRadius: timescale === "weekly" ? 3 : 0,
+      pointHoverRadius: timescale === "weekly" ? 6 : 4,
+      pointStyle: "circle",
       order: 4,
     });
   }

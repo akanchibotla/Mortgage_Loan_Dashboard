@@ -53,7 +53,7 @@ export default function StateDashboard() {
 function StateBody({ slug }: { slug: string }) {
   const data = use(getStatePromise(slug));
   const { pmms15, pmms30, pmms15Weekly, pmms30Weekly } = loadPmms();
-  const { rocket15, rocket30 } = loadRocket();
+  const { rocket15, rocket30, rocket15Daily, rocket30Daily } = loadRocket();
   const [term, setTerm] = useTermPreference();
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number>(PANEL_WIDTH_DEFAULT);
@@ -135,6 +135,7 @@ function StateBody({ slug }: { slug: string }) {
   const usData = term === 15 ? pmms15 : pmms30;
   const usWeekly = (term === 15 ? pmms15Weekly : pmms30Weekly) ?? undefined;
   const rocketData = (term === 15 ? rocket15 : rocket30) ?? undefined;
+  const rocketDaily = (term === 15 ? rocket15Daily : rocket30Daily) ?? undefined;
   const ncData = (term === 15 ? data.bankrate15 : data.bankrate30) ?? [];
   const mndData = (term === 15 ? data.mnd15 : data.mnd30) ?? undefined;
   const nwData = (term === 15 ? data.nerdwallet15 : data.nerdwallet30) ?? undefined;
@@ -282,6 +283,7 @@ function StateBody({ slug }: { slug: string }) {
           usData={usData}
           usWeekly={usWeekly}
           rocketData={rocketData}
+          rocketDaily={rocketDaily}
           ncData={ncData}
           mndData={mndData}
           nwData={nwData}
