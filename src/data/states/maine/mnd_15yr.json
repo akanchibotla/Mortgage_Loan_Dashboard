@@ -145,8 +145,14 @@
   },
   {
     "m": "2026-06",
-    "date": "2026-06-29",
+    "date": "2026-06-30",
     "rate": 6.12,
     "src": "Mortgage News Daily"
+  },
+  {
+    "m": "2026-07",
+    "date": "2026-07-15",
+    "rate": null,
+    "src": "no archive"
   }
 ]

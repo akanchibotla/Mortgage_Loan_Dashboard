@@ -148,5 +148,11 @@
     "date": "2026-06-30",
     "rate": 6.31,
     "src": "Bankrate (live)"
+  },
+  {
+    "m": "2026-07",
+    "date": "2026-07-15",
+    "rate": null,
+    "src": "no archive"
   }
 ]
