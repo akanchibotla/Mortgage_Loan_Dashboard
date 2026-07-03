@@ -145,14 +145,14 @@
   },
   {
     "m": "2026-06",
-    "date": "2026-06-30",
-    "rate": 6.31,
-    "src": "Bankrate (live)"
+    "date": "2026-06-15",
+    "rate": null,
+    "src": "no archive"
   },
   {
     "m": "2026-07",
-    "date": "2026-07-15",
-    "rate": null,
-    "src": "no archive"
+    "date": "2026-07-03",
+    "rate": 6.75,
+    "src": "Bankrate (live)"
   }
 ]
