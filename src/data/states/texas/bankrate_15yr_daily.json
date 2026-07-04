@@ -183,5 +183,11 @@
     "rate": 5.79,
     "src": "Bankrate",
     "method": "static_html"
+  },
+  {
+    "date": "2026-07-04",
+    "rate": 5.75,
+    "src": "Bankrate",
+    "method": "static_html"
   }
 ]
