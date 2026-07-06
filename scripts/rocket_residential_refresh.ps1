@@ -32,7 +32,13 @@ param(
     [string]$RepoPath = (Join-Path $HOME 'Github\Mortgage_Loan_Dashboard')
 )
 
-$ErrorActionPreference = 'Stop'
+# NOT 'Stop': git writes normal progress ("From https://github.com/...") to
+# stderr, and under 'Stop' the `git ... 2>&1 | ...` pipes below would promote
+# that benign stderr into a terminating NativeCommandError (PowerShell 5.1
+# quirk) and abort a healthy run. Control flow here is driven entirely by
+# explicit $LASTEXITCODE checks after each command, so we don't need auto-throw;
+# the try/catch still catches genuine .NET/terminating exceptions.
+$ErrorActionPreference = 'Continue'
 $logFile = Join-Path $RepoPath 'scripts\rocket-residential.log'
 
 function Write-Log {
