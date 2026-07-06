@@ -5,7 +5,7 @@
 
 .WHY
   Akamai denylists GitHub Actions' datacenter IP ranges, so the daily cron
-  (.github/workflows/refresh.yml) gets HTTP 403 on every Rocket tier — the
+  (.github/workflows/refresh.yml) gets HTTP 403 on every Rocket tier -- the
   feed froze at 2026-06-03. From a home/residential IP the exact same
   scripts/fetch_rocket.py succeeds on Tier 1 (plain urllib, no browser).
   This runner is meant to be driven by a Windows Scheduled Task on one of
@@ -22,7 +22,7 @@
     daily cron's push resolves cleanly (they touch disjoint files: the cron
     can't fetch Rocket, so it never modifies these paths).
   - The daily cron already triggers the Pages deploy, so this runner does NOT
-    need `gh` or a Pages redeploy — the next daily cron carries the data live.
+    need `gh` or a Pages redeploy -- the next daily cron carries the data live.
   - The repo path is derived from $HOME so this script is portable across
     every device Arun clones the repo to (repos live under ~/Github).
 #>
