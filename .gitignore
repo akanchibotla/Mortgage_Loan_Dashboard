@@ -29,3 +29,6 @@ data/raw/
 # Python build artifacts
 __pycache__/
 *.pyc
+
+# Transient CI artifact from scripts/check_stale_sources.py (never committed)
+.stale-alert.txt

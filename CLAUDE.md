@@ -81,8 +81,15 @@ python scripts/build_states_index.py
 
 **Gotchas:**
 - **FRED key:** set repo secret `FRED_API_KEY` (and `export FRED_API_KEY=...` locally). Without it the PMMS public-CSV/HTML fallbacks are flaky and rates can go stale.
-- Scrapers are **brittle by nature** — Bankrate/MND/NerdWallet/Rocket page changes break fetchers. The cron auto-opens an issue when that happens; that's the signal to look.
+- Scrapers are **brittle by nature** — Bankrate/MND/NerdWallet/Rocket page changes break fetchers. The cron auto-opens an issue when a run *fails*; a whole source going silently dark (job still green) is caught by the **stale-source backstop** below.
 - HMDA raw national LAR (~3 GB) is **gitignored**; only partitioned per-state/county summaries are committed.
+
+**Rocket feed keepalive (why it's special):** Akamai denylists GitHub Actions' datacenter IPs, so the cron's Rocket tiers all 403 (the feed froze 2026-06-03→07-05). From a **residential IP** the same `scripts/fetch_rocket.py` succeeds on Tier 1 (plain urllib, no browser). So Rocket is refreshed from Arun's own machine:
+- `scripts/rocket_residential_refresh.ps1` — pulls, runs `fetch_rocket.py` + `aggregate_rocket.py`, and commits/pushes **only** the Rocket data files (idempotent-by-date, pull-rebase push, no `gh`/deploy needed — the daily cron carries it live).
+- `scripts/register-rocket-task.ps1` — registers a weekly Windows Scheduled Task (`-StartWhenAvailable`, so a device that was off just runs it on next wake). **Per-device, run once** — the task is OS-local and does *not* sync with git; the runner script does. Only **one** device's task needs to fire per calendar month (the monthly aggregator needs ≥1 row/month); extra devices are harmless redundancy.
+- The cron keeps its Playwright (Tier 2) + widened 45-day Wayback (Tier 3) fallbacks, so if archive.org ever snapshots the page, the cron self-heals without the residential task.
+
+**Stale-source backstop:** `scripts/check_stale_sources.py` (run by `refresh.yml`) flags a source only when its *freshest* observation across all states is past threshold — i.e. the whole source is down, not one flaky state — and opens a de-duplicated `stale-source` issue. This is the long-silence alarm the fail-soft design otherwise lacks (a permanently-broken component keeps the job green, so it used to hide for weeks in "(partial)" commit tags).
 
 ## Next milestones (maintenance only)
 

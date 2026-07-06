@@ -434,6 +434,75 @@ jobs:
             fi
           fi
 
+      # Long-silence backstop. The fail-soft design keeps the job green even
+      # when one whole source is permanently broken (it just logs a per-source
+      # failure), so an outage can hide for weeks in "(partial)" commit tags —
+      # which is exactly how Rocket froze 2026-06-03 -> 07-05 unnoticed. This
+      # flags a source only when its FRESHEST row across all states is past
+      # threshold (the whole source is down, not one flaky state), and opens a
+      # de-duplicated issue so a long silence becomes loud.
+      - name: Check for systemically stale sources
+        if: always()
+        run: |
+          python scripts/check_stale_sources.py --alert-file "$GITHUB_WORKSPACE/.stale-alert.txt" || true
+          if [ -s "$GITHUB_WORKSPACE/.stale-alert.txt" ]; then
+            echo "STALE_ALERT=1" >> "$GITHUB_ENV"
+            {
+              echo "## Systemically stale source(s)"
+              echo ""
+              cat "$GITHUB_WORKSPACE/.stale-alert.txt"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Notify on long-stale source
+        if: always() && github.event_name == 'schedule' && env.STALE_ALERT == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            let detail = '';
+            try {
+              detail = fs.readFileSync(`${process.env.GITHUB_WORKSPACE}/.stale-alert.txt`, 'utf8').trim();
+            } catch (e) { /* no file -> nothing to do */ }
+            if (!detail) { core.info('No stale-alert detail; skipping.'); return; }
+            const title = 'Data source stale > threshold';
+            const body = [
+              detail,
+              ``,
+              `- **Run:** ${runUrl}`,
+              `- **Detected:** ${today}`,
+              ``,
+              `Long-silence backstop: the daily job stays green under fail-soft even`,
+              `when a whole source is down, so this issue is the signal that a feed`,
+              `has gone dark past threshold. Close it once a later run reports the`,
+              `source fresh again.`,
+            ].join('\n');
+            // De-dup by TITLE, not by label: the very first alert creates the
+            // issue before the 'stale-source' label exists, and GitHub drops
+            // an unknown label silently on create -- so a label-filtered search
+            // would miss that first issue and open a duplicate every run.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', per_page: 100,
+            });
+            const dup = existing.data.find(i => i.title.startsWith('Data source stale'));
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: dup.number,
+                body: `Still stale as of ${today}: ${runUrl}\n\n${detail}`,
+              });
+              core.info(`Appended to existing issue #${dup.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['stale-source', 'automation'],
+              });
+              core.info(`Opened issue #${created.data.number}`);
+            }
+
       - name: Commit refreshed data
         id: commit
         env:
