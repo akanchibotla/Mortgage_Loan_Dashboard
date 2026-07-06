@@ -24,4 +24,4 @@
 {"date_iso": "2026-06-29", "term_15": 6.12, "term_30": 6.52, "as_of_raw": "6/29/2026", "fetched_at_utc": "2026-06-30T14:53:48+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
 {"date_iso": "2026-06-30", "term_15": 6.12, "term_30": 6.54, "as_of_raw": "6/30/2026", "fetched_at_utc": "2026-07-01T15:07:12+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
 {"date_iso": "2026-07-01", "term_15": 6.19, "term_30": 6.65, "as_of_raw": "7/1/2026", "fetched_at_utc": "2026-07-02T14:31:29+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
-{"date_iso": "2026-07-02", "term_15": 6.17, "term_30": 6.6, "as_of_raw": "7/2/2026", "fetched_at_utc": "2026-07-05T14:09:07+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
+{"date_iso": "2026-07-02", "term_15": 6.17, "term_30": 6.6, "as_of_raw": "7/2/2026", "fetched_at_utc": "2026-07-06T16:03:05+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
