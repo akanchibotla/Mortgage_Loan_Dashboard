@@ -82,9 +82,12 @@ HYDRATION_TIMEOUT_MS = 25_000
 WARMUP_SLEEP_S = 3
 
 # Wayback: snapshots of rocketmortgage.com/mortgage-rates are sparse
-# (~2/month observed). Look back 30 days so a fallback during a multi-week
-# block drought still has something to grab.
-WAYBACK_LOOKBACK_DAYS = 30
+# (~2/month observed). Look back 45 days so a fallback during a multi-week
+# block drought still has something to grab — widened from 30 after the
+# 2026-06/07 Akamai outage, when the newest snapshot (2026-05-29) aged out of
+# a 30-day window and left Tier 3 empty. The monthly aggregator only needs one
+# hit per calendar month, so a wider window trades nothing for more resilience.
+WAYBACK_LOOKBACK_DAYS = 45
 WAYBACK_CDX_TIMEOUT_S = 30
 WAYBACK_SNAPSHOT_TIMEOUT_S = 60
 # We probe at most this many snapshots before giving up — each one is
