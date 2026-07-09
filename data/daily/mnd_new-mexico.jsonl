@@ -22,3 +22,4 @@
 {"date_iso": "2026-07-02", "term_15": 6.17, "term_30": 6.6, "as_of_raw": "7/2/2026", "fetched_at_utc": "2026-07-06T16:03:01+00:00", "state_slug": "new-mexico", "source": "mnd_live"}
 {"date_iso": "2026-07-06", "term_15": 6.16, "term_30": 6.59, "as_of_raw": "7/6/2026", "fetched_at_utc": "2026-07-07T15:07:17+00:00", "state_slug": "new-mexico", "source": "mnd_live"}
 {"date_iso": "2026-07-07", "term_15": 6.17, "term_30": 6.63, "as_of_raw": "7/7/2026", "fetched_at_utc": "2026-07-08T14:59:37+00:00", "state_slug": "new-mexico", "source": "mnd_live"}
+{"date_iso": "2026-07-08", "term_15": 6.22, "term_30": 6.68, "as_of_raw": "7/8/2026", "fetched_at_utc": "2026-07-09T15:40:44+00:00", "state_slug": "new-mexico", "source": "mnd_live"}
