@@ -23,3 +23,4 @@
 {"date_iso": "2026-07-06", "term_15": 6.16, "term_30": 6.59, "as_of_raw": "7/6/2026", "fetched_at_utc": "2026-07-07T15:06:26+00:00", "state_slug": "idaho", "source": "mnd_live"}
 {"date_iso": "2026-07-07", "term_15": 6.17, "term_30": 6.63, "as_of_raw": "7/7/2026", "fetched_at_utc": "2026-07-08T14:58:49+00:00", "state_slug": "idaho", "source": "mnd_live"}
 {"date_iso": "2026-07-08", "term_15": 6.22, "term_30": 6.68, "as_of_raw": "7/8/2026", "fetched_at_utc": "2026-07-09T15:40:00+00:00", "state_slug": "idaho", "source": "mnd_live"}
+{"date_iso": "2026-07-09", "term_15": 6.2, "term_30": 6.65, "as_of_raw": "7/9/2026", "fetched_at_utc": "2026-07-10T14:58:31+00:00", "state_slug": "idaho", "source": "mnd_live"}
