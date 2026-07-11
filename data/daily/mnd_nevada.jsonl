@@ -25,3 +25,4 @@
 {"date_iso": "2026-07-07", "term_15": 6.17, "term_30": 6.63, "as_of_raw": "7/7/2026", "fetched_at_utc": "2026-07-08T14:59:30+00:00", "state_slug": "nevada", "source": "mnd_live"}
 {"date_iso": "2026-07-08", "term_15": 6.22, "term_30": 6.68, "as_of_raw": "7/8/2026", "fetched_at_utc": "2026-07-09T15:40:37+00:00", "state_slug": "nevada", "source": "mnd_live"}
 {"date_iso": "2026-07-09", "term_15": 6.2, "term_30": 6.65, "as_of_raw": "7/9/2026", "fetched_at_utc": "2026-07-10T14:59:06+00:00", "state_slug": "nevada", "source": "mnd_live"}
+{"date_iso": "2026-07-10", "term_15": 6.19, "term_30": 6.64, "as_of_raw": "7/10/2026", "fetched_at_utc": "2026-07-11T13:48:32+00:00", "state_slug": "nevada", "source": "mnd_live"}
