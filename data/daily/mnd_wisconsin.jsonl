@@ -26,3 +26,4 @@
 {"date_iso": "2026-07-08", "term_15": 6.22, "term_30": 6.68, "as_of_raw": "7/8/2026", "fetched_at_utc": "2026-07-09T15:41:27+00:00", "state_slug": "wisconsin", "source": "mnd_live"}
 {"date_iso": "2026-07-09", "term_15": 6.2, "term_30": 6.65, "as_of_raw": "7/9/2026", "fetched_at_utc": "2026-07-10T14:59:52+00:00", "state_slug": "wisconsin", "source": "mnd_live"}
 {"date_iso": "2026-07-10", "term_15": 6.19, "term_30": 6.64, "as_of_raw": "7/10/2026", "fetched_at_utc": "2026-07-13T15:05:24+00:00", "state_slug": "wisconsin", "source": "mnd_live"}
+{"date_iso": "2026-07-13", "term_15": 6.21, "term_30": 6.75, "as_of_raw": "7/13/2026", "fetched_at_utc": "2026-07-14T14:14:52+00:00", "state_slug": "wisconsin", "source": "mnd_live"}
