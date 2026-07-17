@@ -28,3 +28,4 @@
 {"date_iso": "2026-07-13", "term_15": 6.21, "term_30": 6.75, "as_of_raw": "7/13/2026", "fetched_at_utc": "2026-07-14T14:13:18+00:00", "state_slug": "connecticut", "source": "mnd_live"}
 {"date_iso": "2026-07-14", "term_15": 6.2, "term_30": 6.7, "as_of_raw": "7/14/2026", "fetched_at_utc": "2026-07-15T14:10:54+00:00", "state_slug": "connecticut", "source": "mnd_live"}
 {"date_iso": "2026-07-15", "term_15": 6.18, "term_30": 6.64, "as_of_raw": "7/15/2026", "fetched_at_utc": "2026-07-16T14:21:34+00:00", "state_slug": "connecticut", "source": "mnd_live"}
+{"date_iso": "2026-07-16", "term_15": 6.19, "term_30": 6.68, "as_of_raw": "7/16/2026", "fetched_at_utc": "2026-07-17T14:08:25+00:00", "state_slug": "connecticut", "source": "mnd_live"}
