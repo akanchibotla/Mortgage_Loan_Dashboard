@@ -17,3 +17,4 @@
 {"date_iso": "2026-06-03", "term_15": 5.99, "term_30": 6.875, "term_15_apr": 6.417, "term_30_apr": 7.148, "fetched_at_utc": "2026-06-03T23:13:50+00:00", "source": "rocket_live"}
 {"date_iso": "2026-07-05", "term_15": 5.875, "term_30": 6.75, "term_15_apr": 6.33, "term_30_apr": 7.027, "fetched_at_utc": "2026-07-06T02:33:44+00:00", "source": "rocket_live", "source_method": "static"}
 {"date_iso": "2026-07-12", "term_15": 5.99, "term_30": 6.75, "term_15_apr": 6.426, "term_30_apr": 7.039, "fetched_at_utc": "2026-07-13T01:00:03+00:00", "source": "rocket_live", "source_method": "static"}
+{"date_iso": "2026-07-19", "term_15": 5.875, "term_30": 6.75, "term_15_apr": 6.35, "term_30_apr": 7.027, "fetched_at_utc": "2026-07-20T01:00:04+00:00", "source": "rocket_live", "source_method": "static"}
