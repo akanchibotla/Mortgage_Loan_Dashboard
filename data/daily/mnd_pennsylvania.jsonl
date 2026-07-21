@@ -31,3 +31,4 @@
 {"date_iso": "2026-07-15", "term_15": 6.18, "term_30": 6.64, "as_of_raw": "7/15/2026", "fetched_at_utc": "2026-07-16T14:22:59+00:00", "state_slug": "pennsylvania", "source": "mnd_live"}
 {"date_iso": "2026-07-16", "term_15": 6.19, "term_30": 6.68, "as_of_raw": "7/16/2026", "fetched_at_utc": "2026-07-17T14:09:44+00:00", "state_slug": "pennsylvania", "source": "mnd_live"}
 {"date_iso": "2026-07-17", "term_15": 6.16, "term_30": 6.63, "as_of_raw": "7/17/2026", "fetched_at_utc": "2026-07-20T14:34:15+00:00", "state_slug": "pennsylvania", "source": "mnd_live"}
+{"date_iso": "2026-07-20", "term_15": 6.18, "term_30": 6.71, "as_of_raw": "7/20/2026", "fetched_at_utc": "2026-07-21T14:21:38+00:00", "state_slug": "pennsylvania", "source": "mnd_live"}
