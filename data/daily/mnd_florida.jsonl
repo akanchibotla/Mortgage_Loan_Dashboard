@@ -31,3 +31,4 @@
 {"date_iso": "2026-07-16", "term_15": 6.19, "term_30": 6.68, "as_of_raw": "7/16/2026", "fetched_at_utc": "2026-07-17T14:08:32+00:00", "state_slug": "florida", "source": "mnd_live"}
 {"date_iso": "2026-07-17", "term_15": 6.16, "term_30": 6.63, "as_of_raw": "7/17/2026", "fetched_at_utc": "2026-07-20T14:33:02+00:00", "state_slug": "florida", "source": "mnd_live"}
 {"date_iso": "2026-07-20", "term_15": 6.18, "term_30": 6.71, "as_of_raw": "7/20/2026", "fetched_at_utc": "2026-07-21T14:20:34+00:00", "state_slug": "florida", "source": "mnd_live"}
+{"date_iso": "2026-07-21", "term_15": 6.2, "term_30": 6.75, "as_of_raw": "7/21/2026", "fetched_at_utc": "2026-07-22T14:25:26+00:00", "state_slug": "florida", "source": "mnd_live"}
