@@ -37,3 +37,4 @@
 {"date_iso": "2026-07-23", "term_15": 6.29, "term_30": 6.85, "as_of_raw": "7/23/2026", "fetched_at_utc": "2026-07-24T14:13:21+00:00", "state_slug": "missouri", "source": "mnd_live"}
 {"date_iso": "2026-07-24", "term_15": 6.34, "term_30": 6.81, "as_of_raw": "7/24/2026", "fetched_at_utc": "2026-07-27T15:04:13+00:00", "state_slug": "missouri", "source": "mnd_live"}
 {"date_iso": "2026-07-27", "term_15": 6.33, "term_30": 6.8, "as_of_raw": "7/27/2026", "fetched_at_utc": "2026-07-28T14:37:04+00:00", "state_slug": "missouri", "source": "mnd_live"}
+{"date_iso": "2026-07-28", "term_15": 6.31, "term_30": 6.76, "as_of_raw": "7/28/2026", "fetched_at_utc": "2026-07-29T14:39:24+00:00", "state_slug": "missouri", "source": "mnd_live"}
