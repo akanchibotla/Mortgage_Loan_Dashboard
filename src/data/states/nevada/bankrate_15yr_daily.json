@@ -327,5 +327,11 @@
     "rate": 6.1,
     "src": "Bankrate",
     "method": "static_html"
+  },
+  {
+    "date": "2026-08-01",
+    "rate": 6.11,
+    "src": "Bankrate",
+    "method": "static_html"
   }
 ]
