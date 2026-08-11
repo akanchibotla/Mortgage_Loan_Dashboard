@@ -89,21 +89,38 @@ def live_by_month(live_rows: list[dict], term: int) -> dict[str, dict]:
     The representative is the LATEST observation in the month — the same
     choice aggregate_mnd_state / aggregate_nerdwallet_state make, so the four
     monthly series stay comparable.
+
+    Precedence is applied ACROSS the month, not just within the winning row.
+    Picking the latest row first and reading intro-before-table from only that
+    row reproduced the very defect this module was fixed for, one aggregation
+    level up: when a state's intro_* feed stops mid-month (10 states between
+    2026-07-08 and 2026-07-17), the month's last row carries only the shared
+    national table value, so the whole month published the national number
+    while up to 29 state-specific observations sat in that same month. So:
+    take the latest row that HAS intro_{term}, and fall back to the latest
+    table_{term} row only when the month contains no intro observation at all.
     """
-    best: dict[str, dict] = {}
+    best_intro: dict[str, dict] = {}
+    best_table: dict[str, dict] = {}
     for r in live_rows:
         d = r.get("date_iso")
         if not d or len(d) < 7:
             continue
-        # Same intro-before-table precedence as the live override below.
-        rate = r.get(f"intro_{term}") or r.get(f"table_{term}")
-        if rate is None:
-            continue
         m_label = d[:7]
-        prior = best.get(m_label)
-        if prior is None or d >= prior["date"]:
-            best[m_label] = {"date": d, "rate": rate}
-    return best
+        intro = r.get(f"intro_{term}")
+        table = r.get(f"table_{term}")
+        if intro is not None:
+            prior = best_intro.get(m_label)
+            if prior is None or d >= prior["date"]:
+                best_intro[m_label] = {"date": d, "rate": intro}
+        if table is not None:
+            prior = best_table.get(m_label)
+            if prior is None or d >= prior["date"]:
+                best_table[m_label] = {"date": d, "rate": table}
+    # intro wins wherever the month has one; table covers the genuinely
+    # intro-free months (all of 2026-08 for 17 states, where Bankrate simply
+    # publishes no state-specific figure).
+    return {**best_table, **best_intro}
 
 
 def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None,
@@ -134,7 +151,22 @@ def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None,
             })
             continue
         src_row = by_month.get(m_label)
-        if src_row and src_row.get("bankrate_table_pct") is not None:
+        # Same intro-before-table precedence as the live path above. The
+        # headline fix swapped it only in live_by_month and left this branch
+        # reading bankrate_table_pct alone -- the identical defect, one branch
+        # over in the same function. 66 archived state-months carry an intro
+        # value with NO table value, so they were emitted as
+        # {"rate": null, "src": "no archive"} despite a usable rate sitting in
+        # the record. North Dakota was the worst case: all 15 of its archived
+        # months are intro-only, so its ENTIRE Wayback history was invisible
+        # on the site, and three of the four states the methodology page flags
+        # as having "<11 readings" were low for exactly this reason.
+        dense_rate = None
+        if src_row:
+            dense_rate = (
+                src_row.get("bankrate_intro_pct") or src_row.get("bankrate_table_pct")
+            )
+        if dense_rate is not None:
             parsed = parse_as_of(src_row.get("as_of"))
             if parsed is None:
                 # No usable as_of — fall back to mid-month, but log so a
@@ -152,7 +184,7 @@ def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None,
             rows.append({
                 "m": m_label,
                 "date": date_iso,
-                "rate": src_row["bankrate_table_pct"],
+                "rate": dense_rate,
                 "src": "Bankrate (Wayback)",
             })
         else:

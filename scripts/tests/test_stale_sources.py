@@ -134,3 +134,39 @@ def test_shipped_tree_is_scannable(repo_root):
     )
     corrupt = [f for f in findings if "corruption" in f["detail"]]
     assert corrupt == [], f"shipped data has corrupt dates: {corrupt}"
+
+
+def test_future_dated_rocket_row_does_not_silence_a_dead_live_feed(tmp_path):
+    """The Rocket mirror of scenario D — and the gap that let a regression ship.
+
+    `_freshest` (the per-state path) has always excluded future dates, but
+    `_last_live_value_jsonl` (the Rocket path) filtered only on "is this an ISO
+    date". A single 2099 live row therefore won its max() forever: negative age,
+    never trips the threshold, and no later real row can displace it — so the
+    one source with NO per-state redundancy had the weaker guard.
+
+    Note the future row is deliberately NOT the last line. The pre-regression
+    helper read the file's tail, so a mid-file future date was harmless; the
+    max() rewrite is what made position irrelevant and the bug permanent.
+    """
+    rocket = [
+        {"date_iso": "2099-01-01", "term_30": 6.5, "source": "rocket_live",
+         "source_method": "static"},
+        {"date_iso": THIRTY_DAYS_AGO, "term_30": 6.5, "source": "rocket_live",
+         "source_method": "static"},
+    ]
+    dates = {f"state-{i:02d}": TODAY.isoformat() for i in range(3)}
+
+    findings = _scan(tmp_path, dates, rocket)
+    rk = _sources(findings, "Rocket")
+
+    assert rk, "a 30-day-dead Rocket live feed must still be reported despite the 2099 row"
+
+
+def test_fresh_live_rocket_row_still_clears_the_alarm(tmp_path):
+    """Control: the future-date guard must not manufacture a finding on healthy
+    data. An over-broad fix here would alarm every single day, which trains the
+    operator to ignore the one alarm that has no redundancy."""
+    dates = {f"state-{i:02d}": TODAY.isoformat() for i in range(3)}
+    findings = _scan(tmp_path, dates, FRESH_ROCKET)
+    assert _sources(findings, "Rocket") == []

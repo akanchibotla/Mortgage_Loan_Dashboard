@@ -110,9 +110,18 @@ def test_stale_gate_applies_to_the_current_month_only():
     """A stale tail must not be shown as today's rate — but a completed past
     month is settled history and its age is not a defect."""
     last_month = _past_month_label(1)
+    # The stale tail is pinned to the 1st of the CURRENT month, not to
+    # TODAY - 2 days. The relative form put the tail INSIDE last_month on the
+    # 1st and 2nd of each calendar month, where it won live_by_month's
+    # latest-in-month rule and failed the first assertion below. That is a
+    # fixture bug, not a production bug — but this suite is a BLOCKING step in
+    # refresh.yml ahead of every fetcher, so it would have aborted the daily
+    # scrape for 51 states twice a month, losing same-day data that has no
+    # backfill path. Caught by the post-fix validation, which ran the suite
+    # under simulated dates: 2026-09-01, 2026-09-02 and 2026-10-01 all failed.
     live_rows = [
         _live_row(f"{last_month}-28", intro=6.44),
-        _live_row((TODAY - dt.timedelta(days=2)).isoformat(), intro=6.90),
+        _live_row(TODAY.replace(day=1).isoformat(), intro=6.90),
     ]
     # live=None models load_latest_live() having rejected the tail as stale.
     rows = reconcile_state.reconcile_one("north-carolina", 30, [], None, live_rows)
