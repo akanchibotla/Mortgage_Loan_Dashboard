@@ -21,12 +21,14 @@
     unlocking IS logging on -- so a single monthly session keeps the feed fresh.
   - Runs on battery too (-AllowStartIfOnBatteries), so a laptop that is never
     plugged in still refreshes.
-  - LogonType Interactive: runs while YOU are logged on, using your own git
-    credentials from Windows Credential Manager (no stored password, no
-    elevation). Caveat: it will NOT run when the device is on but nobody is
-    logged in. If you want it to fire while logged off (e.g. an always-on
-    desktop), re-register with '-LogonType S4U' -- that runs unattended but
-    needs git credentials that resolve without an interactive session.
+  - LogonType (parameter, default Interactive): 'Interactive' runs while YOU
+    are logged on, using your own git credentials from Windows Credential
+    Manager (no stored password, no elevation). It will NOT run when the
+    device is on but nobody is logged in, so on an always-on DESKTOP pass
+    '-LogonType S4U' instead -- that fires whether or not anyone is logged on,
+    still without a stored password. Verify an S4U registration with one
+    Start-ScheduledTask before trusting it: with no interactive desktop, a Git
+    Credential Manager prompt would hang the push rather than ask.
   - 30-minute hard time limit (generous enough for the slow Wayback fallback
     path when Rocket's live tiers are all blocked).
 
@@ -41,7 +43,24 @@ param(
     [string]$RepoPath = (Join-Path $HOME 'Github\Mortgage_Loan_Dashboard'),
     [ValidateSet('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday')]
     [string]$DayOfWeek = 'Sunday',
-    [string]$At = '6:00PM'
+    [string]$At = '6:00PM',
+    # Interactive = runs only while you are logged on. Correct for a laptop,
+    # where "I open the lid" IS the logon that lets -StartWhenAvailable fire.
+    # S4U = runs whether or not anyone is logged on, with no stored password.
+    # Correct for an always-on desktop, which would otherwise never fire while
+    # sitting at the lock screen.
+    #
+    # This was documented in .BEHAVIOUR as the remedy for an always-on desktop
+    # but was never actually exposed as a parameter -- the value was hardcoded
+    # below, so following the documentation was impossible without editing the
+    # file. That is exactly how ARUN_HOME ended up with no task at all.
+    #
+    # S4U CAVEAT, verify it before trusting it: an S4U task gets no interactive
+    # desktop, so if Git Credential Manager ever needs to PROMPT for the
+    # GitHub credential the push hangs instead of asking. Register, then run
+    # `Start-ScheduledTask` once and confirm the push actually landed.
+    [ValidateSet('Interactive','S4U')]
+    [string]$LogonType = 'Interactive'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -76,8 +95,9 @@ $settings = New-ScheduledTaskSettingsSet `
 # battery, which would silently defeat the "have a device on once a month"
 # guarantee. A one-off git-commit fetch is cheap enough to run on battery.
 
-# Run as the current interactive user (no stored credentials, no elevation).
-$principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
+# Run as the current user, no stored password and no elevation either way.
+# See the -LogonType parameter help for which value fits which kind of device.
+$principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType $LogonType
 
 Register-ScheduledTask `
     -TaskName $TaskName `

@@ -182,11 +182,18 @@ function computeProductSchedule(
   for (const phase of phases) {
     if (phase.months <= 0) continue;
     const phaseRate = phase.rate / 100 / 12;
-    const phasePayment =
-      phaseRate > 0
-        ? (balance * (phaseRate * Math.pow(1 + phaseRate, monthsRemaining))) /
-          (Math.pow(1 + phaseRate, monthsRemaining) - 1)
-        : balance / monthsRemaining;
+    // Delegate to the shared, tested library instead of re-deriving the
+    // annuity inline. Two copies of this expression survived the dedup pass
+    // and kept the OLD `phaseRate > 0` predicate, so a negative rate fell to
+    // the straight-line branch and returned $972.22 where the correct annuity
+    // value is $417.17 -- the exact defect the dedup existed to remove, still
+    // reachable through the amortization schedule and the headline "Monthly
+    // P&I" while the user is mid-type. monthlyPayment uses `r === 0`, so only
+    // a genuine zero takes the straight-line path, and it carries the
+    // finite/<=0 guards the inline form never had.
+    // monthsRemaining / 12 is exact here: monthlyPayment recomputes
+    // n = termYears * 12, recovering monthsRemaining unchanged.
+    const phasePayment = monthlyPayment(balance, phase.rate, monthsRemaining / 12);
     for (let m = 0; m < phase.months; m++) {
       const interest = balance * phaseRate;
       const principal = Math.min(phasePayment - interest, balance);
@@ -308,11 +315,18 @@ function computePhasePayments(
   for (const phase of phases) {
     if (phase.months <= 0) continue;
     const phaseRate = phase.rate / 100 / 12;
-    const phasePayment =
-      phaseRate > 0
-        ? (balance * (phaseRate * Math.pow(1 + phaseRate, monthsRemaining))) /
-          (Math.pow(1 + phaseRate, monthsRemaining) - 1)
-        : balance / monthsRemaining;
+    // Delegate to the shared, tested library instead of re-deriving the
+    // annuity inline. Two copies of this expression survived the dedup pass
+    // and kept the OLD `phaseRate > 0` predicate, so a negative rate fell to
+    // the straight-line branch and returned $972.22 where the correct annuity
+    // value is $417.17 -- the exact defect the dedup existed to remove, still
+    // reachable through the amortization schedule and the headline "Monthly
+    // P&I" while the user is mid-type. monthlyPayment uses `r === 0`, so only
+    // a genuine zero takes the straight-line path, and it carries the
+    // finite/<=0 guards the inline form never had.
+    // monthsRemaining / 12 is exact here: monthlyPayment recomputes
+    // n = termYears * 12, recovering monthsRemaining unchanged.
+    const phasePayment = monthlyPayment(balance, phase.rate, monthsRemaining / 12);
     out.push({ label: phase.label, rate: phase.rate, payment: phasePayment });
     let phaseBalance = balance;
     for (let m = 0; m < phase.months; m++) {

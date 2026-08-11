@@ -110,9 +110,18 @@ def test_stale_gate_applies_to_the_current_month_only():
     """A stale tail must not be shown as today's rate — but a completed past
     month is settled history and its age is not a defect."""
     last_month = _past_month_label(1)
+    # The stale tail is pinned to the 1st of the CURRENT month, not to
+    # TODAY - 2 days. The relative form put the tail INSIDE last_month on the
+    # 1st and 2nd of each calendar month, where it won live_by_month's
+    # latest-in-month rule and failed the first assertion below. That is a
+    # fixture bug, not a production bug — but this suite is a BLOCKING step in
+    # refresh.yml ahead of every fetcher, so it would have aborted the daily
+    # scrape for 51 states twice a month, losing same-day data that has no
+    # backfill path. Caught by the post-fix validation, which ran the suite
+    # under simulated dates: 2026-09-01, 2026-09-02 and 2026-10-01 all failed.
     live_rows = [
         _live_row(f"{last_month}-28", intro=6.44),
-        _live_row((TODAY - dt.timedelta(days=2)).isoformat(), intro=6.90),
+        _live_row(TODAY.replace(day=1).isoformat(), intro=6.90),
     ]
     # live=None models load_latest_live() having rejected the tail as stale.
     rows = reconcile_state.reconcile_one("north-carolina", 30, [], None, live_rows)
@@ -214,3 +223,73 @@ def test_no_covered_state_month_is_blank_where_jsonl_has_rows(repo_root):
             if r["rate"] is None and r["m"] in months:
                 blanks.append((slug, r["m"]))
     assert blanks == [], f"months blank despite live observations on disk: {blanks[:10]}"
+
+
+def test_dense_wayback_row_prefers_intro_over_table():
+    """The archive branch must apply the same precedence as the live branch.
+
+    The headline fix swapped intro-before-table in live_by_month and left the
+    dense/Wayback branch reading bankrate_table_pct alone — the identical
+    defect, one branch over in the same function. 66 archived state-months
+    carry an intro value and NO table value, so they were emitted as
+    "no archive" despite a usable rate in the record.
+    """
+    old_month = _past_month_label(13)
+    dense = [{
+        "month": old_month,
+        "bankrate_table_pct": 6.05,
+        "bankrate_intro_pct": 6.44,
+        "as_of": None,
+    }]
+    rows = reconcile_state.reconcile_one("north-carolina", 30, dense, None, [])
+    got = [r for r in rows if r["m"] == old_month][0]
+    assert got["rate"] == 6.44, f"dense branch used the national table value: {got}"
+
+
+def test_intro_only_dense_row_is_no_longer_dropped():
+    """North Dakota's real shape: every archived month is intro-only, so its
+    ENTIRE Wayback history rendered as "no archive" before this fix."""
+    old_month = _past_month_label(13)
+    dense = [{
+        "month": old_month,
+        "bankrate_table_pct": None,
+        "bankrate_intro_pct": 6.93,
+        "as_of": None,
+    }]
+    rows = reconcile_state.reconcile_one("north-dakota", 30, dense, None, [])
+    got = [r for r in rows if r["m"] == old_month][0]
+    assert got["rate"] == 6.93 and got["src"] == "Bankrate (Wayback)", got
+
+
+def test_month_uses_its_latest_INTRO_row_not_merely_its_latest_row():
+    """Precedence is applied across the month, not just inside the winning row.
+
+    Maine 2026-07 is the real fixture: 29 state-specific intro observations,
+    then the intro feed stops and the month's final rows carry only the shared
+    national table value. Taking the latest row first published the national
+    number for the whole month — the headline defect, one level up.
+    """
+    last_month = _past_month_label(1)
+    live_rows = [
+        _live_row(f"{last_month}-10", intro=6.80),
+        # Later in the SAME month, intro has gone away; only the national
+        # table value remains.
+        {"date_iso": f"{last_month}-30", "table_30": 6.76, "intro_30": None},
+    ]
+    rows = reconcile_state.reconcile_one("north-carolina", 30, [], None, live_rows)
+    got = [r for r in rows if r["m"] == last_month][0]
+    assert got["rate"] == 6.80, f"published the shared national value for the month: {got}"
+
+
+def test_month_with_no_intro_at_all_still_falls_back_to_table():
+    """Control: 17 states genuinely carry no intro_* in the current month, and
+    the national table is the only number available. The fix must not turn
+    those months into holes."""
+    last_month = _past_month_label(1)
+    live_rows = [
+        {"date_iso": f"{last_month}-10", "table_30": 6.70, "intro_30": None},
+        {"date_iso": f"{last_month}-28", "table_30": 6.76, "intro_30": None},
+    ]
+    rows = reconcile_state.reconcile_one("north-carolina", 30, [], None, live_rows)
+    got = [r for r in rows if r["m"] == last_month][0]
+    assert got["rate"] == 6.76, f"table fallback lost: {got}"

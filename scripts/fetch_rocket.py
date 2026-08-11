@@ -416,16 +416,34 @@ def merge_row(existing: dict | None, new_row: dict) -> dict:
     if not existing:
         return new_row
     merged = dict(existing)
-    for k in RATE_FIELDS:
-        if merged.get(k) is None and new_row.get(k) is not None:
-            merged[k] = new_row[k]
     new_filled = sum(1 for k in RATE_FIELDS if new_row.get(k) is not None)
     old_filled = sum(1 for k in RATE_FIELDS if existing.get(k) is not None)
     if new_filled >= old_filled:
-        # The incoming row is at least as complete: let its provenance and
-        # timestamp win too, so the log reflects the fetch that produced it.
+        # The incoming row is at least as complete, so it wins OUTRIGHT --
+        # values as well as provenance.
+        #
+        # This used to only fill fields the existing row had as None, which
+        # made the guard about value staleness when it should only ever have
+        # been about COMPLETENESS. When both rows were complete (the ordinary
+        # case for a same-day re-fetch after rates moved) no rate field was
+        # copied, yet the timestamp and provenance were updated -- so the code
+        # declared the incoming row authoritative and then kept the old
+        # numbers. rows_equivalent() then saw no change and printed "No change
+        # for this date; leaving rocket.jsonl untouched" while the fetch had
+        # just reported different rates. Before the merge helper existed this
+        # was plain last-writer-wins, so a re-fetch correctly corrected the
+        # day; the fix for partial-demotes-complete silently took that away.
+        for k in RATE_FIELDS:
+            merged[k] = new_row.get(k)
         for k in ("fetched_at_utc", "source", "source_method"):
             if k in new_row:
+                merged[k] = new_row[k]
+    else:
+        # Strictly LESS complete (a Wayback salvage or a static_partial hit
+        # carrying one term): fill only the gaps, and never let it demote a
+        # term we already captured or overwrite better provenance.
+        for k in RATE_FIELDS:
+            if merged.get(k) is None and new_row.get(k) is not None:
                 merged[k] = new_row[k]
     return merged
 
@@ -469,6 +487,32 @@ def write_today_view(path: str, row: dict) -> None:
             if row["term_30"] is not None else None
         ),
     }
+    # Keep the PREVIOUS fetched_at_utc when nothing else in the view moved.
+    #
+    # fetched_at_utc changes on every single run by definition, so stamping it
+    # unconditionally made this file dirty even when the rates were identical.
+    # That defeated the runner's own "No Rocket data changes ... Nothing to
+    # push" short-circuit -- the same dead-branch defect already fixed for
+    # rocket.jsonl -- so every weekly residential run produced a commit, a
+    # push, and a full Pages redeploy carrying a one-line timestamp change.
+    # Observed live on 2026-08-10: three consecutive runs, three commits, each
+    # "1 file changed, 1 insertion(+), 1 deletion(-)".
+    #
+    # The timestamp still advances whenever a rate, an APR or the as-of date
+    # actually changes, so "when did this number last move" stays answerable;
+    # what it stops recording is "when did we last look", which the JSONL
+    # accumulator and the git history already carry.
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                prev = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            prev = None
+        if isinstance(prev, dict):
+            comparable = {k: v for k, v in out.items() if k != "fetched_at_utc"}
+            prev_comparable = {k: v for k, v in prev.items() if k != "fetched_at_utc"}
+            if comparable == prev_comparable and "fetched_at_utc" in prev:
+                out["fetched_at_utc"] = prev["fetched_at_utc"]
     with open(path, "w") as f:
         json.dump(out, f, indent=2)
 

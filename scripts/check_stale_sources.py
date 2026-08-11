@@ -97,13 +97,17 @@ def _is_wayback_row(row: dict) -> bool:
         str(row.get("source_method") or "").startswith("wayback")
 
 
-def _last_live_value_jsonl(path: str, key: str) -> object | None:
+def _last_live_value_jsonl(path: str, key: str, today: dt.date) -> object | None:
     """Like _last_value_jsonl, but for Rocket: skip Wayback salvage rows.
 
     WHY: an archive row is written with the SNAPSHOT's date, so a successful
     Wayback salvage lands a fresh-looking row and clears this alarm -- exactly
     the condition the alarm exists to catch. Rocket's live feed being dead is
     the finding; the archive row is the workaround, not the recovery.
+
+    `today` is required, not optional: it is what excludes future-dated rows
+    from the max(). Making it default would let a caller silently reinstate
+    the bug this parameter exists to prevent.
     """
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -119,9 +123,19 @@ def _last_live_value_jsonl(path: str, key: str) -> object | None:
     # dates and mask staleness. If nothing parses, hand back a raw value so the
     # caller reports corruption instead of "no rows".
     present = [r.get(key) for r in live if r.get(key) not in (None, "")]
-    valid = [v for v in present if _is_iso_date(v)]
+    # Future dates are excluded from the max() for the SAME reason _freshest
+    # excludes them, and this helper originally forgot to: a single
+    # '2099-01-01' live row wins max() forever, yields a negative age, never
+    # trips `age > threshold`, and no later real row can ever displace it --
+    # so the Rocket alarm goes silent permanently. The per-state path already
+    # handled this; the Rocket path did not, which meant the one source with
+    # no per-state redundancy had the weaker guard.
+    valid = [v for v in present if _is_iso_date(v) and dt.date.fromisoformat(v) <= today]
     if valid:
         return max(valid)
+    # Nothing usable: hand back a raw value so the caller reports corruption
+    # rather than the much quieter "no rows". A future-dated row reaches here
+    # and is surfaced as an unparseable/corrupt date, which is what it is.
     return present[0] if present else None
 
 
@@ -224,7 +238,7 @@ def scan(root_states: str, daily_dir: str, data_dir: str, today: dt.date,
             })
 
     # ---- Rocket: single national JSONL ----
-    rk = _last_live_value_jsonl(os.path.join(daily_dir, "rocket.jsonl"), "date_iso")
+    rk = _last_live_value_jsonl(os.path.join(daily_dir, "rocket.jsonl"), "date_iso", today)
     if rk is None:
         findings.append({"source": "Rocket", "detail": "no live rows in rocket.jsonl"})
     else:

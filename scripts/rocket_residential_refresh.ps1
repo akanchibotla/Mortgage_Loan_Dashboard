@@ -124,8 +124,24 @@ try {
 
     Write-Log 'Fetching Rocket rates (residential IP) ...'
     & $py scripts/fetch_rocket.py 2>&1 | ForEach-Object { Write-Log $_ }
-    if ($LASTEXITCODE -ne 0) {
-        Write-Log 'fetch_rocket.py failed even from residential IP (upstream change?). No commit.' 'WARN'
+    $fetchRc = $LASTEXITCODE
+    # Exit 4 is NOT a failure: fetch_rocket returns it when the row came from a
+    # Wayback salvage rather than the live feed. It exists so refresh.yml's
+    # `|| echo "rocket" >> $FAIL_LOG` records that CI's live feed is dead --
+    # but this runner is the OTHER caller, and it is the only path that gets
+    # Rocket data at all (Akamai denylists the GitHub runners, which is why
+    # `rocket` sits on the expected-failure allowlist).
+    #
+    # Treating 4 as failure here bailed out before aggregate/commit/push, so a
+    # perfectly good salvaged row was written to disk and never published --
+    # leaving the tree dirty for the next run's --autostash to carry, while the
+    # log claimed the fetch had "failed". A salvage is degraded, not broken:
+    # publish it, and say plainly that the live feed is down.
+    if ($fetchRc -eq 4) {
+        Write-Log 'Row came from a Wayback snapshot, not the live feed (Rocket live is down). Publishing the salvaged row anyway.' 'WARN'
+    }
+    elseif ($fetchRc -ne 0) {
+        Write-Log "fetch_rocket.py failed even from residential IP (upstream change?) rc=$fetchRc. No commit." 'WARN'
         exit 5
     }
 

@@ -57,14 +57,29 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt || echo "pip-install failed" >> "$FAIL_LOG"
 
-      # Deliberately placed here: AFTER the deps are available but BEFORE any
-      # network work. If the aggregation math is broken we must not publish,
-      # and failing at this point costs nothing — no fetcher has run, so there
-      # is no half-collected data to discard. This step is NOT fail-soft: a
-      # red suite means the code that computes every published number is
-      # wrong, which is categorically different from one flaky upstream page.
+      # Placed AFTER the deps are available but BEFORE any network work, so a
+      # red suite is reported before we spend 25 minutes scraping.
+      #
+      # FAIL-SOFT, deliberately, and this was a hard-won correction. It first
+      # shipped as a blocking step on the reasoning that "if the aggregation
+      # math is broken we must not publish". That reasoning is right about
+      # PUBLISHING and wrong about FETCHING. The fetchers read same-day quoted
+      # rates that exist nowhere else — miss a day and it is gone, with only a
+      # patchy Wayback backfill. A test failure is a reason to distrust the
+      # derived views, never a reason to throw away the raw observations.
+      #
+      # Proven, not hypothetical: a date-relative fixture in
+      # test_bankrate_selection.py failed on the 1st and 2nd of every month,
+      # which as a blocking step would have aborted the scrape for 51 states
+      # across 3 sources, twice a month, forever. The fixture is fixed; this
+      # step is what stops the next such bug from costing data.
+      #
+      # Routing it through FAIL_LOG makes it an UNEXPECTED failure (it is not
+      # on the expected-failures allowlist), so it raises ::error::, names
+      # itself in the commit subject, and cannot be mistaken for the routine
+      # Akamai-blocked `rocket` line.
       - name: Pipeline unit tests
-        run: python -m pytest scripts/tests -q
+        run: python -m pytest scripts/tests -q || echo "pipeline-tests" >> "$FAIL_LOG"
 
       # Playwright's Chromium binary is ~170 MB. Caching it keyed on
       # requirements.txt (which pins the Playwright version) skips the
@@ -580,7 +595,23 @@ jobs:
       - name: Check for systemically stale sources
         if: always()
         run: |
-          python scripts/check_stale_sources.py --alert-file "$GITHUB_WORKSPACE/.stale-alert.txt" || true
+          # Tri-state, deliberately. "No alert file" was being used as a
+          # synonym for "healthy", but it is ALSO what you get when the
+          # detector never ran or crashed -- and the `|| true` is precisely
+          # what swallows that. The issue-closer downstream would then read
+          # absence-of-evidence as evidence-of-absence and close a live
+          # production alarm on the strength of a detector that did not run.
+          rc=0
+          python scripts/check_stale_sources.py --alert-file "$GITHUB_WORKSPACE/.stale-alert.txt" || rc=$?
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::check_stale_sources.py exited $rc; staleness is UNKNOWN this run"
+            echo "STALE_CHECK=error" >> "$GITHUB_ENV"
+            echo "stale-check" >> "$FAIL_LOG"
+          elif [ -s "$GITHUB_WORKSPACE/.stale-alert.txt" ]; then
+            echo "STALE_CHECK=alert" >> "$GITHUB_ENV"
+          else
+            echo "STALE_CHECK=ok" >> "$GITHUB_ENV"
+          fi
           if [ -s "$GITHUB_WORKSPACE/.stale-alert.txt" ]; then
             echo "STALE_ALERT=1" >> "$GITHUB_ENV"
             {
@@ -658,8 +689,13 @@ jobs:
       # STALE_ALERT is set by the check step above only when the alert file is
       # non-empty, so `!= '1'` means check_stale_sources.py produced no
       # findings this run.
+      # Gated on POSITIVE evidence of health (STALE_CHECK == 'ok'), not on the
+      # absence of an alert file, and on success() rather than always(): a red
+      # job must never be able to declare a production alarm recovered. The
+      # first version could close every open stale-source issue on a run that
+      # aborted before the detector even executed.
       - name: Close recovered stale-source issues
-        if: always() && github.event_name == 'schedule' && env.STALE_ALERT != '1'
+        if: success() && github.event_name == 'schedule' && env.STALE_CHECK == 'ok'
         uses: actions/github-script@v7
         with:
           script: |
