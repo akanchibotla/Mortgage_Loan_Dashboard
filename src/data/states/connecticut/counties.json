@@ -8,7 +8,7 @@
   "counties": [
     {
       "fips": "09110",
-      "name": "FIPS 09110",
+      "name": "Capitol",
       "term_15": {
         "n_loans": 173,
         "simple_mean_pct": 6.094,
@@ -34,7 +34,7 @@
     },
     {
       "fips": "09120",
-      "name": "FIPS 09120",
+      "name": "Greater Bridgeport",
       "term_15": {
         "n_loans": 37,
         "simple_mean_pct": 6.11,
@@ -60,7 +60,7 @@
     },
     {
       "fips": "09130",
-      "name": "FIPS 09130",
+      "name": "Lower Connecticut River Valley",
       "term_15": {
         "n_loans": 28,
         "simple_mean_pct": 5.963,
@@ -86,7 +86,7 @@
     },
     {
       "fips": "09140",
-      "name": "FIPS 09140",
+      "name": "Naugatuck Valley",
       "term_15": {
         "n_loans": 38,
         "simple_mean_pct": 6.404,
@@ -112,7 +112,7 @@
     },
     {
       "fips": "09150",
-      "name": "FIPS 09150",
+      "name": "Northeastern Connecticut",
       "term_15": {
         "n_loans": 12,
         "simple_mean_pct": 6.655,
@@ -138,7 +138,7 @@
     },
     {
       "fips": "09160",
-      "name": "FIPS 09160",
+      "name": "Northwest Hills",
       "term_15": {
         "n_loans": 20,
         "simple_mean_pct": 6.443,
@@ -164,7 +164,7 @@
     },
     {
       "fips": "09170",
-      "name": "FIPS 09170",
+      "name": "South Central Connecticut",
       "term_15": {
         "n_loans": 71,
         "simple_mean_pct": 6.073,
@@ -190,7 +190,7 @@
     },
     {
       "fips": "09180",
-      "name": "FIPS 09180",
+      "name": "Southeastern Connecticut",
       "term_15": {
         "n_loans": 55,
         "simple_mean_pct": 6.145,
@@ -216,7 +216,7 @@
     },
     {
       "fips": "09190",
-      "name": "FIPS 09190",
+      "name": "Western Connecticut",
       "term_15": {
         "n_loans": 94,
         "simple_mean_pct": 5.812,

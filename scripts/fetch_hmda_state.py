@@ -133,7 +133,13 @@ LOAN_AMT_BRACKETS = [
     (350, 500, "$350–500K"),
     (500, 750, "$500–750K"),
     (750, 1_000, "$750K–1M"),
-    (1_000, 5_000, ">$1M"),
+    # Unbounded top bracket. The old 5_000 ceiling made the label ">$1M" a
+    # lie and dropped every loan above $5M on the floor (709 of them in the
+    # 2024 LAR), so the loan_amount dimension did not partition the state
+    # population the way race/ethnicity/sex do. Effective at the NEXT annual
+    # ingest — the shipped 2024 files are unchanged (re-downloading 3.5M rows
+    # a state is not warranted for a 0.0003 pp shift).
+    (1_000, float("inf"), ">$1M"),
 ]
 
 
@@ -154,6 +160,24 @@ def state_summary(rates: list[float], amounts: list[float], state: dict, term: i
         f"loan_term={'180' if term == 15 else '360'}"
     )
     return s
+
+
+def looks_like_lar_csv(csv_path: str) -> bool:
+    """Cheap shape check on the downloaded body before we trust it.
+
+    curl --fail catches an HTTP error status, but FFIEC has served 200-with-an
+    -HTML-body before. csv.DictReader parses that happily, yields zero
+    qualifying rows, and emit() then overwrites four good summary JSONs with
+    empty ones. Requiring the two columns the parser actually reads turns that
+    into a loud failure.
+    """
+    try:
+        with open(csv_path, "r", encoding="utf-8", errors="ignore", newline="") as f:
+            header = f.readline()
+    except OSError:
+        return False
+    cols = {c.strip().strip('"') for c in header.split(",")}
+    return {"loan_term", "interest_rate"} <= cols
 
 
 def process_csv(csv_path: str, state: dict) -> dict:
@@ -328,7 +352,26 @@ def fetch_one(slug: str, keep_csv: bool = False, cache_dir: str | None = None) -
                 os.unlink(csv_path)
             return 1
     try:
+        # Guard the OVERWRITE, not the download. emit() rewrites four shipped
+        # JSONs unconditionally, so an empty parse silently replaces a good
+        # state summary with zeros — and the annual LAR is only re-downloadable
+        # at 3.5M rows a state. Refuse to emit anything from a body that either
+        # isn't a LAR CSV or yielded no qualifying loans at all.
+        if not looks_like_lar_csv(csv_path):
+            print(
+                f"  ERROR: {csv_path} does not look like a HMDA LAR CSV "
+                f"(header lacks loan_term/interest_rate); refusing to emit.",
+                file=sys.stderr,
+            )
+            return 2
         result = process_csv(csv_path, state)
+        if result["n_state_15"] + result["n_state_30"] == 0:
+            print(
+                f"  ERROR: {slug}: parsed 0 qualifying originations; refusing "
+                f"to overwrite the existing summaries.",
+                file=sys.stderr,
+            )
+            return 2
         emit(slug, state, result)
         return 0
     finally:

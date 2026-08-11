@@ -12,6 +12,13 @@ import {
 import { Link } from "react-router-dom";
 import { loadPmms, loadStateData, loadStatesIndex, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
+import { fmtMoney, monthlyPayment } from "../lib/payment";
+import { LOAN_MIN, LOAN_MAX } from "../lib/useCalculator";
+import {
+  buildBuydownPlan,
+  computeBuydownSubsidyTotal,
+  type BuydownProduct,
+} from "../lib/loanMath";
 import type { CountyEntry, HmdaSummary } from "../types";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 
@@ -31,13 +38,6 @@ function getStatePromise(slug: string): Promise<StateData | null> {
   return p;
 }
 
-function monthlyPayment(principal: number, annualRatePct: number, termYears: number): number {
-  const r = annualRatePct / 100 / 12;
-  const n = termYears * 12;
-  if (r <= 0) return principal / n;
-  return (principal * (r * Math.pow(1 + r, n))) / (Math.pow(1 + r, n) - 1);
-}
-
 function latestNonNull(rows: { rate: number | null }[] | null | undefined): number | null {
   if (!rows) return null;
   for (let i = rows.length - 1; i >= 0; i--) {
@@ -46,13 +46,10 @@ function latestNonNull(rows: { rate: number | null }[] | null | undefined): numb
   return null;
 }
 
-type ProductType =
-  | "fixed"
-  | "arm-7-1"
-  | "arm-5-1"
-  | "buydown-2-1"
-  | "buydown-1-0"
-  | "buydown-3-2-1";
+// The three buydown members come from lib/loanMath's BuydownProduct rather
+// than being re-spelled here, so the shared helpers can never drift out of
+// sync with the products this page offers.
+type ProductType = "fixed" | "arm-7-1" | "arm-5-1" | BuydownProduct;
 
 interface LoanInstance {
   id: string;
@@ -121,42 +118,9 @@ function buildPhases(
 // itself amortizes at the note rate throughout. `rateReduction` is the
 // percentage points subtracted from the note rate when computing the
 // borrower's bought-down payment per Fannie Mae Selling Guide B5-5.1-04.
-interface BuydownPhase {
-  months: number;
-  rateReduction: number;
-  label: string;
-}
-
-function buildBuydownPlan(productType: ProductType, totalMonths: number): BuydownPhase[] {
-  switch (productType) {
-    case "buydown-2-1": {
-      const tail = Math.max(0, totalMonths - 24);
-      return [
-        { months: Math.min(12, totalMonths), rateReduction: 2, label: "Year 1" },
-        { months: Math.min(12, Math.max(0, totalMonths - 12)), rateReduction: 1, label: "Year 2" },
-        ...(tail > 0 ? [{ months: tail, rateReduction: 0, label: "Year 3+" }] : []),
-      ];
-    }
-    case "buydown-1-0": {
-      const tail = Math.max(0, totalMonths - 12);
-      return [
-        { months: Math.min(12, totalMonths), rateReduction: 1, label: "Year 1" },
-        ...(tail > 0 ? [{ months: tail, rateReduction: 0, label: "Year 2+" }] : []),
-      ];
-    }
-    case "buydown-3-2-1": {
-      const tail = Math.max(0, totalMonths - 36);
-      return [
-        { months: Math.min(12, totalMonths), rateReduction: 3, label: "Year 1" },
-        { months: Math.min(12, Math.max(0, totalMonths - 12)), rateReduction: 2, label: "Year 2" },
-        { months: Math.min(12, Math.max(0, totalMonths - 24)), rateReduction: 1, label: "Year 3" },
-        ...(tail > 0 ? [{ months: tail, rateReduction: 0, label: "Year 4+" }] : []),
-      ];
-    }
-    default:
-      return [{ months: totalMonths, rateReduction: 0, label: "Note rate" }];
-  }
-}
+// The type and the plan builder live in lib/loanMath — this page used to
+// carry byte-identical private copies, which meant the unit tests exercised
+// the library while the shipping calculator ran untested code.
 
 interface ScheduleRow {
   month: number;
@@ -189,7 +153,10 @@ const BUYDOWN_PRODUCTS = new Set<ProductType>([
   "buydown-3-2-1",
 ]);
 
-function isBuydown(p: ProductType): boolean {
+// A type predicate, not a plain boolean: it is what narrows a widely-typed
+// ProductType down to the BuydownProduct the shared lib/loanMath helpers
+// accept, at every call site that already gated on it.
+function isBuydown(p: ProductType): p is BuydownProduct {
   return BUYDOWN_PRODUCTS.has(p);
 }
 
@@ -241,7 +208,7 @@ function computeProductSchedule(
 
 function computeBuydownSchedule(
   loanAmount: number,
-  productType: ProductType,
+  productType: BuydownProduct,
   noteRate: number,
   termYears: number,
   totalMonths: number,
@@ -359,32 +326,6 @@ function computePhasePayments(
   return out;
 }
 
-// Total upfront cost of the buydown — the dollar amount that must be
-// deposited into the subsidy account at closing. Sum of the per-month
-// (notePayment − borrowerPayment) across the buydown period. Zero for
-// non-buydown products. Used by the loan card to surface the real cost
-// that the seller/builder/lender is paying.
-function computeBuydownSubsidyTotal(
-  loanAmount: number,
-  productType: ProductType,
-  noteRate: number,
-  termYears: number,
-): number {
-  if (!isBuydown(productType)) return 0;
-  const totalMonths = Math.round(termYears * 12);
-  if (!Number.isFinite(loanAmount) || loanAmount <= 0 || totalMonths <= 0) return 0;
-  const notePayment = monthlyPayment(loanAmount, noteRate, termYears);
-  const plan = buildBuydownPlan(productType, totalMonths);
-  let total = 0;
-  for (const p of plan) {
-    if (p.months <= 0) continue;
-    const effectiveRate = Math.max(0, noteRate - p.rateReduction);
-    const borrowerPayment = monthlyPayment(loanAmount, effectiveRate, termYears);
-    total += Math.max(0, notePayment - borrowerPayment) * p.months;
-  }
-  return total;
-}
-
 const ARM_PRODUCTS = new Set<ProductType>(["arm-7-1", "arm-5-1"]);
 
 function newLoanId(): string {
@@ -401,6 +342,24 @@ function parseCustomRate(rateText: string): number | null {
   if (t === "") return null;
   const v = Number.parseFloat(t);
   return Number.isFinite(v) ? v : null;
+}
+
+// The range every rate field on this page already advertises via min/max and
+// enforces in its stepper. Clamping happens on BLUR, never here in the parse
+// and never in onChange: these are controlled inputs, so a per-keystroke
+// clamp rewrites "-" or "0." mid-typing and makes the field unusable.
+const RATE_FLOOR = 0;
+const RATE_CEILING = 30;
+
+// Snap a typed rate back into [RATE_FLOOR, RATE_CEILING] once the user
+// leaves the field. Returns null when there is nothing to correct, so the
+// caller can leave an empty / unparseable field alone rather than
+// fabricating a value.
+function clampRateOnBlur(rateText: string): string | null {
+  const v = parseCustomRate(rateText);
+  if (v == null) return null;
+  const clamped = Math.max(RATE_FLOOR, Math.min(RATE_CEILING, v));
+  return clamped.toFixed(2);
 }
 
 export default function CalculatorPage() {
@@ -970,14 +929,19 @@ function PhasePaymentBlock({
   const buydownLenderPayment = buydown
     ? monthlyPayment(loan.loanAmount, centralRate, loan.term)
     : 0;
-  const buydownSubsidyTotal = buydown
+  // Guard inline rather than reusing `buydown` above: the shared helper takes
+  // a BuydownProduct, and only a direct isBuydown() call in the condition
+  // narrows loan.productType down to it.
+  const buydownSubsidyTotal = isBuydown(loan.productType)
     ? computeBuydownSubsidyTotal(loan.loanAmount, loan.productType, centralRate, loan.term)
     : 0;
   // For buydown loans the headline shifts from "Monthly P&I" (which would be
-  // misleading — the borrower's check varies by year) to "Your monthly
-  // payment". A footnote restores the loan's true amortization view.
+  // misleading — the borrower's check varies by year) to "Your monthly P&I".
+  // "Your monthly payment" read as the all-in housing cost, which this number
+  // is not — it excludes taxes, insurance and any MI. A footnote restores the
+  // loan's true amortization view.
   const headline = buydown
-    ? "Your monthly payment"
+    ? "Your monthly P&I"
     : "Monthly P&I";
   return (
     <div className="loan-block loan-block-output">
@@ -990,9 +954,7 @@ function PhasePaymentBlock({
             <span className="k">
               @ {centralRate.toFixed(2)}% ({centralLabel})
             </span>
-            <span className="v">
-              ${Math.round(phasePayments[0]?.payment ?? 0).toLocaleString()}
-            </span>
+            <span className="v">{fmtMoney(phasePayments[0]?.payment ?? 0)}</span>
           </li>
         ) : (
           phasePayments.map((ph, idx) => (
@@ -1000,7 +962,7 @@ function PhasePaymentBlock({
               <span className="k">
                 {ph.label} @ {ph.rate.toFixed(2)}%
               </span>
-              <span className="v">${Math.round(ph.payment).toLocaleString()}</span>
+              <span className="v">{fmtMoney(ph.payment)}</span>
             </li>
           ))
         )}
@@ -1008,28 +970,24 @@ function PhasePaymentBlock({
           <>
             <li className="loan-stats-aside">
               <span className="k">Lender amortizes at {centralRate.toFixed(2)}% throughout</span>
-              <span className="v">${Math.round(buydownLenderPayment).toLocaleString()}/mo</span>
+              <span className="v">{fmtMoney(buydownLenderPayment)}/mo</span>
             </li>
             <li className="loan-stats-aside">
               <span className="k">Upfront subsidy (seller/builder/lender funds)</span>
-              <span className="v">${Math.round(buydownSubsidyTotal).toLocaleString()}</span>
+              <span className="v">{fmtMoney(buydownSubsidyTotal)}</span>
             </li>
           </>
         )}
         {p10 != null && (
           <li>
             <span className="k">@ {p10.toFixed(2)}% (best 10%)</span>
-            <span className="v">
-              ${Math.round(monthlyPayment(loan.loanAmount, p10, loan.term)).toLocaleString()}
-            </span>
+            <span className="v">{fmtMoney(monthlyPayment(loan.loanAmount, p10, loan.term))}</span>
           </li>
         )}
         {p90 != null && (
           <li>
             <span className="k">@ {p90.toFixed(2)}% (worst 10%)</span>
-            <span className="v">
-              ${Math.round(monthlyPayment(loan.loanAmount, p90, loan.term)).toLocaleString()}
-            </span>
+            <span className="v">{fmtMoney(monthlyPayment(loan.loanAmount, p90, loan.term))}</span>
           </li>
         )}
       </ul>
@@ -1134,7 +1092,7 @@ function LoanCardForm({
     const current = useCustom
       ? parseCustomRate(loan.rateText) ?? anchorRate ?? 0
       : anchorRate ?? 0;
-    const next = Math.max(0, Math.min(30, current + dir * RATE_STEP));
+    const next = Math.max(RATE_FLOOR, Math.min(RATE_CEILING, current + dir * RATE_STEP));
     onChange({ rateText: next.toFixed(2), hasCustomRate: true });
   };
 
@@ -1274,8 +1232,8 @@ function LoanCardForm({
         <span>Loan amount</span>
         <input
           type="number"
-          min={50_000}
-          max={3_000_000}
+          min={LOAN_MIN}
+          max={LOAN_MAX}
           step={5_000}
           value={loan.loanAmount}
           onChange={(e) => {
@@ -1283,9 +1241,15 @@ function LoanCardForm({
             // attributes. Typed input ignores the stepper limits, so a
             // user can type "99999999" and have the calculator compute
             // with an out-of-band value otherwise.
+            //
+            // The floor is 0, not 50,000 (commit ad0259cf's deliberate
+            // spec): this is a controlled field, so a non-zero floor would
+            // rewrite the value on every keystroke while the user is still
+            // typing. `min` now advertises that same 0 — it used to say
+            // 50,000, which is what made this comment false.
             const v = Number(e.target.value);
             if (!Number.isFinite(v)) return;
-            const clamped = Math.max(0, Math.min(3_000_000, v));
+            const clamped = Math.max(LOAN_MIN, Math.min(LOAN_MAX, v));
             onChange({ loanAmount: clamped });
           }}
         />
@@ -1315,11 +1279,18 @@ function LoanCardForm({
             id={rateInputId}
             type="number"
             className="rate-field-input"
-            min={0}
-            max={30}
+            min={RATE_FLOOR}
+            max={RATE_CEILING}
             step={0.05}
             value={rateDisplay}
             onChange={(e) => onChange({ rateText: e.target.value, hasCustomRate: true })}
+            onBlur={() => {
+              if (!useCustom) return;
+              const clamped = clampRateOnBlur(loan.rateText);
+              if (clamped != null && clamped !== loan.rateText) {
+                onChange({ rateText: clamped, hasCustomRate: true });
+              }
+            }}
           />
           <div className="rate-spin-buttons">
             <button
@@ -1358,7 +1329,7 @@ function LoanCardForm({
           const current = armUseCustom
             ? parseCustomRate(loan.armAdjustedRateText) ?? baseRate
             : baseRate;
-          const next = Math.max(0, Math.min(30, current + dir * RATE_STEP));
+          const next = Math.max(RATE_FLOOR, Math.min(RATE_CEILING, current + dir * RATE_STEP));
           onChange({
             armAdjustedRateText: next.toFixed(2),
             hasCustomArmAdjustedRate: true,
@@ -1390,8 +1361,8 @@ function LoanCardForm({
                 id={armRateInputId}
                 type="number"
                 className="rate-field-input"
-                min={0}
-                max={30}
+                min={RATE_FLOOR}
+                max={RATE_CEILING}
                 step={0.05}
                 value={armRateDisplay}
                 onChange={(e) =>
@@ -1400,6 +1371,16 @@ function LoanCardForm({
                     hasCustomArmAdjustedRate: true,
                   })
                 }
+                onBlur={() => {
+                  if (!armUseCustom) return;
+                  const clamped = clampRateOnBlur(loan.armAdjustedRateText);
+                  if (clamped != null && clamped !== loan.armAdjustedRateText) {
+                    onChange({
+                      armAdjustedRateText: clamped,
+                      hasCustomArmAdjustedRate: true,
+                    });
+                  }
+                }}
               />
               <div className="rate-spin-buttons">
                 <button
@@ -1429,6 +1410,17 @@ function LoanCardForm({
   );
 }
 
+// Whole-percent ticks across the resolved range. The old axis hardcoded
+// [4..10]; once the range can widen, the labels have to follow it or they
+// describe a track that isn't there. Step up so a widened range doesn't
+// crowd the axis with labels.
+function axisTicks(lo: number, hi: number): number[] {
+  const step = Math.max(1, Math.ceil((hi - lo) / 6));
+  const out: number[] = [];
+  for (let v = lo; v <= hi; v += step) out.push(v);
+  return out;
+}
+
 function DistributionBar({
   p10,
   p25,
@@ -1444,15 +1436,18 @@ function DistributionBar({
   p90: number;
   market?: number;
 }) {
-  const RANGE_LO = 4;
-  const RANGE_HI = 10;
+  // 4%–10% is the COMMON case, not a hard range. Against a fixed track a
+  // county whose p10 sits below 4 (or p90 above 10) painted its band outside
+  // the track entirely. Widen to fit, the way DemographicsPanel already does.
+  const RANGE_LO = Math.floor(Math.min(4, p10));
+  const RANGE_HI = Math.ceil(Math.max(10, p90));
   const span = RANGE_HI - RANGE_LO;
   const pct = (v: number) => `${((v - RANGE_LO) / span) * 100}%`;
   const w = (a: number, b: number) => `${((b - a) / span) * 100}%`;
   return (
     <div className="dist-bar">
       <div className="dist-axis">
-        {[4, 5, 6, 7, 8, 9, 10].map((v) => (
+        {axisTicks(RANGE_LO, RANGE_HI).map((v) => (
           <span key={v} style={{ left: pct(v) }}>
             {v}%
           </span>

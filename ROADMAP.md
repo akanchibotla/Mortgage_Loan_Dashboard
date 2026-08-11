@@ -6,40 +6,37 @@
 
 The unique value is the **combination**. Bankrate and Zillow have today's quoted rates per state but no closed-loan reality. The FFIEC HMDA Data Browser has actual closings per county but no time series and no quote comparison. The calculator that asks "based on your loan amount, where do you sit?" doesn't exist in a polished form anywhere. We're building the missing connective tissue.
 
-## Current state — v3 phase 1 (shipped 2026-06-01)
+## Current state — v2 through v5 shipped; national coverage complete
+
+> This section was written during the early per-state rollout and stayed frozen there for months
+> while the repo went national. It now states what actually ships. Every count below is measured
+> off the committed data, not planned.
 
 - **Live URL:** https://akanchibotla.github.io/Mortgage_Loan_Dashboard/
-- **12 states bundled**: NC, CA, FL, TX, NY, IL, GA, PA, OH, MI, WA, AZ — each with Wayback historical (12–20 months) + live Bankrate trailing + today's MND.
-- **County drilldown (NC)**: 100 NC counties with HMDA 2024 origination distributions (n=120,955 loans). Interactive county choropleth on the NC state page colored by HMDA mean rate. Click any county → per-county distribution band, p10–p90 stats, county-vs-state delta, nearest-peer counties.
+- **All 51 states bundled** (50 + DC), each with Wayback Bankrate history where the archive has it + live Bankrate / MND / NerdWallet trailing.
+- **County drilldown, nationwide**: **3,128 counties** with HMDA 2024 origination distributions totalling **2,904,579** originations. Interactive county choropleth on each state page colored by HMDA mean rate. Click any county → per-county distribution band, p10–p90 stats, county-vs-state delta, nearest-peer counties.
 - **Home page**: U.S. state choropleth (D3 + TopoJSON via `us-atlas`) colored by current 15-yr or 30-yr Bankrate rate; click any state to drill in.
-- **State page** (`/state/:slug`): per-state dashboard with FRED PMMS (national), Bankrate, MND, and HMDA reference band where bundled (NC only currently).
-- **Calculator** (`/calculator`): state + term + loan-amount inputs; HMDA percentile-anchored rate range (where available); P&I at p10/median/p90 rates.
+- **State page** (`/state/:slug`): per-state dashboard with FRED PMMS (national), Bankrate, MND, NerdWallet, Rocket (national), and the state's HMDA reference band.
+- **Calculator** (`/calculator`): state + term + loan-amount inputs; HMDA percentile-anchored rate range; P&I at p10/median/p90 rates; buydown plans.
+- **Methodology page** (`/methodology`): source-by-source disclosure of what each series is and is not.
 - **Architecture**:
   - `scripts/states.py` 50-state + DC registry; all fetchers take `--state SLUG`.
   - Per-state JSON in `src/data/states/{slug}/`, lazy-loaded per route.
   - `src/data/states_index.json` powers the map and the calculator dropdown.
-  - Daily GitHub Actions cron iterates `ACTIVE_STATES` (currently 7).
-  - Bundle: main 233KB / 75KB gzipped; Chart.js + choropleth lazy-loaded.
-- Same data plumbing as v1 (FRED, Bankrate browser, MND, JSONL accumulators, Wayback backfill, rolling window, idempotent appends).
+  - Daily GitHub Actions cron **discovers states by listing `src/data/states/`** — there is no state list in the workflow to maintain.
+  - Chart.js + choropleth lazy-loaded per route.
+- Same data plumbing as v1 (FRED, Bankrate browser, MND, JSONL accumulators, Wayback backfill, rolling window, idempotent appends), plus NerdWallet and Rocket.
 
-**Adding a state is now a 3-line task**:
-```
-python scripts/backfill_bankrate_state_wayback.py --state pennsylvania
-python scripts/fetch_bankrate_state.py --state pennsylvania
-python scripts/fetch_mnd_state.py --state pennsylvania
-python scripts/aggregate_mnd_state.py --state pennsylvania
-python scripts/reconcile_state.py --state pennsylvania
-python scripts/build_states_index.py
-```
-Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
+**Adding a state** — the full recipe (12 steps, not 3) lives in `README.md` → *Adding a state*.
+Creating `src/data/states/<slug>/` is what enrolls the state in the cron; no workflow edit is needed.
 
 ---
 
-## v2 — National time series (50 states) — IN PROGRESS (12 / 51)
+## v2 — National time series (50 states) — ✅ SHIPPED (51 / 51)
 
 **Why first**: scope-up before depth-down. Once Bankrate/MND can be fetched per state with the same pipeline, every later phase trivially generalizes.
 
-**Status**: 12 states live (NC, CA, FL, TX, NY, IL, GA, PA, OH, MI, WA, AZ). Architecture proven end-to-end. Remaining 39 = bulk Wayback runs (~5–6 hours total) + adding each slug to `ACTIVE_STATES`. No code changes needed.
+**Status**: **all 51 states live** (50 + DC). Architecture proven end-to-end; the Wayback backfill ran and the daily cron has iterated the full set since. The residual is coverage quality, not coverage: 45 states have archived Bankrate months (median 14 in the 27-month window), 5 have none, and Bankrate publishes no DC page at all.
 
 ### Deliverables
 - Per-state daily JSONL: `data/daily/bankrate_{state}.jsonl`, `data/daily/mnd_{state}.jsonl`
@@ -51,7 +48,7 @@ Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 
 ### Hard problems
 - **Wayback coverage is uneven across states.** California / Texas / New York are crawled often; Wyoming and the Dakotas may have <5 snapshots in 2 years. v2 must render gracefully when a state's NC line is mostly null.
-- **HMDA bulk download is ~3 GB nationally for 2024.** Strategy: download once locally, partition by `state_code`, commit per-state summary JSON, gitignore the raw CSV.
+- ~~**HMDA bulk download is ~3 GB nationally for 2024.**~~ **Resolved differently.** No bulk download was needed: `scripts/fetch_hmda_state.py` pulls a per-state CSV straight from the FFIEC data-browser API (`/v2/data-browser-api/view/csv?states=<postal>&years=2024&actions_taken=1&loan_purposes=1`) and streams it. The 403 that blocked the first attempt was not an anti-scraping block — Python's `urllib` redirect handler strips headers in a way the signed-S3 redirect target rejects — so the download shells out to `curl` instead (`fetch_hmda_state.py:52-54`). Raw CSVs stay gitignored; only the partitioned summaries are committed.
 - **Daily refresh runtime balloons.** 50 Bankrate headless fetches × ~20s = ~17 min on each cron run. Mitigations: parallelize 5-at-a-time in Playwright, or stagger across multiple workflows (e.g., regions on different schedules), or accept ~20-min runtime (still well under Action quotas).
 - **Bankrate may rate-limit aggressive crawling.** Add randomized delay 5–15s between state fetches; cap to once-per-day; cache state slugs.
 - **State slugs in URLs**: Bankrate uses `north-carolina`, MND uses `north-carolina`, so both normalize to lowercase-hyphenated. FIPS state code (`37` for NC) is the canonical key in code; slug is the URL display.
@@ -70,11 +67,13 @@ Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 
 ---
 
-## v3 — County-level HMDA depth (the differentiator) — IN PROGRESS (NC done)
+## v3 — County-level HMDA depth (the differentiator) — ✅ SHIPPED (nationwide)
 
 **Why next**: this is the actual market gap. Nobody shows per-county 2024 origination distributions in a clean UI. Bankrate/MND don't go below state. The closer we get to "your specific county", the more useful.
 
-**Status**: NC fully drilled — 100 counties, ~121K originations, choropleth + dashboard + peer-comparison shipped. Remaining 49 states require either the FFIEC HMDA bulk download (currently 403 to scripted requests) or per-state manual exports. Implementation pattern (`partition_hmda_counties.py` + `CountyDashboard` + `CountyChoropleth`) is fully reusable — adding a state's counties is a one-script-run once that state's HMDA CSV is on hand.
+**Status**: **all 51 states drilled — 3,128 counties, 2,904,579 originations**, choropleth + dashboard + peer-comparison shipped nationwide. `scripts/fetch_hmda_state.py` supersedes the NC-era `partition_hmda_counties.py` + `nc_county_names.py` pair (both still present, both legacy). It downloads, streams, aggregates and emits `hmda_2024_{15,30}yr.json`, `counties.json` and `hmda_2024_demographics.json` in one run per state.
+
+**Known residual**: `us-atlas` 3.0.1 ships 2017-vintage county geometry. Connecticut's 2022 planning regions (09110–09190) match **0 of 9** shapes and Alaska's post-2019 census areas match 25 of 27, so those counties render grey. The distributions themselves are correct and reachable from the state page's top-county links.
 
 ### Deliverables
 - Per-county HMDA aggregate JSON per state: `data/states/{state}/counties.json` with one entry per county containing `{fips, name, n_loans_15, n_loans_30, distribution_15: {mean, weighted_mean, p10/25/50/75/90}, distribution_30: {...}}`
@@ -97,7 +96,7 @@ Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 - `src/components/HmdaBandSelector.tsx` — toggle between state-level and county-level band.
 
 ### Definition of done
-- Picking any of ~3,143 counties shows that county's distribution next to its state's; comparable stats and visual band.
+- Picking any of the 3,128 shipped counties shows that county's distribution next to its state's; comparable stats and visual band.
 
 ---
 
@@ -158,14 +157,18 @@ Then add `pennsylvania` to `ACTIVE_STATES` in `.github/workflows/refresh.yml`.
 - `src/data/topo/{state}-counties-500k.json` (lazy-loaded)
 
 ### Definition of done
-- Mobile and desktop both work. Lighthouse scores green. Pages indexed by Google.
+- Mobile and desktop both work. Lighthouse scores green.
+
+  *(Per-route Google indexing was dropped from this bar — see Routing below. It is not achievable on the shipped architecture and was never delivered.)*
 
 ---
 
 ## Cross-cutting architecture (decisions to lock now)
 
 ### Routing
-React Router v6+, file structure `/`, `/state/:slug`, `/state/:slug/county/:countyFips`, `/calculator`. Static-generated by Vite at build time for SEO (pre-render each state/county page at build).
+React Router 7 with **`HashRouter`** (`src/main.tsx`), routes `/`, `/state/:slug`, `/state/:slug/county/:countyFips`, `/calculator`, `/methodology`. Every URL is therefore fragment-based (`…/#/state/california`).
+
+**The build-time prerender described here was never built, and the trade-off is accepted.** GitHub Pages serves static files with no SPA rewrite, so a hash router is the standard way to get deep links that survive a refresh without a `404.html` shim. The cost is that fragments are not separate documents to a crawler: **there is no per-route search indexing**, and `sitemap.xml` can only honestly advertise the base URL. Changing this means `BrowserRouter` + a `404.html` redirect shim + real prerendering — an architecture change, out of scope for a maintenance-mode repo.
 
 ### Data delivery
 - Per-state JSON lazy-loaded on route enter (avoid shipping all 50 states in initial bundle).
@@ -209,7 +212,7 @@ To keep scope honest:
 
 - **Real-time / intraday rates** — daily refresh only.
 - **Refinance rates** — purchase only for v2–v4; refi could be v6.
-- **ARM / FHA / VA breakdown beyond conventional** — overlay only as a future enhancement.
+- **ARM / FHA / VA breakdowns** — we do not *break out* loan type separately. Note this is not a filter: the HMDA distributions **include** conventional, FHA, VA and USDA loans together (`fetch_hmda_state.py` filters on term, purpose and action taken, never on `loan_type` or `lien_status`). A per-type overlay is a future enhancement.
 - **Loan officer / lender directory** — not in scope.
 - **User accounts / saved scenarios** — calculator is anonymous and stateless.
 - **Pre-qualification / soft credit pull** — we point users to lenders, never collect PII.

@@ -7,7 +7,7 @@ import {
 
 describe("monthlyPayment", () => {
   it("standard 30-yr at 6.5% on $400K matches the worked example", () => {
-    expect(monthlyPayment(400_000, 6.5, 30)).toBeCloseTo(2_528.27, 1);
+    expect(monthlyPayment(400_000, 6.5, 30)).toBeCloseTo(2_528.272094, 2);
   });
 
   it("zero rate returns straight-line principal/n", () => {
@@ -25,8 +25,8 @@ describe("monthlyPayment", () => {
   });
 
   it("15-yr at 5.5% on $300K", () => {
-    // hand-computed: 300000 * (r * (1+r)^180) / ((1+r)^180 - 1) with r=0.045833…
-    expect(monthlyPayment(300_000, 5.5, 15)).toBeCloseTo(2_451.25, 1);
+    // hand-computed: 300000 * (r * (1+r)^180) / ((1+r)^180 - 1) with r=0.0045833…
+    expect(monthlyPayment(300_000, 5.5, 15)).toBeCloseTo(2_451.250364, 2);
   });
 });
 
@@ -77,32 +77,40 @@ describe("buildBuydownPlan", () => {
 
 describe("computeBuydownSubsidyTotal", () => {
   it("2-1 buydown $400K/30yr/6.5% — worked numeric example", () => {
-    // Hand-computed:
-    //   lender payment = $2,528.27
-    //   y1 borrower @ 4.5% = $2,026.74; subsidy = $501.53/mo × 12 = $6,018.36
-    //   y2 borrower @ 5.5% = $2,271.16; subsidy = $257.11/mo × 12 = $3,085.32
-    //   total ≈ $9,103.68 (vs prior commit's verified $9,103.76)
+    // Verified against the implementation, full precision:
+    //   lender payment       @ 6.5% = $2,528.272094
+    //   y1 borrower          @ 4.5% = $2,026.741239 → leg = $6,018.370256
+    //   y2 borrower          @ 5.5% = $2,271.156005 → leg = $3,085.393063
+    //   total                              = $9,103.763319
+    // The previous comment rounded each leg independently and then wrote a
+    // total ($9,103.68) that its own arithmetic did not produce.
     expect(
       computeBuydownSubsidyTotal(400_000, "buydown-2-1", 6.5, 30),
-    ).toBeCloseTo(9_103.76, 1);
+    ).toBeCloseTo(9_103.763319, 2);
   });
 
   it("3-2-1 buydown $400K/30yr/6.5% subsidy > 2-1 subsidy (more reduction)", () => {
     const total321 = computeBuydownSubsidyTotal(400_000, "buydown-3-2-1", 6.5, 30);
     const total21 = computeBuydownSubsidyTotal(400_000, "buydown-2-1", 6.5, 30);
     expect(total321).toBeGreaterThan(total21);
-    // Roughly 2x the 2-1 cost — verified ~$17,888 in the worked example.
-    expect(total321).toBeCloseTo(17_888.88, 0);
+    // Roughly 2x the 2-1 cost — verified $17,888.883432.
+    expect(total321).toBeCloseTo(17_888.883432, 2);
   });
 
   it("rate clamp: 1.5% note rate with 3-2-1 — year 1 reduction is clamped to 0%", () => {
     // With note 1.5%, reductions of 3% / 2% / 1% would take the rate
     // negative in years 1 and 2. Clamp(0) means the borrower payment in
-    // year 1 = monthlyPayment(loan, 0%, term) = principal/n = $1,111.11
-    // on $400K/30yr.
+    // years 1 and 2 = monthlyPayment(loan, 0%, term) = principal/n =
+    // $1,111.11 on $400K/30yr, so both legs are identical:
+    //   note @ 1.5%                        = $1,380.480842
+    //   y1 @ 0% (clamped from −1.5%) → leg = $3,232.436769
+    //   y2 @ 0% (clamped from −0.5%) → leg = $3,232.436769
+    //   y3 @ 0.5%                    → leg = $2,204.673755
+    //   total                              = $8,669.547292
+    // `> 0 && isFinite` passed for any positive number and would not have
+    // caught a broken clamp; this pins the value the clamp actually produces.
     const subsidy = computeBuydownSubsidyTotal(400_000, "buydown-3-2-1", 1.5, 30);
-    expect(subsidy).toBeGreaterThan(0);
-    expect(Number.isFinite(subsidy)).toBe(true);
+    expect(subsidy).toBeCloseTo(8_669.547292, 2);
   });
 
   it("zero or negative loan amount returns 0", () => {

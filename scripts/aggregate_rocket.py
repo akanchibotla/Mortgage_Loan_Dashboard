@@ -93,8 +93,13 @@ def daily_in_window(rows: list[dict], term_key: str) -> list[dict]:
             continue
         if (y, mo) not in months_in_window:
             continue
-        method = r.get("source_method") or "live"
-        src = "Rocket Mortgage (Wayback)" if str(method).startswith("wayback") else "Rocket Mortgage"
+        # Archive rows identify themselves two ways: the backfiller stamps
+        # source="rocket_wayback", the live fetcher's salvage path stamps
+        # source_method="wayback*". Reading only source_method mislabelled all
+        # 15 backfilled rows as live captures.
+        is_wb = (r.get("source") == "rocket_wayback") or \
+            str(r.get("source_method") or "").startswith("wayback")
+        src = "Rocket Mortgage (Wayback)" if is_wb else "Rocket Mortgage"
         out.append({"date": d, "rate": r[term_key], "src": src})
     return out
 

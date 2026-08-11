@@ -95,6 +95,50 @@
       }
     },
     {
+      "fips": "02063",
+      "name": "Chugach",
+      "term_15": {
+        "n_loans": 0
+      },
+      "term_30": {
+        "n_loans": 53,
+        "simple_mean_pct": 6.328,
+        "amount_weighted_mean_pct": 6.339,
+        "p10_pct": 5.625,
+        "p25_pct": 5.99,
+        "p50_pct": 6.5,
+        "p75_pct": 6.625,
+        "p90_pct": 6.875,
+        "low_n": false
+      }
+    },
+    {
+      "fips": "02066",
+      "name": "Copper River",
+      "term_15": {
+        "n_loans": 1,
+        "simple_mean_pct": 5.75,
+        "amount_weighted_mean_pct": 5.75,
+        "p10_pct": 5.75,
+        "p25_pct": 5.75,
+        "p50_pct": 5.75,
+        "p75_pct": 5.75,
+        "p90_pct": 5.75,
+        "low_n": true
+      },
+      "term_30": {
+        "n_loans": 9,
+        "simple_mean_pct": 6.402,
+        "amount_weighted_mean_pct": 6.4,
+        "p10_pct": 5.99,
+        "p25_pct": 6.25,
+        "p50_pct": 6.5,
+        "p75_pct": 6.625,
+        "p90_pct": 6.625,
+        "low_n": true
+      }
+    },
+    {
       "fips": "02068",
       "name": "Denali",
       "term_15": {
@@ -127,50 +171,6 @@
         "p50_pct": 6.75,
         "p75_pct": 7.0,
         "p90_pct": 7.125,
-        "low_n": true
-      }
-    },
-    {
-      "fips": "02063",
-      "name": "FIPS 02063",
-      "term_15": {
-        "n_loans": 0
-      },
-      "term_30": {
-        "n_loans": 53,
-        "simple_mean_pct": 6.328,
-        "amount_weighted_mean_pct": 6.339,
-        "p10_pct": 5.625,
-        "p25_pct": 5.99,
-        "p50_pct": 6.5,
-        "p75_pct": 6.625,
-        "p90_pct": 6.875,
-        "low_n": false
-      }
-    },
-    {
-      "fips": "02066",
-      "name": "FIPS 02066",
-      "term_15": {
-        "n_loans": 1,
-        "simple_mean_pct": 5.75,
-        "amount_weighted_mean_pct": 5.75,
-        "p10_pct": 5.75,
-        "p25_pct": 5.75,
-        "p50_pct": 5.75,
-        "p75_pct": 5.75,
-        "p90_pct": 5.75,
-        "low_n": true
-      },
-      "term_30": {
-        "n_loans": 9,
-        "simple_mean_pct": 6.402,
-        "amount_weighted_mean_pct": 6.4,
-        "p10_pct": 5.99,
-        "p25_pct": 6.25,
-        "p50_pct": 6.5,
-        "p75_pct": 6.625,
-        "p90_pct": 6.625,
         "low_n": true
       }
     },

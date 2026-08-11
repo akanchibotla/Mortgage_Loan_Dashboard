@@ -13,6 +13,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _http import fetch_html  # noqa: E402
+from _jsonl import upsert_jsonl  # noqa: E402
 from _paths import mnd_jsonl, mnd_today_view  # noqa: E402
 from states import by_slug  # noqa: E402
 
@@ -41,23 +42,10 @@ def parse_mnd_date(s: str) -> str | None:
 
 
 def write_jsonl_idempotent(path: str, new_row: dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    existing: list[dict] = []
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    existing.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    by_date = {r.get("date_iso"): r for r in existing if r.get("date_iso")}
-    by_date[new_row["date_iso"]] = new_row
-    with open(path, "w", encoding="utf-8") as f:
-        for r in sorted(by_date.values(), key=lambda r: r.get("date_iso", "")):
-            f.write(json.dumps(r) + "\n")
+    """Insert-or-replace today's row. Delegates to the shared helper so the
+    write is atomic and malformed lines are reported rather than silently
+    deleted from the archive — see scripts/_jsonl.py."""
+    upsert_jsonl(path, new_row)
 
 
 def write_today_view(path: str, row: dict) -> None:
@@ -87,7 +75,22 @@ def run_one(slug: str) -> int:
     rate_15 = float(rates_m.group(1))
     rate_30 = float(rates_m.group(2))
     as_of_raw = date_m.group(1) if date_m else None
-    date_iso = parse_mnd_date(as_of_raw) if as_of_raw else dt.date.today().isoformat()
+    if as_of_raw:
+        date_iso = parse_mnd_date(as_of_raw)
+        if date_iso is None:
+            # A None here used to reach the row dict and raise INSIDE the
+            # truncating write. Treat an unparseable stamp as what it is: a
+            # parse failure, reported like any other.
+            print(
+                f"ERROR: {slug}: could not parse MND as-of stamp {as_of_raw!r}",
+                file=sys.stderr,
+            )
+            return 3
+    else:
+        # UTC, not local: the row's sibling `fetched_at_utc` is UTC and CI runs
+        # in UTC, so a local-date fallback would file a late-evening run under
+        # yesterday on a machine behind UTC.
+        date_iso = dt.datetime.now(dt.UTC).date().isoformat()
     row = {
         "date_iso": date_iso,
         "term_15": rate_15,

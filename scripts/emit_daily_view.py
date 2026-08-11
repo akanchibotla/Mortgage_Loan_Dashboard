@@ -12,7 +12,7 @@ keep the last `DAYS` days, and write:
 
 Row shape: {"date": "YYYY-MM-DD", "rate": 6.41, "src": "Bankrate"|"MND"|"NerdWallet"}
 
-For Bankrate we prefer table_<term> and fall back to intro_<term>, matching
+For Bankrate we prefer intro_<term> and fall back to table_<term>, matching
 the reconcile script's preference order. Per date, the latest fetched_at_utc
 wins (idempotency: re-runs overwrite same-day entries).
 """
@@ -75,10 +75,16 @@ def emit_bankrate(slug: str) -> tuple[int, int]:
         out: list[dict] = []
         for d in sorted(by_date):
             r = by_date[d]
-            rate = r.get(f"table_{term}") or r.get(f"intro_{term}")
+            # intro_* first — see reconcile_state.reconcile_one: table_* went
+            # national on 2026-07-18 and is now identical across all states.
+            rate = r.get(f"intro_{term}") or r.get(f"table_{term}")
             if rate is None:
                 continue
-            row = {"date": d, "rate": rate, "src": "Bankrate"}
+            # `field` records WHICH of the two Bankrate fields the number came
+            # from, so the substitution is auditable rather than invisible.
+            # Not read by the frontend; it exists for the regression check.
+            row = {"date": d, "rate": rate, "src": "Bankrate",
+                   "field": "intro" if r.get(f"intro_{term}") else "table"}
             method = r.get("source_method")
             if method:
                 row["method"] = method

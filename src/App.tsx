@@ -4,6 +4,7 @@ import { useExternalLinks } from "./lib/useExternalLinks";
 import { CalculatorProvider } from "./lib/useCalculator";
 import { ThemeProvider, ThemeToggle } from "./lib/useTheme";
 import { ChartToggleProvider } from "./lib/useChartToggles";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StateDashboard = lazy(() => import("./pages/StateDashboard"));
@@ -53,6 +54,38 @@ export default function App() {
         <ThemeToggle />
       </nav>
       <CalculatorProvider>
+        {/*
+          Root boundary, deliberately OUTSIDE the Suspense (see the docstring
+          on ErrorBoundary): every route below is lazy(), so a chunk that
+          fails to load rejects the import promise and never mounts. A
+          boundary inside Suspense cannot catch that, and the user is left
+          with an empty #root.
+
+          Retry reloads the document rather than clearing state. The dominant
+          failure here is a stale content-hashed chunk 404 — every daily data
+          deploy rotates the route-chunk hashes, so a tab left open across a
+          deploy requests URLs that no longer exist. setState would just
+          re-request the same dead URL; only re-fetching index.html picks up
+          the new asset manifest.
+        */}
+        <ErrorBoundary
+          fallback={() => (
+            <div className="error-boundary-fallback" role="alert">
+              <p>
+                <b>Couldn't load this page.</b> The site may have been updated
+                since you opened this tab. Reloading fetches the current
+                version.
+              </p>
+              <button
+                type="button"
+                className="error-boundary-retry"
+                onClick={() => window.location.reload()}
+              >
+                Reload
+              </button>
+            </div>
+          )}
+        >
         <Suspense fallback={<p className="loading">Loading…</p>}>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -75,6 +108,7 @@ export default function App() {
             />
           </Routes>
         </Suspense>
+        </ErrorBoundary>
       </CalculatorProvider>
     </ThemeProvider>
   );

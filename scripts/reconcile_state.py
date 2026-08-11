@@ -1,7 +1,8 @@
 """Reconcile state-level Bankrate snapshots into a 24-row chart-ready monthly
 series for any state. Reads:
   - src/data/states/{slug}/bankrate_{term}yr_dense.json (Wayback historical)
-  - data/daily/bankrate_{slug}.jsonl (latest live value, used for trailing month)
+  - data/daily/bankrate_{slug}.jsonl (live daily observations; the PRIMARY
+    source for every month it covers, with the Wayback dense file as fallback)
 
 Emits:
   - src/data/states/{slug}/bankrate_{term}yr.json (24-row chart-ready)
@@ -14,6 +15,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _jsonl import read_jsonl  # noqa: E402
 from _paths import bankrate_jsonl, state_data_dir, WINDOW_JSON  # noqa: E402
 from _window import window_months, write_window_json  # noqa: E402
 from states import by_slug  # noqa: E402
@@ -49,27 +51,28 @@ def parse_as_of(as_of_str: str | None) -> str | None:
         return None
 
 
-def load_latest_live(slug: str) -> dict | None:
+def load_all_live(slug: str) -> list[dict]:
+    """Every row in the state's live Bankrate accumulator, oldest first.
+
+    The whole file, not just the tail: reconcile_one now builds a per-MONTH
+    live series from it (see the WHY there), so discarding everything but the
+    newest row would throw away the very history this reads for.
+    """
     path = bankrate_jsonl(slug)
-    if not os.path.exists(path):
-        return None
-    rows: list[dict] = []
-    with open(path, "r", encoding="utf-8") as f:
-        for lineno, line in enumerate(f, start=1):
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rows.append(json.loads(line))
-            except json.JSONDecodeError as e:
-                print(
-                    f"  load_latest_live({path}): skipped malformed JSON "
-                    f"on line {lineno}: {e}",
-                    file=sys.stderr,
-                )
+    rows = [r for r in read_jsonl(path) if r.get("date_iso")]
+    rows.sort(key=lambda r: (r.get("date_iso", ""), r.get("fetched_at_utc", "")))
+    return rows
+
+
+def load_latest_live(slug: str) -> dict | None:
+    """The newest live row, or None when it is older than STALE_DAYS.
+
+    Still used for the CURRENT month's freshness gate and for state_meta's
+    `live_trailing` flag — a stale tail must not be presented as today's rate.
+    """
+    rows = load_all_live(slug)
     if not rows:
         return None
-    rows.sort(key=lambda r: r.get("date_iso", ""))
     latest = rows[-1]
     try:
         latest_date = dt.date.fromisoformat(latest["date_iso"])
@@ -80,11 +83,56 @@ def load_latest_live(slug: str) -> dict | None:
     return latest
 
 
-def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None) -> list[dict]:
+def live_by_month(live_rows: list[dict], term: int) -> dict[str, dict]:
+    """Collapse the live daily accumulator to one representative per month.
+
+    The representative is the LATEST observation in the month — the same
+    choice aggregate_mnd_state / aggregate_nerdwallet_state make, so the four
+    monthly series stay comparable.
+    """
+    best: dict[str, dict] = {}
+    for r in live_rows:
+        d = r.get("date_iso")
+        if not d or len(d) < 7:
+            continue
+        # Same intro-before-table precedence as the live override below.
+        rate = r.get(f"intro_{term}") or r.get(f"table_{term}")
+        if rate is None:
+            continue
+        m_label = d[:7]
+        prior = best.get(m_label)
+        if prior is None or d >= prior["date"]:
+            best[m_label] = {"date": d, "rate": rate}
+    return best
+
+
+def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None,
+                  live_rows: list[dict] | None = None) -> list[dict]:
     by_month = {row["month"]: row for row in dense}
+    # WHY the live accumulator is consulted per-month, not just for the tail:
+    # 100+ state-months (June + July 2026 across all covered states) rendered
+    # as {"rate": null, "src": "no archive"} while 28-31 daily observations
+    # for each sat in the JSONL. It was masked only because emit_daily_view's
+    # 90-day trail still plotted them; June 2026 ages out of that trail around
+    # 2026-08-30, at which point the data would leave the site entirely.
+    # Wayback (dense) is the fallback now, not the primary.
+    live_months = live_by_month(live_rows or [], term)
+    this_month = dt.date.today().strftime("%Y-%m")
     rows = []
     for (y, m) in window_months():
         m_label = f"{y}-{m:02d}"
+        lv = live_months.get(m_label)
+        # The STALE_DAYS gate applies to the CURRENT month only: a stale tail
+        # must not be shown as today's rate, but a completed past month is
+        # settled history and its age is not a defect.
+        if lv is not None and (m_label != this_month or live is not None):
+            rows.append({
+                "m": m_label,
+                "date": lv["date"],
+                "rate": lv["rate"],
+                "src": "Bankrate (live)",
+            })
+            continue
         src_row = by_month.get(m_label)
         if src_row and src_row.get("bankrate_table_pct") is not None:
             parsed = parse_as_of(src_row.get("as_of"))
@@ -110,19 +158,10 @@ def reconcile_one(slug: str, term: int, dense: list[dict], live: dict | None) ->
         else:
             rows.append({"m": m_label, "date": f"{y}-{m:02d}-15", "rate": None, "src": "no archive"})
 
-    # Apply live override for the latest month if present.
-    if live:
-        date_iso = live["date_iso"]
-        y, mo, _ = date_iso.split("-")
-        m_label = f"{y}-{mo}"
-        rate = live.get(f"table_{term}") or live.get(f"intro_{term}")
-        if rate is not None:
-            for r in rows:
-                if r["m"] == m_label:
-                    r["date"] = date_iso
-                    r["rate"] = rate
-                    r["src"] = "Bankrate (live)"
-                    break
+    # The old "apply live override for the latest month" block used to live
+    # here. It is superseded, not dropped: the loop above already prefers the
+    # live accumulator for every month it covers, including the latest, with
+    # the same intro-before-table precedence and the same STALE_DAYS gate.
     return rows
 
 
@@ -131,6 +170,7 @@ def reconcile_state(slug: str) -> int:
     out_dir = state_data_dir(slug)
     os.makedirs(out_dir, exist_ok=True)
     live = load_latest_live(slug)
+    live_rows = load_all_live(slug)
 
     write_window_json(WINDOW_JSON)
 
@@ -142,7 +182,7 @@ def reconcile_state(slug: str) -> int:
         else:
             with open(dense_path) as f:
                 dense = json.load(f)
-        rows = reconcile_one(slug, term, dense, live)
+        rows = reconcile_one(slug, term, dense, live, live_rows)
         n_filled = sum(1 for r in rows if r["rate"] is not None)
         out_path = os.path.join(out_dir, f"bankrate_{term}yr.json")
         with open(out_path, "w") as f:

@@ -1,8 +1,9 @@
 """Download FRED MORTGAGE15US and MORTGAGE30US (Freddie Mac PMMS weekly via
 St. Louis Fed) and aggregate to monthly mean over Jun 2024 - May 2026.
 
-Emits the same {month, rate, n_weeks} shape that parse_pmms.py emitted, so no
-downstream change is needed. Use this in place of parse_pmms.py going forward.
+Emits {month, rate, n_weeks}. This supersedes the retired parse_pmms.py, which
+was deleted once it had hardcoded a window ending 2026-05 and would have
+truncated the live national series if anyone had repaired its stale paths.
 """
 import csv
 import datetime as dt
@@ -337,6 +338,17 @@ def _append_fail_log(line: str) -> None:
         print(f"  WARNING: could not append to FAIL_LOG ({FAIL_LOG}): {e}", file=sys.stderr)
 
 
+def _on_disk_rows(path: str) -> int:
+    """How many rows the currently-shipped JSON holds. Returns 0 when the file
+    is absent or unreadable, so a first-ever run is never blocked."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        return len(data) if isinstance(data, list) else 0
+    except (OSError, json.JSONDecodeError):
+        return 0
+
+
 def main() -> int:
     os.makedirs(OUT_DIR, exist_ok=True)
     failures: list[str] = []
@@ -352,16 +364,34 @@ def main() -> int:
             print(f"  WARNING: no observations returned for {fred_id}")
             failures.append(fred_id)
             continue
+        out_path = os.path.join(OUT_DIR, f"pmms_{term}yr_monthly.json")
+        weekly_path = os.path.join(OUT_DIR, f"pmms_{term}yr_weekly.json")
+
+        # Refuse to shrink. Tiers 1 and 4 of fetch_series return a SINGLE
+        # current row; the unconditional write below would then collapse 27
+        # months of history to 1 with exit 0 and no FAIL_LOG line. Freddie Mac
+        # is Tier 1 — evaluated before the full-history CSV endpoints — so a
+        # missing or revoked FRED_API_KEY makes that the permanent daily
+        # behaviour. Keep the previous JSON and report it like any other
+        # failure instead.
+        if len(weekly) == 1 and _on_disk_rows(out_path) > 1:
+            print(
+                f"  WARNING: {fred_id} returned a single-row fallback but "
+                f"{os.path.basename(out_path)} holds {_on_disk_rows(out_path)} "
+                f"rows; keeping the previous JSON.",
+                file=sys.stderr,
+            )
+            _append_fail_log(f"fred:{fred_id} (single-row fallback; kept previous JSON)")
+            continue
+
         monthly = aggregate(weekly)
         print(f"  {len(weekly)} weekly observations -> {len(monthly)} months in window")
         for row in monthly:
             print(f"    {row['month']}  {row['rate']:.3f}%  ({row['n_weeks']} weeks)")
-        out_path = os.path.join(OUT_DIR, f"pmms_{term}yr_monthly.json")  # noqa
         with open(out_path, "w") as f:
             json.dump(monthly, f, indent=2)
         print(f"  Saved -> {out_path}")
         weekly_rows = weekly_in_window(weekly)
-        weekly_path = os.path.join(OUT_DIR, f"pmms_{term}yr_weekly.json")
         with open(weekly_path, "w") as f:
             json.dump(weekly_rows, f, indent=2)
         print(f"  Saved -> {weekly_path}  ({len(weekly_rows)} weekly rows)\n")

@@ -32,3 +32,8 @@ __pycache__/
 
 # Transient CI artifact from scripts/check_stale_sources.py (never committed)
 .stale-alert.txt
+
+# Claude Code machine-local state. Note the `*.local` pattern above does NOT
+# match `settings.local.json` — gitignore globs the whole filename, and that
+# one ends in `.json`, which is why it was tracked for months.
+.claude/

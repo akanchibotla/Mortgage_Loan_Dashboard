@@ -42,18 +42,49 @@ export default function MethodologyPage() {
             via simple HTTP (their values are embedded in raw HTML).
           </li>
           <li>
+            <b>State-level "today" rates (NerdWallet)</b> —{" "}
+            <a href="https://www.nerdwallet.com/mortgages/mortgage-rates">
+              NerdWallet's per-state mortgage-rate pages
+            </a>
+            , fetched daily over simple HTTP. Their published figure is a state average across
+            their lender panel. Most of the plotted history is Wayback backfill rather than live
+            capture — for a typical state, roughly half the months in the window come from the
+            archive. NerdWallet publishes no Nevada page, so Nevada has no NerdWallet line.
+          </li>
+          <li>
+            <b>National lender quote (Rocket Mortgage)</b> — <b>not a daily series.</b> Rocket's
+            site is behind Akamai bot protection that blocks the GitHub Actions runners, so the
+            scheduled pipeline cannot fetch it at all. Live readings are collected by a scheduled
+            task on a residential connection roughly weekly, and the pre-2026 history is entirely
+            Wayback backfill at about one reading per month. Multi-week gaps are normal and real:
+            the plotted line <em>breaks</em> at months with no observation rather than
+            interpolating across them. Treat every Rocket point as "one lender's advertised rate
+            on that specific day", not as a monthly average.
+          </li>
+          <li>
             <b>State-level historical rates (Bankrate)</b> — monthly snapshots of each state's
             Bankrate page captured by the{" "}
             <a href="https://web.archive.org/">Internet Archive's Wayback Machine</a>. We query the
-            CDX index for the closest snapshot to mid-month and extract the rate-table value. Coverage
-            depends on how often Wayback crawled each state (varies from ~11 to ~20 months out of 25).
+            CDX index for the closest snapshot to mid-month and extract the rate-table value.
+            Coverage depends entirely on how often Wayback crawled each state, and it is uneven:
+            across the 27-month window the median state has <b>13</b> archived readings, the
+            best-covered (Texas) has <b>19</b>, and <b>11 states have fewer than 11</b>. Seven
+            states — Alaska, Arkansas, Delaware, Nevada, New Hampshire, North Dakota and the
+            District of Columbia — have <b>no usable archive at all</b> and show only the live
+            readings collected since this dashboard started. DC is a different case from the other
+            six: Bankrate publishes no District of Columbia state page, so there is nothing to
+            archive and nothing to fetch live either.
           </li>
           <li>
             <b>Closed-loan distributions (HMDA)</b> — the{" "}
             <a href="https://ffiec.cfpb.gov/data-browser/">FFIEC HMDA Data Browser</a> 2024 LAR
-            (Loan Application Register), filtered to <code>action_taken=1</code> (originated),{" "}
-            <code>loan_purpose=1</code> (home purchase), and conventional first-lien purchase. ~7
-            million originations across 3,141 U.S. counties.
+            (Loan Application Register), filtered to <code>action_taken=1</code> (originated) and{" "}
+            <code>loan_purpose=1</code> (home purchase), then restricted to loans with a stated
+            term of 180 or 360 months, excluding reverse mortgages, open-end lines of credit, and
+            business-purpose loans. <b>All loan types are included</b> — conventional, FHA, VA and
+            USDA — so the distributions mix government-insured and conventional pricing; FHA and VA
+            note rates typically run below conventional, which pulls the lower percentiles down.
+            Lien status is not filtered. 2,904,579 originations across 3,128 U.S. counties.
           </li>
         </ul>
       </section>
@@ -199,6 +230,16 @@ export default function MethodologyPage() {
             close-of-business each weekday.
           </li>
           <li>
+            <b>NerdWallet state pages</b> — fetched daily alongside the others.
+          </li>
+          <li>
+            <b>Rocket Mortgage</b> — <b>not daily, and not refreshed by CI at all.</b> The
+            scheduled pipeline is blocked by Rocket's bot protection, so this series is refreshed
+            by hand from a residential connection roughly once a week. Expect gaps of a week or
+            more, and expect the most recent Rocket point to be older than every other line on the
+            chart.
+          </li>
+          <li>
             <b>HMDA</b> — annual. The 2024 LAR is what's used today. 2025 LAR is expected mid-2026.
           </li>
         </ul>
@@ -208,7 +249,7 @@ export default function MethodologyPage() {
         <h2>Limitations &amp; what we don't do</h2>
         <ul>
           <li>No intraday data. Rates can move 0.25 percentage points between morning and afternoon; this dashboard is daily-resolution.</li>
-          <li>No ARM, refinance, FHA-specific, or VA-specific breakdowns yet. All views are 15-year or 30-year fixed conventional purchase.</li>
+          <li>No ARM, refinance, FHA-specific, or VA-specific breakdowns yet. All views are 15-year or 30-year fixed purchase loans, with every loan type pooled together — we do not <em>break out</em> conventional vs. FHA / VA / USDA, and we do not filter to any one of them.</li>
           <li>HMDA public LAR strips some fields for privacy (e.g., the exact origination date and credit score). All percentile ranges are calendar-year-2024 aggregates — there's no monthly granularity at the state or county level. For month-by-month rate movement, see the rate chart on any state dashboard.</li>
           <li>Bankrate's quoted rates are a panel survey, not actual closed-loan rates. They typically run about 0.10–0.30 percentage points above or below HMDA closings depending on point/credit dynamics.</li>
           <li>The rate sources (FRED PMMS lender survey, Bankrate lender-aggregate quote, MND lock-flow, NerdWallet state average, Rocket Mortgage national quote) use different methodologies and typically disagree by about 0.10–0.30 percentage points even on the same date. Don't expect the lines on each state chart to agree.</li>

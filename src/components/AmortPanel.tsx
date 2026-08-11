@@ -211,9 +211,11 @@ function AmortChart({
   const innerW = W - 2 * PAD_X;
   const innerH = H - 2 * PAD_Y;
   const n = schedule.length;
-  if (n === 0) return null;
-
+  // The hook must run BEFORE the early return, not after it: React identifies
+  // hooks by call order, so an empty schedule followed by a non-empty one
+  // changes the number of hooks this component calls between renders.
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  if (n === 0) return null;
 
   const x = (m: number) => PAD_X + (m / n) * innerW;
   // 100%-normalized per month: each column is the full payment for THAT
@@ -222,6 +224,12 @@ function AmortChart({
   // payment products (ARMs, buydowns) where using the first month's
   // payment as a global scale makes later-phase columns look wrong.
   const yShare = (row: AmortRow) => {
+    // A non-finite payment or interest (an out-of-band rate upstream) would
+    // otherwise write "NaN" straight into the SVG `d` attribute, which
+    // silently drops the whole path. Fall back to the baseline instead.
+    if (!Number.isFinite(row.payment) || !Number.isFinite(row.interest)) {
+      return PAD_Y + innerH;
+    }
     if (row.payment <= 0) return PAD_Y + innerH;
     const interestShare = Math.max(0, Math.min(1, row.interest / row.payment));
     return PAD_Y + (1 - interestShare) * innerH;

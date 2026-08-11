@@ -18,8 +18,14 @@ WHAT IT CATCHES (and what it deliberately doesn't)
   self-heals on the next run. This guard is the long-silence backstop, not a
   second per-state nag.
 
-  A date that is present but UNPARSEABLE (data corruption) is treated as an
-  alert, not silently ignored -- a garbage value must never mask a dead source.
+  A date that is present but UNPARSEABLE or in the FUTURE (data corruption)
+  is treated as an alert, not silently ignored -- a garbage value must never
+  mask a dead source, and a future date would otherwise win the max() and
+  report a negative age that never trips the threshold.
+
+  Rocket freshness is measured over LIVE rows only. A Wayback salvage row is
+  written with the snapshot's own date, so counting it would let the archive
+  workaround clear the very alarm that says the live feed is dead.
 
 USAGE
   python scripts/check_stale_sources.py [--today YYYY-MM-DD]
@@ -83,7 +89,43 @@ def _last_value_jsonl(path: str, key: str) -> object | None:
     return None
 
 
-def _freshest(dates: list[object]) -> tuple[str | None, bool]:
+def _is_wayback_row(row: dict) -> bool:
+    """True when a Rocket row was salvaged from the Internet Archive rather
+    than fetched live. The backfiller stamps source="rocket_wayback"; the live
+    fetcher's Tier-3 salvage stamps source_method="wayback_<YYYYMMDD>"."""
+    return (row.get("source") == "rocket_wayback") or \
+        str(row.get("source_method") or "").startswith("wayback")
+
+
+def _last_live_value_jsonl(path: str, key: str) -> object | None:
+    """Like _last_value_jsonl, but for Rocket: skip Wayback salvage rows.
+
+    WHY: an archive row is written with the SNAPSHOT's date, so a successful
+    Wayback salvage lands a fresh-looking row and clears this alarm -- exactly
+    the condition the alarm exists to catch. Rocket's live feed being dead is
+    the finding; the archive row is the workaround, not the recovery.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            rows = [json.loads(ln) for ln in f if ln.strip()]
+    except (OSError, json.JSONDecodeError):
+        return None
+    live = [r for r in rows if isinstance(r, dict) and not _is_wayback_row(r)]
+    if not live:
+        return None
+    # The file is date-sorted on write, but backfills can interleave, so take
+    # the max explicitly rather than trusting the tail. Only ISO values are
+    # eligible for the max -- a garbage string would otherwise sort above real
+    # dates and mask staleness. If nothing parses, hand back a raw value so the
+    # caller reports corruption instead of "no rows".
+    present = [r.get(key) for r in live if r.get(key) not in (None, "")]
+    valid = [v for v in present if _is_iso_date(v)]
+    if valid:
+        return max(valid)
+    return present[0] if present else None
+
+
+def _freshest(dates: list[object], today: dt.date) -> tuple[str | None, bool]:
     """Return (freshest_valid_ISO_date_or_None, saw_unparseable).
 
     Non-ISO / malformed values are dropped from the max() (a garbage string
@@ -91,9 +133,19 @@ def _freshest(dates: list[object]) -> tuple[str | None, bool]:
     and then fail age parsing, silently masking staleness) -- but the fact
     that a malformed value was seen is reported back so the caller can alert
     on corruption rather than swallow it.
+
+    A date in the FUTURE is corruption too, and the more dangerous kind: a
+    single '2099-01-01' row in ONE state used to win the max() and report a
+    negative age, which never trips `age > threshold` -- so one bad row could
+    silence a 30-day-dead source across all 51 states. Future dates are
+    therefore excluded from the max() and reported as corruption.
     """
-    valid = [d for d in dates if _is_iso_date(d)]
-    saw_bad = any(d is not None and not _is_iso_date(d) for d in dates)
+    valid = [d for d in dates if _is_iso_date(d) and dt.date.fromisoformat(d) <= today]
+    saw_bad = any(
+        d is not None
+        and (not _is_iso_date(d) or dt.date.fromisoformat(d) > today)
+        for d in dates
+    )
     return (max(valid) if valid else None), saw_bad
 
 
@@ -149,12 +201,21 @@ def scan(root_states: str, daily_dir: str, data_dir: str, today: dt.date,
         ],
     }
     for name, dates in per_state.items():
-        fresh, saw_bad = _freshest(dates)
+        fresh, saw_bad = _freshest(dates, today)
         if fresh is None:
             detail = ("all rows have unparseable dates (data corruption)"
                       if saw_bad else "no dated rows on disk at all")
             findings.append({"source": name, "detail": detail})
             continue
+        if saw_bad:
+            # A bad value no longer masks staleness (it is out of the max()),
+            # but it is still corruption and must be said out loud.
+            findings.append({
+                "source": name,
+                "detail": "at least one state has an unparseable or future-dated "
+                          "row (data corruption); it was excluded from the "
+                          "freshness check",
+            })
         age = _age_days(fresh, today)
         if age is not None and age > daily_threshold:
             findings.append({
@@ -163,20 +224,20 @@ def scan(root_states: str, daily_dir: str, data_dir: str, today: dt.date,
             })
 
     # ---- Rocket: single national JSONL ----
-    rk = _last_value_jsonl(os.path.join(daily_dir, "rocket.jsonl"), "date_iso")
+    rk = _last_live_value_jsonl(os.path.join(daily_dir, "rocket.jsonl"), "date_iso")
     if rk is None:
-        findings.append({"source": "Rocket", "detail": "no rows in rocket.jsonl"})
+        findings.append({"source": "Rocket", "detail": "no live rows in rocket.jsonl"})
     else:
         age = _age_days(rk, today)
         if age is None:
             findings.append({
                 "source": "Rocket",
-                "detail": f"last national row has an unparseable date {rk!r} (data corruption)",
+                "detail": f"last live national row has an unparseable date {rk!r} (data corruption)",
             })
         elif age > daily_threshold:
             findings.append({
                 "source": "Rocket",
-                "detail": f"last national row is {rk} ({age} days old)",
+                "detail": f"last LIVE national row is {rk} ({age} days old); Wayback salvage rows are excluded",
             })
 
     # ---- PMMS 30/15-yr national monthly ----

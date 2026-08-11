@@ -9,6 +9,13 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  # Needed for the notifier at the end of this job. This workflow is what
+  # actually puts data in front of users, and until now a failure here was
+  # completely silent: refresh.yml dispatches it and does not wait for it, so
+  # when the 2026-08-04 deploy died in actions/deploy-pages the refresh run
+  # stayed green and the live site served a three-day-old bundle. An issue is
+  # the only channel that reaches a human without one being logged in.
+  issues: write
 
 concurrency:
   group: pages
@@ -33,6 +40,19 @@ jobs:
 
       - run: npm ci
 
+      # The suite existed for months and no workflow ever ran it, which made
+      # it decorative. It is meaningful now for a specific reason: until the
+      # calculator stopped carrying private copies of monthlyPayment /
+      # buildBuydownPlan / computeBuydownSubsidyTotal, these tests exercised
+      # src/lib/loanMath.ts — a module with zero production importers — so a
+      # regression in the SHIPPING mortgage math could not have been caught
+      # here. The page now imports the tested library, so this gate is real.
+      - name: Unit tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Build
         run: npm run build
         env:
@@ -46,3 +66,86 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      # De-duplicated by label + title, same shape as the notifiers in
+      # refresh.yml. Not gated on `github.event_name`: unlike refresh.yml,
+      # every run of this workflow is a real publish attempt (a push to main or
+      # the refresh job's dispatch), so any failure means the live site is
+      # stale and deserves the issue.
+      - name: Notify on deploy failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = `Pages deploy failed (${today})`;
+            const body = [
+              `The GitHub Pages deploy failed, so the live site is still serving the previous bundle.`,
+              `Data already committed to main will not be visible to users until a deploy succeeds.`,
+              ``,
+              `- **Run:** ${runUrl}`,
+              `- **Triggered by:** ${context.eventName}`,
+              `- **SHA:** ${context.sha}`,
+              ``,
+              `Re-run the failed job, or dispatch this workflow manually against main.`,
+            ].join('\n');
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'deploy-failure', per_page: 50,
+            });
+            // listForRepo returns pull requests alongside issues.
+            const dup = open.data
+              .filter(i => !i.pull_request)
+              .find(i => i.title.startsWith('Pages deploy failed'));
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: dup.number,
+                body: `Another deploy failure: ${runUrl}`,
+              });
+              core.info(`Appended comment to existing issue #${dup.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['deploy-failure', 'automation'],
+              });
+              core.info(`Opened issue #${created.data.number}`);
+            }
+
+      # The closing half — added with the notifier rather than after it, so
+      # this alarm never becomes the one-way kind that had to be retrofitted
+      # onto stale-source and daily-refresh-failure. A successful deploy IS the
+      # recovery condition: the site is now serving the current bundle.
+      #
+      # Restricted to main. This workflow has no `schedule` trigger, so the
+      # scheduled-only guard used by the closers in refresh.yml has no
+      # equivalent here; the guard that carries the same INTENT is that only a
+      # real production publish may declare an alarm recovered. A manual
+      # dispatch against a branch must not silence it.
+      - name: Close recovered deploy-failure issues
+        if: success() && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'deploy-failure', per_page: 50,
+            });
+            const issues = open.data.filter(i => !i.pull_request);
+            if (!issues.length) { core.info('No open deploy-failure issues to close.'); return; }
+            for (const issue of issues) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Recovered as of ${today}: a Pages deploy completed successfully.\n\n- **Run:** ${runUrl}`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed', state_reason: 'completed',
+              });
+              core.info(`Closed recovered issue #${issue.number}`);
+            }

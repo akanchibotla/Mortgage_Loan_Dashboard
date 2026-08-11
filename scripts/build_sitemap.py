@@ -1,40 +1,54 @@
-"""Generate public/sitemap.xml listing all state and county pages.
+"""Generate public/sitemap.xml.
 
-URLs use the HashRouter convention; Google's renderer follows hashes via the
-sitemap. Run after build_states_index.py so we know which states/counties are
-bundled.
+The site is a HashRouter SPA, so every route is a FRAGMENT of one document.
+Crawlers discard the fragment, which means the 2,684 `#/state/...` and
+`#/state/.../county/...` entries this used to emit all collapsed to the single
+base URL — 2,685 lines of daily churn advertising 2,685 URLs that resolve to
+one. Emitting just the base URL says the same thing honestly.
+
+That is a documentation fix, not an SEO regression: per-route indexing needs
+build-time prerendering (or BrowserRouter + a 404 shim), which is an
+architecture change and explicitly out of scope. See ROADMAP.
+
+`lastmod` likewise comes from the DATA's own newest observation date, not
+`date.today()`: a wall-clock stamp rewrote the file on every run whether or
+not anything had changed.
 """
 import datetime as dt
+import glob
 import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _paths import REPO_ROOT, STATES_DIR, STATES_INDEX_JSON  # noqa: E402
+from _paths import REPO_ROOT, STATES_DIR  # noqa: E402
 
 BASE = "https://akanchibotla.github.io/Mortgage_Loan_Dashboard/"
 
 
-def main() -> int:
-    today = dt.date.today().isoformat()
-    urls: list[tuple[str, str]] = [
-        (BASE, today),
-        (f"{BASE}#/calculator", today),
-    ]
+def data_lastmod() -> str:
+    """Newest observation date across the shipped daily views.
 
-    if os.path.exists(STATES_INDEX_JSON):
-        with open(STATES_INDEX_JSON) as f:
-            idx = json.load(f)
-        for s in idx["states"]:
-            urls.append((f"{BASE}#/state/{s['slug']}", today))
-            counties_path = os.path.join(STATES_DIR, s["slug"], "counties.json")
-            if not os.path.exists(counties_path):
-                continue
-            with open(counties_path) as f:
-                cf = json.load(f)
-            for c in cf["counties"]:
-                if (c["term_30"].get("n_loans") or 0) >= 30 or (c["term_15"].get("n_loans") or 0) >= 30:
-                    urls.append((f"{BASE}#/state/{s['slug']}/county/{c['fips']}", today))
+    This is the date the site's CONTENT last changed. Falls back to today only
+    when no daily view exists at all (a fresh checkout mid-bootstrap).
+    """
+    newest = ""
+    for path in glob.glob(os.path.join(STATES_DIR, "*", "*_daily.json")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                rows = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(rows, list) and rows:
+            d = rows[-1].get("date")
+            if isinstance(d, str) and d > newest:
+                newest = d
+    return newest or dt.date.today().isoformat()
+
+
+def main() -> int:
+    lastmod = data_lastmod()
+    urls: list[tuple[str, str]] = [(BASE, lastmod)]
 
     sitemap_lines = ['<?xml version="1.0" encoding="UTF-8"?>',
                      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { loadPmms, loadRocket, loadStateData, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import { useTermPreference } from "../lib/useTermPreference";
-import { useCalculator } from "../lib/useCalculator";
+import { useCalculator, LOAN_MAX, RATE_MIN, RATE_MAX } from "../lib/useCalculator";
 import { fmtMoney, monthlyPayment } from "../lib/payment";
 import type { CountyEntry } from "../types";
 import { ErrorBoundary } from "../components/ErrorBoundary";
@@ -296,7 +296,11 @@ function StateBody({ slug }: { slug: string }) {
           usLabel={`U.S. ${term}-yr FRM (FRED MORTGAGE${term}US, monthly mean)`}
           rocketLabel={`Rocket Mortgage ${term}-yr fixed (national)`}
           ncLabel={`${name} ${term}-yr fixed (Bankrate)`}
-          mndLabel={`${name} ${term}-yr fixed (Mortgage News Daily)`}
+          // MND publishes ONE national daily rate, which the pipeline
+          // replicates to all 51 states — there is no per-state MND series.
+          // Labelling it "{state} (Mortgage News Daily)" claimed a state
+          // reading that does not exist; matches the usLabel precedent above.
+          mndLabel={`Mortgage News Daily ${term}-yr fixed (national)`}
           nwLabel={`${name} ${term}-yr fixed (NerdWallet state average)`}
           yMin={yMin}
           yMax={7.5}
@@ -493,6 +497,7 @@ function StateCalculator({
             type="number"
             inputMode="numeric"
             min={0}
+            max={LOAN_MAX}
             step={5_000}
             value={loanAmount}
             onChange={(e) => {
@@ -523,10 +528,23 @@ function StateCalculator({
           <input
             type="number"
             inputMode="decimal"
-            min={0}
+            min={RATE_MIN}
+            max={RATE_MAX}
             step={0.05}
             value={rateInputValue}
             onChange={(e) => setRateText(e.target.value)}
+            onBlur={() => {
+              // Clamp on BLUR only, matching HomePage. Clamping inside
+              // onChange would make the field untypeable — it is controlled,
+              // so "-" or "0." would be rewritten on every keystroke. An
+              // unclamped negative rate used to flow into monthlyPayment and
+              // produce a confidently wrong payment.
+              if (customRate != null && Number.isFinite(customRate)) {
+                setRateText(
+                  Math.max(RATE_MIN, Math.min(RATE_MAX, customRate)).toFixed(2),
+                );
+              }
+            }}
             className="sc-field-input"
           />
           <span className="sc-field-suffix">%</span>

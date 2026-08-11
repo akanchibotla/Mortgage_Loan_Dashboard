@@ -24,6 +24,7 @@ import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _jsonl import upsert_jsonl  # noqa: E402
 from _paths import bankrate_jsonl  # noqa: E402
 from states import by_slug  # noqa: E402
 
@@ -200,24 +201,10 @@ def fetch_html(slug: str) -> tuple[str, int]:
 
 
 def write_jsonl_idempotent(path: str, new_row: dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    existing: list[dict] = []
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    existing.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
-    existing = [r for r in existing if r.get("date_iso") != new_row["date_iso"]]
-    existing.append(new_row)
-    existing.sort(key=lambda r: r.get("date_iso", ""))
-    with open(path, "w", encoding="utf-8") as f:
-        for r in existing:
-            f.write(json.dumps(r) + "\n")
+    """Insert-or-replace today's row. Delegates to the shared helper so the
+    write is atomic and malformed lines are reported rather than silently
+    deleted from the archive — see scripts/_jsonl.py."""
+    upsert_jsonl(path, new_row)
 
 
 def real(v):
@@ -340,7 +327,8 @@ def run_one(slug: str) -> int:
                 print(f"  Tier 3 (Wayback {snapshot_date}) succeeded for {slug}")
 
     out = {
-        "date_iso": dt.date.today().isoformat(),
+        # UTC, not local — see the note in fetch_mnd_state.run_one.
+        "date_iso": dt.datetime.now(dt.UTC).date().isoformat(),
         "fetched_at_utc": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "as_of": vals.get("as_of"),
         "state_slug": slug,

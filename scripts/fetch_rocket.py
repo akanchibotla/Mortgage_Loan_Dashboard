@@ -52,6 +52,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _http import fetch_html  # noqa: E402
+from _jsonl import read_jsonl, upsert_jsonl  # noqa: E402
 from _paths import rocket_jsonl, rocket_today_view  # noqa: E402
 
 BASE = "https://www.rocketmortgage.com"
@@ -400,24 +401,58 @@ def gather_rates() -> tuple[dict, str, str | None] | None:
     return None
 
 
+RATE_FIELDS = ("term_15", "term_30", "term_15_apr", "term_30_apr")
+
+
+def merge_row(existing: dict | None, new_row: dict) -> dict:
+    """Combine an existing row for the same date with the incoming one.
+
+    Rocket's tiers degrade: a Wayback salvage or a `static_partial` hit often
+    carries only one term. The plain last-writer-wins upsert let such a row
+    REPLACE a complete earlier row for the same date, destroying a term we had
+    already captured. Instead, fill only the fields the existing row is
+    missing, and never let a partial row demote a more complete one.
+    """
+    if not existing:
+        return new_row
+    merged = dict(existing)
+    for k in RATE_FIELDS:
+        if merged.get(k) is None and new_row.get(k) is not None:
+            merged[k] = new_row[k]
+    new_filled = sum(1 for k in RATE_FIELDS if new_row.get(k) is not None)
+    old_filled = sum(1 for k in RATE_FIELDS if existing.get(k) is not None)
+    if new_filled >= old_filled:
+        # The incoming row is at least as complete: let its provenance and
+        # timestamp win too, so the log reflects the fetch that produced it.
+        for k in ("fetched_at_utc", "source", "source_method"):
+            if k in new_row:
+                merged[k] = new_row[k]
+    return merged
+
+
+def rows_equivalent(a: dict, b: dict) -> bool:
+    """Same row apart from the wall-clock stamp.
+
+    `fetched_at_utc` changes on every run, so a re-fetch that found identical
+    rates still dirtied the file and forced a commit. Ignoring it makes
+    rocket_residential_refresh.ps1's "Nothing to push" branch reachable.
+    """
+    ignore = {"fetched_at_utc"}
+    return {k: v for k, v in a.items() if k not in ignore} == \
+           {k: v for k, v in b.items() if k not in ignore}
+
+
 def write_jsonl_idempotent(path: str, new_row: dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    existing: list[dict] = []
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    existing.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    by_date = {r.get("date_iso"): r for r in existing if r.get("date_iso")}
-    by_date[new_row["date_iso"]] = new_row
-    with open(path, "w", encoding="utf-8") as f:
-        for r in sorted(by_date.values(), key=lambda r: r.get("date_iso", "")):
-            f.write(json.dumps(r) + "\n")
+    """Insert-or-merge today's row. Delegates the write to the shared helper
+    so it is atomic and malformed lines are reported rather than silently
+    deleted from the archive — see scripts/_jsonl.py."""
+    existing = {r.get("date_iso"): r for r in read_jsonl(path) if r.get("date_iso")}
+    merged = merge_row(existing.get(new_row["date_iso"]), new_row)
+    prior = existing.get(new_row["date_iso"])
+    if prior is not None and rows_equivalent(prior, merged):
+        print("  No change for this date; leaving rocket.jsonl untouched.")
+        return
+    upsert_jsonl(path, merged)
 
 
 def write_today_view(path: str, row: dict) -> None:
@@ -447,6 +482,19 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    # Validate BEFORE any network work: an unparseable --date-iso used to be
+    # written straight into the accumulator's primary key, where nothing
+    # downstream can tell it from a real date.
+    if args.date_iso is not None:
+        try:
+            dt.date.fromisoformat(args.date_iso)
+        except ValueError:
+            print(
+                f"--date-iso must be YYYY-MM-DD, got {args.date_iso!r}",
+                file=sys.stderr,
+            )
+            return 2
+
     print("Fetching Rocket Mortgage national rates (multi-URL fallback) ...")
     result = gather_rates()
     if result is None:
@@ -456,7 +504,9 @@ def main() -> int:
 
     # Wayback hits report the snapshot's own date so the row lands in the
     # correct calendar month for the monthly aggregator. Live hits use today.
-    date_iso = args.date_iso or snapshot_iso or dt.date.today().isoformat()
+    # UTC, not local — the --date-iso help text above already promises UTC,
+    # and the row's sibling `fetched_at_utc` is UTC.
+    date_iso = args.date_iso or snapshot_iso or dt.datetime.now(dt.UTC).date().isoformat()
     row = {
         "date_iso": date_iso,
         "term_15": found["term_15"],
@@ -476,6 +526,18 @@ def main() -> int:
     )
     write_jsonl_idempotent(rocket_jsonl(), row)
     write_today_view(rocket_today_view(), row)
+
+    # A Wayback salvage means the LIVE feed is dead — the row is real and worth
+    # keeping, but it must not read as a successful live fetch. Exit 4 so
+    # refresh.yml's `|| echo "rocket" >> $FAIL_LOG` records it, instead of the
+    # dead feed hiding behind an archive row and a green exit 0.
+    if str(source_method or "").startswith("wayback"):
+        print(
+            "  NOTE: row came from a Wayback snapshot, not the live feed; "
+            "exiting 4 so the refresh workflow records it.",
+            file=sys.stderr,
+        )
+        return 4
     return 0
 
 

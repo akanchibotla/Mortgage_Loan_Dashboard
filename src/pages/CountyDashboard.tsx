@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { loadStateData, type StateData } from "../lib/loadStateData";
 import { usePageMeta } from "../lib/usePageMeta";
 import type { CountyEntry, HmdaSummary } from "../types";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import { fmtRate } from "../lib/payment";
 
 const cache = new Map<string, Promise<StateData | null>>();
 function getStatePromise(slug: string): Promise<StateData | null> {
@@ -16,10 +18,15 @@ function getStatePromise(slug: string): Promise<StateData | null> {
 
 export default function CountyDashboard() {
   const { slug = "", countyFips = "" } = useParams<{ slug: string; countyFips: string }>();
+  // Mirrors StateDashboard: the boundary sits OUTSIDE the Suspense so a
+  // rejected loadStateData() promise renders a message instead of hanging on
+  // the fallback forever.
   return (
-    <Suspense fallback={<p className="loading">Loading…</p>}>
-      <CountyBody slug={slug} countyFips={countyFips} />
-    </Suspense>
+    <ErrorBoundary label={`data for county ${countyFips}`}>
+      <Suspense fallback={<p className="loading">Loading…</p>}>
+        <CountyBody slug={slug} countyFips={countyFips} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -132,16 +139,21 @@ function DistributionSection({
 
 function DistributionBar({ d }: { d: CountyEntry["term_30"] }) {
   if (!d.p10_pct || !d.p90_pct) return null;
-  // Use a fixed range so all county bars are comparable: 4%–10%.
-  const RANGE_LO = 4;
-  const RANGE_HI = 10;
+  // 4%–10% is the COMMON case, not a hard range: 184 county/term cells have a
+  // p10 below 4 or a p90 above 10, and against a fixed track those bars were
+  // painted outside it entirely (California Imperial started half a track-
+  // width to the left of the axis). Widen to fit the data the way
+  // DemographicsPanel already does, so every bar stays inside its own track
+  // and the axis labels stay truthful about what the track shows.
+  const RANGE_LO = Math.floor(Math.min(4, d.p10_pct));
+  const RANGE_HI = Math.ceil(Math.max(10, d.p90_pct));
   const span = RANGE_HI - RANGE_LO;
   const pct = (v: number) => `${((v - RANGE_LO) / span) * 100}%`;
   const w = (a: number, b: number) => `${((b - a) / span) * 100}%`;
   return (
     <div className="dist-bar">
       <div className="dist-axis">
-        {[4, 5, 6, 7, 8, 9, 10].map((v) => (
+        {axisTicks(RANGE_LO, RANGE_HI).map((v) => (
           <span key={v} style={{ left: pct(v) }}>
             {v}%
           </span>
@@ -170,6 +182,17 @@ function DistributionBar({ d }: { d: CountyEntry["term_30"] }) {
       </div>
     </div>
   );
+}
+
+// Whole-percent ticks across the resolved range. The old axis hardcoded
+// [4..10]; once the range can widen, the labels have to follow it or they
+// describe a track that isn't there. Step up so a widened range doesn't
+// crowd the axis with labels.
+function axisTicks(lo: number, hi: number): number[] {
+  const step = Math.max(1, Math.ceil((hi - lo) / 6));
+  const out: number[] = [];
+  for (let v = lo; v <= hi; v += step) out.push(v);
+  return out;
 }
 
 function PeerComparison({
@@ -219,10 +242,6 @@ function Stat({ k, v }: { k: string; v: string }) {
       <span className="v">{v}</span>
     </div>
   );
-}
-
-function fmtRate(v?: number): string {
-  return v != null ? `${v.toFixed(2)}%` : "—";
 }
 
 function compareBp(a?: number, b?: number): string {

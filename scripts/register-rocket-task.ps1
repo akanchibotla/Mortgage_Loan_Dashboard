@@ -51,9 +51,14 @@ if (-not (Test-Path $runner)) {
     throw "Runner not found at $runner -- is the repo cloned at $RepoPath?"
 }
 
+# -RepoPath is forwarded explicitly. Without it the registered task ran the
+# runner with NO argument, so the runner fell back to its own default
+# (~/Github/Mortgage_Loan_Dashboard) and a device registered with a custom
+# -RepoPath silently refreshed the wrong path -- or exited 2 "repo not found"
+# every week, in a log file that lived under that same wrong path.
 $action = New-ScheduledTaskAction `
     -Execute 'powershell.exe' `
-    -Argument "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$runner`""
+    -Argument "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$runner`" -RepoPath `"$RepoPath`""
 
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $DayOfWeek -At $At
 

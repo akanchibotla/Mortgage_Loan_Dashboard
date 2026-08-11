@@ -48,9 +48,17 @@ const rocketDailyFiles = import.meta.glob("../data/rocket_*_daily.json", {
 
 // Lazy: per-state time-series + HMDA JSON. Each route loader fetches just
 // its own state's files via dynamic import — Vite chunks them per state.
-const stateLoaders = import.meta.glob("../data/states/*/*.json", {
-  import: "default",
-}) as Record<string, () => Promise<unknown>>;
+//
+// state_meta.json is excluded because `metaFiles` above already imports it
+// EAGERLY. A module that is statically imported cannot also be split out by a
+// dynamic import, so leaving it in this glob made Vite emit 51 build-time
+// INEFFECTIVE_DYNAMIC_IMPORT warnings (one per state) — noise that would hide
+// a real chunking regression. The eager copy is the one that is used; nothing
+// reads state_meta through stateLoaders.
+const stateLoaders = import.meta.glob(
+  ["../data/states/*/*.json", "!../data/states/*/state_meta.json"],
+  { import: "default" },
+) as Record<string, () => Promise<unknown>>;
 
 export interface StateData {
   slug: string;

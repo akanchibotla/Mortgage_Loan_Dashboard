@@ -57,6 +57,15 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt || echo "pip-install failed" >> "$FAIL_LOG"
 
+      # Deliberately placed here: AFTER the deps are available but BEFORE any
+      # network work. If the aggregation math is broken we must not publish,
+      # and failing at this point costs nothing — no fetcher has run, so there
+      # is no half-collected data to discard. This step is NOT fail-soft: a
+      # red suite means the code that computes every published number is
+      # wrong, which is categorically different from one flaky upstream page.
+      - name: Pipeline unit tests
+        run: python -m pytest scripts/tests -q
+
       # Playwright's Chromium binary is ~170 MB. Caching it keyed on
       # requirements.txt (which pins the Playwright version) skips the
       # full download/install on every run where the version hasn't moved —
@@ -85,7 +94,17 @@ jobs:
         id: states
         run: |
           set -e
-          slugs=$(ls src/data/states 2>/dev/null | sort | tr '\n' ' ')
+          # `find -type d`, not `ls`: ls lists any stray FILE under
+          # src/data/states as if it were a state slug, and it exits 0 even
+          # when the directory is missing entirely (the `2>/dev/null` hid the
+          # error). An empty slug list then flowed into every fetch loop and
+          # the validator, making the whole run a silent no-op that still
+          # printed "coverage check passed" over zero states.
+          slugs=$(find src/data/states -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tr '\n' ' ')
+          if [ -z "${slugs// /}" ]; then
+            echo "::error::No state directories found under src/data/states — refusing to run a zero-state refresh."
+            exit 1
+          fi
           echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
           echo "Active states: $slugs"
 
@@ -105,36 +124,63 @@ jobs:
           python scripts/fetch_rocket.py || echo "rocket" >> "$FAIL_LOG"
           python scripts/aggregate_rocket.py || echo "aggregate-rocket" >> "$FAIL_LOG"
 
+      # NOTE on `timeout` (all three per-state loops): each fetcher already
+      # budgets its own retries, and these wrappers are deliberately set ABOVE
+      # those budgets. Bankrate's worst legitimate path is 3 Playwright
+      # attempts of 60s goto + 45s hydration with 4s/12s backoffs (~331s),
+      # then the static tier (30s) and the Wayback CDX + snapshot tier
+      # (30s + 60s) — ~451s all told. MND/NerdWallet go through
+      # scripts/_http.py: 3 attempts of 30s plus the same backoffs (~106s).
+      # The wrappers exist to kill a genuinely WEDGED socket or browser (the
+      # unbounded case that turns one site-wide slowdown into a multi-hour
+      # job), NOT to preempt a retry the fetcher was designed to make — a
+      # tighter cap would convert states that recover on attempt 2 or 3 into
+      # permanent lost days. `timeout` exits 124 on expiry, which the existing
+      # `|| echo` path records in FAIL_LOG like any other failure, so after
+      # the expected-failure allowlist below an expired state is NAMED in the
+      # commit subject instead of vanishing into "(partial: N)".
       - name: Fetch Bankrate live per state
+        env:
+          # Passed through env rather than interpolated into the script body:
+          # a `${{ }}` expression is substituted as TEXT before bash parses the
+          # line, so anything that ever reaches the slug list could inject
+          # shell. As an env var it is data, never code.
+          STATE_SLUGS: ${{ steps.states.outputs.slugs }}
         run: |
-          for s in ${{ steps.states.outputs.slugs }}; do
+          for s in $STATE_SLUGS; do
             echo "::group::Bankrate $s"
-            python scripts/fetch_bankrate_state.py --state "$s" || echo "bankrate:$s" >> "$FAIL_LOG"
+            timeout 480 python scripts/fetch_bankrate_state.py --state "$s" || echo "bankrate:$s" >> "$FAIL_LOG"
             sleep 4
             echo "::endgroup::"
           done
 
       - name: Fetch MND live per state
+        env:
+          STATE_SLUGS: ${{ steps.states.outputs.slugs }}
         run: |
-          for s in ${{ steps.states.outputs.slugs }}; do
+          for s in $STATE_SLUGS; do
             echo "::group::MND $s"
-            python scripts/fetch_mnd_state.py --state "$s" || echo "mnd:$s" >> "$FAIL_LOG"
+            timeout 150 python scripts/fetch_mnd_state.py --state "$s" || echo "mnd:$s" >> "$FAIL_LOG"
             sleep 2
             echo "::endgroup::"
           done
 
       - name: Fetch NerdWallet live per state
+        env:
+          STATE_SLUGS: ${{ steps.states.outputs.slugs }}
         run: |
-          for s in ${{ steps.states.outputs.slugs }}; do
+          for s in $STATE_SLUGS; do
             echo "::group::NerdWallet $s"
-            python scripts/fetch_nerdwallet_state.py --state "$s" || echo "nerdwallet:$s" >> "$FAIL_LOG"
+            timeout 150 python scripts/fetch_nerdwallet_state.py --state "$s" || echo "nerdwallet:$s" >> "$FAIL_LOG"
             sleep 2
             echo "::endgroup::"
           done
 
       - name: Aggregate + reconcile per state
+        env:
+          STATE_SLUGS: ${{ steps.states.outputs.slugs }}
         run: |
-          for s in ${{ steps.states.outputs.slugs }}; do
+          for s in $STATE_SLUGS; do
             echo "::group::Aggregate $s"
             python scripts/aggregate_mnd_state.py --state "$s" || echo "aggregate-mnd:$s" >> "$FAIL_LOG"
             python scripts/aggregate_nerdwallet_state.py --state "$s" || echo "aggregate-nerdwallet:$s" >> "$FAIL_LOG"
@@ -148,17 +194,70 @@ jobs:
           python scripts/build_states_index.py || echo "states-index" >> "$FAIL_LOG"
           python scripts/build_sitemap.py || echo "sitemap" >> "$FAIL_LOG"
 
+      # Splits FAIL_LOG into EXPECTED (known, permanent, already-understood)
+      # and UNEXPECTED failures, and exports the split for the validator's
+      # step summary and the commit-message tag.
+      #
+      # WHY: `rocket` lands in FAIL_LOG on literally every run by design —
+      # Akamai denylists GitHub's datacenter IPs, so the feed is refreshed
+      # weekly from a residential IP instead (scripts/rocket_residential_refresh.ps1).
+      # That pinned every commit subject at "(partial: 1 failure(s))", a
+      # permanently-saturated signal: when a REAL second failure occurred
+      # (nerdwallet:maine, 2026-07-31) the tag read "(partial: 2 failure(s))",
+      # nobody could tell it apart from the daily noise, and that state
+      # permanently lost a day of its series behind a green run with no issue.
+      # Expected failures now stay VISIBLE (a "known-expected:" line) but stop
+      # counting; only unexpected ones raise ::error:: and name themselves in
+      # the commit subject.
       - name: Summarize partial failures
         if: always()
+        env:
+          # Hardcoded rather than read from a repo variable so the allowlist is
+          # reviewable in the diff and cannot be widened without a commit.
+          # One component per line, matched as a WHOLE line (grep -x -F), so
+          # `rocket` never accidentally allowlists `aggregate-rocket`.
+          EXPECTED_FAILURES: |
+            rocket
         run: |
+          exp_file="${RUNNER_TEMP:-/tmp}/expected-failures.txt"
+          unexp_file="${RUNNER_TEMP:-/tmp}/unexpected-failures.txt"
+          printf '%s\n' "$EXPECTED_FAILURES" | sed '/^[[:space:]]*$/d' > "$exp_file"
+          : > "$unexp_file"
+          expected_seen=""
           if [ -s "$FAIL_LOG" ]; then
-            echo "::warning::Daily refresh had partial failures:"
+            # `|| true` on both greps: grep exits 1 when nothing matches, which
+            # under the runner's default `bash -e` would abort the step on the
+            # happy path (no unexpected failures at all).
+            grep -vxF -f "$exp_file" "$FAIL_LOG" | sort -u > "$unexp_file" || true
+            expected_seen=$(grep -xF -f "$exp_file" "$FAIL_LOG" | sort -u | paste -sd, - || true)
+          fi
+          unexpected=$(wc -l < "$unexp_file" | tr -d ' ')
+          unexpected_list=$(paste -sd, - < "$unexp_file" || true)
+
+          if [ "$unexpected" -gt 0 ]; then
+            # ::error:: not ::warning:: — an unexpected failure means a source
+            # lost today's observation and nobody will refetch it.
+            echo "::error::Daily refresh had $unexpected UNEXPECTED component failure(s): $unexpected_list"
+          fi
+          if [ -n "$expected_seen" ]; then
+            echo "known-expected: $expected_seen"
+          fi
+          if [ -s "$FAIL_LOG" ]; then
+            echo "Full failure log:"
             cat "$FAIL_LOG"
             echo ""
-            echo "Count: $(wc -l < "$FAIL_LOG")"
+            echo "Total lines: $(wc -l < "$FAIL_LOG") (unexpected: $unexpected)"
           else
             echo "Daily refresh: no component-level failures."
           fi
+
+          # Exported for the "Validate daily coverage" summary table and the
+          # "Commit refreshed data" subject line, so the split is computed once.
+          {
+            echo "UNEXPECTED_FAILURE_COUNT=$unexpected"
+            echo "UNEXPECTED_FAILURE_LIST=$unexpected_list"
+            echo "EXPECTED_FAILURE_LIST=$expected_seen"
+          } >> "$GITHUB_ENV"
 
       - name: Validate daily coverage
         if: always()
@@ -170,6 +269,8 @@ jobs:
           # the whole run. Threshold lives in STRICT_THRESHOLD below.
           STRICT_COVERAGE: ${{ vars.STRICT_COVERAGE || '0' }}
           STRICT_THRESHOLD: '20'   # percent of source-state cells allowed to be missing/stale
+          # Data, not code — see the note on the Bankrate fetch step.
+          STATE_SLUGS: ${{ steps.states.outputs.slugs }}
         run: |
           today=$(date -u +%Y-%m-%d)
           yesterday=$(date -u -d 'yesterday' +%Y-%m-%d)
@@ -192,7 +293,7 @@ jobs:
           # (scripts/fetch_bankrate_state.py KNOWN_NO_COVERAGE) — keep this
           # list in sync so the validator stops warning about the empty file.
           BANKRATE_NO_COVERAGE=" district-of-columbia "
-          for s in ${{ steps.states.outputs.slugs }}; do
+          for s in $STATE_SLUGS; do
             state_count=$((state_count + 1))
             bf="src/data/states/$s/bankrate_30yr_daily.json"
             mf="src/data/states/$s/mnd_30yr_daily.json"
@@ -202,7 +303,14 @@ jobs:
             if [[ "$BANKRATE_NO_COVERAGE" == *" $s "* ]]; then
               :
             elif [ -f "$bf" ]; then
-              last=$(jq -r '.[-1].date // ""' "$bf" 2>/dev/null)
+              # `|| echo ""`: jq exits non-zero on malformed JSON, and under
+              # the runner's default `bash -e` a bare assignment from a failing
+              # command substitution ABORTS this whole step. "Commit refreshed
+              # data" carries no `if:`, so it was skipped too and the entire
+              # day's fetch was discarded over one unreadable file. Falling
+              # back to "" routes the file into the existing *_missing bucket,
+              # which is what an unreadable file actually is.
+              last=$(jq -r '.[-1].date // ""' "$bf" 2>/dev/null || echo "")
               if [ -z "$last" ]; then
                 bk_missing+=("$s")
               elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
@@ -212,7 +320,8 @@ jobs:
               bk_missing+=("$s")
             fi
             if [ -f "$mf" ]; then
-              last=$(jq -r '.[-1].date // ""' "$mf" 2>/dev/null)
+              # See the `|| echo ""` note above.
+              last=$(jq -r '.[-1].date // ""' "$mf" 2>/dev/null || echo "")
               if [ -z "$last" ]; then
                 mnd_missing+=("$s")
               elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
@@ -227,7 +336,8 @@ jobs:
               if [[ "$NW_NO_COVERAGE" == *" $s "* ]]; then
                 :
               else
-                last=$(tail -1 "$nwf" | jq -r '.date_iso // ""' 2>/dev/null)
+                # See the `|| echo ""` note above.
+                last=$(tail -1 "$nwf" | jq -r '.date_iso // ""' 2>/dev/null || echo "")
                 if [ -z "$last" ]; then
                   nw_missing+=("$s")
                 elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
@@ -265,15 +375,24 @@ jobs:
             mnd_failed_today=$(grep -c '^mnd:' "$FAIL_LOG" 2>/dev/null || true)
             nw_failed_today=$(grep -c '^nerdwallet:' "$FAIL_LOG" 2>/dev/null || true)
           fi
-          bk_fetched_today=$((state_count - bk_failed_today))
-          mnd_fetched_today=$((state_count - mnd_failed_today))
-          nw_fetched_today=$((state_count - nw_failed_today))
+          # Denominators exclude the states the fetcher deliberately skips, so
+          # the summary stops reporting "51/51 fetched" for a source that only
+          # ever attempts 50. Derived by counting the NO_COVERAGE lists above
+          # rather than hardcoding 1, so adding a slug to a list updates the
+          # denominator with it.
+          bk_expected=$((state_count - $(echo $BANKRATE_NO_COVERAGE | wc -w)))
+          nw_expected=$((state_count - $(echo $NW_NO_COVERAGE | wc -w)))
+          mnd_expected=$state_count
+          bk_fetched_today=$((bk_expected - bk_failed_today))
+          mnd_fetched_today=$((mnd_expected - mnd_failed_today))
+          nw_fetched_today=$((nw_expected - nw_failed_today))
 
           # Rocket is national (single JSONL, no per-state loop).
           rk_status="ok"
           rkf="data/daily/rocket.jsonl"
           if [ -f "$rkf" ]; then
-            last=$(tail -1 "$rkf" | jq -r '.date_iso // ""' 2>/dev/null)
+            # See the `|| echo ""` note above.
+            last=$(tail -1 "$rkf" | jq -r '.date_iso // ""' 2>/dev/null || echo "")
             if [ -z "$last" ]; then
               rk_status="missing (no rows)"
             elif [ "$last" != "$today" ] && [ "$last" != "$yesterday" ]; then
@@ -293,7 +412,8 @@ jobs:
           for term in 30 15; do
             pf="src/data/pmms_${term}yr_monthly.json"
             if [ -f "$pf" ]; then
-              last=$(jq -r '.[-1].month // ""' "$pf" 2>/dev/null)
+              # See the `|| echo ""` note above.
+              last=$(jq -r '.[-1].month // ""' "$pf" 2>/dev/null || echo "")
               if [ -z "$last" ]; then
                 status_val="missing (no rows)"
               elif [ "$last" != "$curr_month" ] && [ "$last" != "$prev_month" ]; then
@@ -358,6 +478,14 @@ jobs:
             echo "::warning::FRED PMMS fetcher failed today (PMMS 30=$pmms_status_30 / 15=$pmms_status_15)"
             ok=false
           fi
+          # The `state_count -gt 0` guard is the second half of the discovery
+          # fix: without it a zero-state run trips none of the per-state checks
+          # above (every array is empty) and prints an all-clear over a run
+          # that validated nothing at all.
+          if [ "$state_count" -eq 0 ]; then
+            echo "::error::Validator saw 0 states — nothing was checked; refusing to report an all-clear."
+            ok=false
+          fi
           if $ok; then
             echo "Daily coverage check passed: every tracked source has a recent row."
           fi
@@ -374,10 +502,18 @@ jobs:
             echo ""
             echo "**Date (UTC):** $today"
             echo "**Tracked states:** $state_count"
-            if [ -s "$FAIL_LOG" ]; then
-              echo "**Component failures:** $(wc -l < "$FAIL_LOG") (see workflow log for detail)"
+            # Unexpected-only count, computed once in "Summarize partial
+            # failures" and passed through $GITHUB_ENV. The expected ones stay
+            # on their own line so a permanent, understood failure is still
+            # VISIBLE without saturating the number anyone actually reads.
+            if [ "${UNEXPECTED_FAILURE_COUNT:-0}" -gt 0 ]; then
+              echo "**Component failures (unexpected):** ${UNEXPECTED_FAILURE_COUNT} — ${UNEXPECTED_FAILURE_LIST}"
             else
-              echo "**Component failures:** 0"
+              echo "**Component failures (unexpected):** 0"
+            fi
+            if [ -n "${EXPECTED_FAILURE_LIST:-}" ]; then
+              echo ""
+              echo "known-expected: ${EXPECTED_FAILURE_LIST}"
             fi
             echo ""
             # "Fetched today" — what *today's* fetcher step actually
@@ -388,9 +524,9 @@ jobs:
             fred_today=$( [ "$fred_failed_today" -eq 0 ] && echo "yes" || echo "NO" )
             echo "| Source | Scope | Fetched today | Missing | Stale (>1d) | Status |"
             echo "|---|---|:--:|---:|---:|---|"
-            echo "| Bankrate | per state | $bk_fetched_today/$state_count | $bk_m | $bk_s | $( [ $bk_m -eq 0 ] && [ $bk_s -eq 0 ] && echo OK || echo WARN ) |"
-            echo "| MND | per state | $mnd_fetched_today/$state_count | $mnd_m | $mnd_s | $( [ $mnd_m -eq 0 ] && [ $mnd_s -eq 0 ] && echo OK || echo WARN ) |"
-            echo "| NerdWallet | per state | $nw_fetched_today/$state_count | $nw_m | $nw_s | $( [ $nw_m -eq 0 ] && [ $nw_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| Bankrate | per state | $bk_fetched_today/$bk_expected | $bk_m | $bk_s | $( [ $bk_m -eq 0 ] && [ $bk_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| MND | per state | $mnd_fetched_today/$mnd_expected | $mnd_m | $mnd_s | $( [ $mnd_m -eq 0 ] && [ $mnd_s -eq 0 ] && echo OK || echo WARN ) |"
+            echo "| NerdWallet | per state | $nw_fetched_today/$nw_expected | $nw_m | $nw_s | $( [ $nw_m -eq 0 ] && [ $nw_s -eq 0 ] && echo OK || echo WARN ) |"
             echo "| Rocket | national | $rk_today | - | - | $rk_status |"
             echo "| PMMS 30-yr | national-monthly | $fred_today | - | - | $pmms_status_30 |"
             echo "| PMMS 15-yr | national-monthly | $fred_today | - | - | $pmms_status_15 |"
@@ -479,15 +615,22 @@ jobs:
               `has gone dark past threshold. Close it once a later run reports the`,
               `source fresh again.`,
             ].join('\n');
-            // De-dup by TITLE, not by label: the very first alert creates the
-            // issue before the 'stale-source' label exists, and GitHub drops
-            // an unknown label silently on create -- so a label-filtered search
-            // would miss that first issue and open a duplicate every run.
+            // De-dup by LABEL. The previous comment here claimed a label
+            // filter would miss the first-ever alert because GitHub silently
+            // drops an unknown label on create -- that is not what happened:
+            // issue #2, the first alert this notifier ever opened, carries the
+            // 'stale-source' label. Meanwhile the unfiltered listForRepo it
+            // used instead returns PULL REQUESTS as well as issues, and paged
+            // at 100, so an unrelated issue backlog could hide the duplicate
+            // and open a second one every run. The `!i.pull_request` filter is
+            // belt-and-braces for the same API quirk.
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner, repo: context.repo.repo,
-              state: 'open', per_page: 100,
+              state: 'open', labels: 'stale-source', per_page: 100,
             });
-            const dup = existing.data.find(i => i.title.startsWith('Data source stale'));
+            const dup = existing.data
+              .filter(i => !i.pull_request)
+              .find(i => i.title.startsWith('Data source stale'));
             if (dup) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner, repo: context.repo.repo,
@@ -501,6 +644,47 @@ jobs:
                 title, body, labels: ['stale-source', 'automation'],
               });
               core.info(`Opened issue #${created.data.number}`);
+            }
+
+      # The other half of the alarm. Until now nothing anywhere in this repo
+      # ever called issues.update({state:'closed'}), so every alarm was
+      # one-way: issue #3 sat open across five consecutive GREEN runs and #2's
+      # condition had already cleared. An alarm that never clears trains you to
+      # ignore it, which defeats the point of raising it.
+      #
+      # Gated on `github.event_name == 'schedule'` deliberately: a manual
+      # workflow_dispatch is often run against a branch or with a partial data
+      # tree, and must never be able to declare a production alarm recovered.
+      # STALE_ALERT is set by the check step above only when the alert file is
+      # non-empty, so `!= '1'` means check_stale_sources.py produced no
+      # findings this run.
+      - name: Close recovered stale-source issues
+        if: always() && github.event_name == 'schedule' && env.STALE_ALERT != '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'stale-source', per_page: 100,
+            });
+            // listForRepo returns PRs too; a PR carrying the label would
+            // otherwise be closed by this step.
+            const stale = open.data.filter(i => !i.pull_request);
+            if (!stale.length) { core.info('No open stale-source issues to close.'); return; }
+            for (const issue of stale) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Recovered as of ${today}: check_stale_sources.py reported no findings on this scheduled run.\n\n- **Run:** ${runUrl}`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed', state_reason: 'completed',
+              });
+              core.info(`Closed recovered issue #${issue.number}`);
             }
 
       - name: Commit refreshed data
@@ -518,21 +702,39 @@ jobs:
             echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # Subject tag is driven by the UNEXPECTED count only (computed in
+          # "Summarize partial failures"), and NAMES the components. The old
+          # "(partial: N failure(s))" counted the permanently-expected `rocket`
+          # line, so every single commit carried the tag and the one day it
+          # mattered — 2026-07-31, when nerdwallet:maine failed too — read as
+          # "(partial: 2 failure(s))" and scrolled past unread.
           fail_summary=""
-          if [ -s "$FAIL_LOG" ]; then
-            fail_summary=" (partial: $(wc -l < "$FAIL_LOG") failure(s))"
+          if [ "${UNEXPECTED_FAILURE_COUNT:-0}" -gt 0 ]; then
+            fail_summary=" (FAILED: ${UNEXPECTED_FAILURE_LIST})"
           fi
           git commit -m "auto: refresh data $(date -u +%Y-%m-%d)${fail_summary}"
           # Push with pull-rebase retry to survive races where another commit
           # lands on main during the ~25min refresh window.
           for i in 1 2 3 4 5; do
-            if git push; then
+            # HEAD:main, not a bare `git push`: after a rebase the branch's
+            # upstream can be ambiguous, and being explicit about the refspec
+            # means a retry can never push a detached or unexpected ref.
+            if git push origin HEAD:main; then
               echo "Push succeeded on attempt $i"
               echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Push attempt $i failed; rebasing on origin/main and retrying"
-            git pull --rebase origin main || true
+            # `|| true` here left a CONFLICTED rebase in progress: attempts 2-5
+            # then died at exit 128 on a detached HEAD and the step reported
+            # "Push failed after 5 attempts" — the wrong diagnosis, hiding a
+            # conflict behind a retry-exhaustion message. Mirrors the abort
+            # path scripts/rocket_residential_refresh.ps1 already uses.
+            if ! git pull --rebase origin main; then
+              echo "::error::Rebase onto origin/main conflicted; aborting to a clean state. Today's data is not lost — the next scheduled run refetches and recommits it."
+              git rebase --abort || true
+              exit 1
+            fi
             sleep $((i * 4))
           done
           echo "Push failed after 5 attempts"
@@ -547,11 +749,34 @@ jobs:
       # therefore go stale on the live site even though origin/main has fresh
       # data. workflow_dispatch IS allowed via GITHUB_TOKEN, so explicitly
       # triggering the deploy after a successful data push fixes that.
+      #
+      # The dispatch was a SINGLE un-retried API call, and it is the only thing
+      # standing between fresh data on origin/main and the live site. On
+      # 2026-08-04 it returned 503; the pipeline stayed green and Pages served
+      # a three-day-old bundle until someone noticed on 08-07. Retry it, and
+      # fail the job if all three attempts miss — a failed dispatch means the
+      # data we just pushed will never reach users, which is not a green
+      # outcome. (The `failure()` notifier at the end of this job then opens an
+      # issue, and deploy.yml carries its own notifier for the case where the
+      # dispatch lands but the build or deploy-pages step dies.)
       - name: Trigger Pages deploy
         if: steps.commit.outputs.pushed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run deploy.yml --ref main
+        run: |
+          for i in 1 2 3; do
+            if gh workflow run deploy.yml --ref main; then
+              echo "Pages deploy dispatched on attempt $i"
+              exit 0
+            fi
+            echo "Dispatch attempt $i failed"
+            # `if`, not `[ ... ] && sleep`: on the last iteration the test is
+            # false, the compound returns 1, and the runner's `bash -e` would
+            # abort the step before the ::error:: below ever printed.
+            if [ "$i" -lt 3 ]; then sleep $((i * 10)); fi
+          done
+          echo "::error::Failed to dispatch deploy.yml after 3 attempts — data is pushed to main but the live site will keep serving the previous bundle."
+          exit 1
 
       # Opens a GitHub issue when a *scheduled* (cron) run fails. Manual
       # (workflow_dispatch) runs are exempt because the human invoker is
@@ -585,7 +810,12 @@ jobs:
               labels: 'daily-refresh-failure',
               per_page: 50,
             });
-            const dup = existing.data.find(i => i.title.startsWith('Daily refresh failed'));
+            // listForRepo returns pull requests alongside issues; a PR that
+            // happened to carry the label would be treated as the duplicate
+            // and get the comment instead of the issue.
+            const dup = existing.data
+              .filter(i => !i.pull_request)
+              .find(i => i.title.startsWith('Daily refresh failed'));
             if (dup) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -603,4 +833,37 @@ jobs:
                 labels: ['daily-refresh-failure', 'automation'],
               });
               core.info(`Opened issue #${created.data.number}`);
+            }
+
+      # Mirror of the stale-source auto-close, for the failure notifier above.
+      # `if: success()` means every earlier step in this job passed, so the
+      # condition the open issue describes has demonstrably cleared. Restricted
+      # to scheduled runs for the same reason as the other closer: a manual
+      # dispatch can be run against a branch or a partial tree and must not be
+      # able to silence a production alarm.
+      - name: Close refresh-failure issues on a green scheduled run
+        if: success() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'daily-refresh-failure', per_page: 50,
+            });
+            const issues = open.data.filter(i => !i.pull_request);
+            if (!issues.length) { core.info('No open daily-refresh-failure issues to close.'); return; }
+            for (const issue of issues) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Recovered as of ${today}: the scheduled daily refresh completed successfully.\n\n- **Run:** ${runUrl}`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed', state_reason: 'completed',
+              });
+              core.info(`Closed recovered issue #${issue.number}`);
             }

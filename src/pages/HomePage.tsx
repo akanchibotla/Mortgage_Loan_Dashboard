@@ -4,7 +4,7 @@ import { loadPmms, loadStatesIndex } from "../lib/loadStateData";
 import { usePageMeta, BASE_TITLE } from "../lib/usePageMeta";
 import { fmtMoney, fmtRate, monthlyPayment } from "../lib/payment";
 import { useTermPreference } from "../lib/useTermPreference";
-import { useCalculator } from "../lib/useCalculator";
+import { useCalculator, LOAN_MAX, RATE_MIN, RATE_MAX } from "../lib/useCalculator";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const UsChoropleth = lazy(() =>
@@ -17,12 +17,15 @@ const AmortPanel = lazy(() =>
 const STEP = 5_000;
 const SHIFT_STEP = 50_000;
 const MIN_AMOUNT = 25_000;
-const MAX_AMOUNT = 5_000_000;
+// Was 5,000,000 — an advertised ceiling the shared provider does not honour.
+// The one agreed bound lives in useCalculator (LOAN_MAX); this input must
+// advertise the same number it can actually reach.
+const MAX_AMOUNT = LOAN_MAX;
 
 const RATE_STEP = 0.05;
 const RATE_SHIFT_STEP = 0.25;
-const MIN_RATE = 0.5;
-const MAX_RATE = 25;
+const MIN_RATE = RATE_MIN;
+const MAX_RATE = RATE_MAX;
 
 function clampLoan(v: number): number {
   if (!Number.isFinite(v)) return MIN_AMOUNT;
@@ -391,14 +394,19 @@ export default function HomePage() {
           <h2>Pick a state</h2>
           <span className="map-controls-hint">Showing {term}-yr rates · click to drill in</span>
         </div>
-        <Suspense fallback={<p className="loading">Loading map…</p>}>
-          <UsChoropleth
-            index={states}
-            term={term}
-            loanAmount={loanAmount}
-            selectedSlug={selectedStateSlug}
-          />
-        </Suspense>
+        {/* Boundary outside the Suspense: UsChoropleth is lazy(), so a failed
+            chunk load rejects the import promise and never mounts. Without
+            this the map area sits on "Loading map…" forever. */}
+        <ErrorBoundary label="the map">
+          <Suspense fallback={<p className="loading">Loading map…</p>}>
+            <UsChoropleth
+              index={states}
+              term={term}
+              loanAmount={loanAmount}
+              selectedSlug={selectedStateSlug}
+            />
+          </Suspense>
+        </ErrorBoundary>
         <p className="map-caption">
           Hover any colored state for today's rate + your estimated payment. Use the{" "}
           <button
@@ -446,13 +454,20 @@ export default function HomePage() {
             <div className="stat-value">{states.length}</div>
             <div className="stat-label">states + DC bundled</div>
           </div>
+          {/* Measured from the shipped data, not from the national totals.
+              3,141 was the count of U.S. counties that EXIST; this dashboard
+              partitions the 3,128 that have 2024 HMDA originations at a
+              bundled term. "~7M" was the raw LAR download; 2,904,579 rows
+              survive the term / reverse / open-end / business-purpose
+              filtering and are what every percentile on this site is
+              computed from — the old figure overstated it by 2.4x. */}
           <div className="stat-card">
-            <div className="stat-value">3,141</div>
+            <div className="stat-value">3,128</div>
             <div className="stat-label">counties partitioned</div>
           </div>
           <div className="stat-card">
             <div className="stat-value">
-              ~7<span className="stat-value-sub">M</span>
+              2.9<span className="stat-value-sub">M</span>
             </div>
             <div className="stat-label">HMDA closed loans</div>
           </div>

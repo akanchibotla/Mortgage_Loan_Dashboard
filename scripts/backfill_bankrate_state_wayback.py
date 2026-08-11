@@ -19,6 +19,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _paths import state_data_dir  # noqa: E402
+from fetch_bankrate_state import real  # noqa: E402
 from states import by_slug  # noqa: E402
 
 HEADERS = {
@@ -93,8 +94,12 @@ def extract_rates(html: str) -> dict:
     for term in (15, 30):
         m = TABLE_OLD(term).search(html) or TABLE_NEW(term).search(html)
         i = INTRO(term).search(html)
-        out[f"table_{term}"] = float(m.group(1)) if m else None
-        out[f"intro_{term}"] = float(i.group(1)) if i else None
+        # real() rejects the un-hydrated placeholder: a Wayback snapshot taken
+        # before the page's JS filled the table matches the regex with "0.00",
+        # which is not a rate. fetch_bankrate_state already applies this guard
+        # on the live path; 18 zeros reached the dense files without it.
+        out[f"table_{term}"] = real(float(m.group(1))) if m else None
+        out[f"intro_{term}"] = real(float(i.group(1))) if i else None
     date_m = DATE_INTRO_PAT.search(html)
     out["as_of"] = date_m.group(1) if date_m else None
     return out

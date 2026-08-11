@@ -240,10 +240,17 @@ export function RateChart({
   // (MonthlyRate). Renders as an orange solid-circle line — distinct from
   // PMMS blue, but using the same "small filled dot" marker convention to
   // signal that both lines belong to the national tier.
-  const rocketPoints: ChartPoint[] = (rocketData ?? [])
-    .filter((p) => p.rate != null)
-    .map((p) => ({ x: `${p.month}-15`, y: p.rate as number }));
-  if (rocketPoints.length > 0) {
+  // Keep the null months in the series (the PMMS line at the top of this
+  // function already does). Stripping them made Chart.js join the two
+  // surviving neighbours, drawing a confident straight line across months
+  // where we recorded ZERO observations — 2025-02 and 2026-05 both have
+  // `rate: null, n_obs: 0`. `spanGaps: false` is what turns a null into a
+  // visible break instead of an interpolation.
+  const rocketPoints: ChartPoint[] = (rocketData ?? []).map((p) => ({
+    x: `${p.month}-15`,
+    y: p.rate,
+  }));
+  if ((rocketData ?? []).some((p) => p.rate != null)) {
     pushDataset("rocket", {
       label: rocketLabel ?? "Rocket Mortgage (national lender quote)",
       data: rocketPoints,
@@ -253,6 +260,7 @@ export function RateChart({
       pointRadius: 3,
       pointHoverRadius: 5,
       tension: 0.25,
+      spanGaps: false,
       order: 4,
     });
   }

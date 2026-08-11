@@ -2,414 +2,483 @@
   {
     "date": "2026-06-01",
     "rate": 6.83,
-    "src": "Bankrate"
+    "src": "Bankrate",
+    "field": "intro"
   },
   {
     "date": "2026-06-03",
     "rate": 6.53,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-04",
     "rate": 6.63,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-05",
     "rate": 6.46,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-06",
     "rate": 6.62,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-07",
     "rate": 6.55,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-08",
     "rate": 6.44,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-10",
     "rate": 6.56,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-11",
     "rate": 6.59,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-12",
     "rate": 6.56,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-13",
     "rate": 6.63,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-14",
     "rate": 6.58,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-15",
     "rate": 6.56,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-16",
-    "rate": 6.59,
+    "rate": 6.63,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-17",
-    "rate": 6.53,
+    "rate": 6.65,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-18",
-    "rate": 6.51,
+    "rate": 6.34,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-19",
-    "rate": 6.48,
+    "rate": 6.38,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-20",
-    "rate": 6.53,
+    "rate": 6.69,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-21",
-    "rate": 6.53,
+    "rate": 6.69,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-22",
-    "rate": 6.53,
+    "rate": 6.5,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-23",
-    "rate": 6.61,
+    "rate": 6.88,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-24",
-    "rate": 6.58,
+    "rate": 6.71,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-25",
-    "rate": 6.6,
+    "rate": 6.46,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-26",
-    "rate": 6.56,
+    "rate": 6.46,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-27",
-    "rate": 6.54,
+    "rate": 6.6,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-28",
-    "rate": 6.54,
+    "rate": 6.47,
     "src": "Bankrate",
+    "field": "intro",
     "method": "browser"
   },
   {
     "date": "2026-06-29",
-    "rate": 6.54,
+    "rate": 6.56,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-06-30",
-    "rate": 6.52,
+    "rate": 6.45,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-01",
-    "rate": 6.47,
+    "rate": 6.41,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-02",
-    "rate": 6.51,
+    "rate": 6.29,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-03",
-    "rate": 6.54,
+    "rate": 6.67,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-04",
-    "rate": 6.54,
+    "rate": 6.91,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-05",
-    "rate": 6.54,
+    "rate": 6.63,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-06",
-    "rate": 6.54,
+    "rate": 6.73,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-07",
-    "rate": 6.61,
+    "rate": 6.75,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-08",
-    "rate": 6.54,
+    "rate": 6.5,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-09",
-    "rate": 6.56,
+    "rate": 6.63,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-10",
-    "rate": 6.57,
+    "rate": 6.69,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-11",
-    "rate": 6.58,
+    "rate": 6.67,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-12",
-    "rate": 6.58,
+    "rate": 6.67,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-13",
-    "rate": 6.58,
+    "rate": 6.67,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-14",
-    "rate": 6.64,
+    "rate": 6.75,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-15",
-    "rate": 6.59,
+    "rate": 6.69,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-16",
-    "rate": 6.62,
+    "rate": 6.71,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-17",
-    "rate": 6.62,
+    "rate": 6.75,
     "src": "Bankrate",
+    "field": "intro",
     "method": "static_html"
   },
   {
     "date": "2026-07-18",
     "rate": 6.61,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-19",
     "rate": 6.61,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-20",
     "rate": 6.61,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-21",
     "rate": 6.63,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-22",
     "rate": 6.61,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-23",
     "rate": 6.65,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-24",
     "rate": 6.74,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-25",
     "rate": 6.75,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-26",
     "rate": 6.75,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-27",
     "rate": 6.75,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-28",
     "rate": 6.82,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-29",
     "rate": 6.75,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-30",
     "rate": 6.76,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-07-31",
     "rate": 6.76,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-01",
     "rate": 6.78,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-02",
     "rate": 6.78,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-03",
     "rate": 6.78,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-04",
     "rate": 6.8,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-05",
     "rate": 6.76,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-06",
     "rate": 6.79,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-07",
     "rate": 6.75,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-08",
     "rate": 6.76,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-09",
     "rate": 6.76,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   },
   {
     "date": "2026-08-10",
     "rate": 6.76,
     "src": "Bankrate",
+    "field": "table",
     "method": "static_html"
   }
 ]

@@ -39,14 +39,29 @@ param(
 # explicit $LASTEXITCODE checks after each command, so we don't need auto-throw;
 # the try/catch still catches genuine .NET/terminating exceptions.
 $ErrorActionPreference = 'Continue'
-$logFile = Join-Path $RepoPath 'scripts\rocket-residential.log'
+
+# The log lives OUTSIDE the repo, under %LOCALAPPDATA%. Two reasons:
+#   1. It used to be $RepoPath\scripts\rocket-residential.log, which meant the
+#      one failure mode the log most needed to record -- "repo not found at
+#      $RepoPath" -- wrote the ERROR line into a directory that by definition
+#      did not exist. The Add-Content threw, the empty catch below swallowed
+#      it, and an unattended weekly task failed invisibly.
+#   2. A log inside the working tree is a file the runner's own `git add`/
+#      rebase have to keep stepping around.
+$logDir = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'MortgageDashboard' } else { Join-Path $env:TEMP 'MortgageDashboard' }
+if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
+$logFile = Join-Path $logDir 'rocket-residential.log'
 
 function Write-Log {
     param([string]$Message, [string]$Level = 'INFO')
     $line = '{0}  [{1}] {2}' -f (Get-Date).ToString('u'), $Level, $Message
     # Console for interactive runs; file for scheduled (unattended) runs.
     Write-Host $line
-    try { Add-Content -Path $logFile -Value $line -Encoding utf8 } catch { }
+    # A bare `catch { }` here made the file half of that promise a lie: if the
+    # log path was unwritable, EVERY line vanished and the scheduled task's
+    # only evidence of what it did was the exit code. Report the failure to
+    # the console (which Task Scheduler does capture) instead of hiding it.
+    try { Add-Content -Path $logFile -Value $line -Encoding utf8 } catch { Write-Host "log write failed ($logFile): $_" }
 }
 
 # Only these paths are ever committed by this runner.
@@ -78,6 +93,28 @@ try {
         exit 3
     }
     Write-Log "Using interpreter: $py"
+
+    # Un-wedge before pulling. A run that died between `git pull --rebase` and
+    # its abort -- a crash, the 30-minute ExecutionTimeLimit killing the task,
+    # the machine sleeping mid-rebase -- leaves .git\rebase-merge (or
+    # .git\rebase-apply for the am-based path) on disk. Every LATER run then
+    # fails its own pull with "a rebase is already in progress" and exits 4,
+    # weekly, forever, with the Rocket feed frozen and nothing but an exit code
+    # to say why. The abort is safe here: this runner only ever commits the
+    # $rocketPaths files, and an interrupted rebase of those is refetched from
+    # scratch on the next run.
+    foreach ($rebaseDir in @('.git\rebase-merge', '.git\rebase-apply')) {
+        if (Test-Path (Join-Path $RepoPath $rebaseDir)) {
+            Write-Log "Found a stale rebase in progress ($rebaseDir) from an earlier run; aborting it." 'WARN'
+            git rebase --abort 2>&1 | ForEach-Object { Write-Log $_ }
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log 'Recovered from a wedged rebase.' 'WARN'
+            } else {
+                Write-Log 'git rebase --abort did not succeed; the pull below will report the resulting state.' 'ERROR'
+            }
+            break
+        }
+    }
 
     # Sync to origin first so our commit sits on top of the latest cron data.
     # --autostash guards the rare case a prior run left the tree dirty.

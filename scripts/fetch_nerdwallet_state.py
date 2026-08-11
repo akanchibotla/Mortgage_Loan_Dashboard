@@ -31,6 +31,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _http import fetch_html  # noqa: E402
+from _jsonl import upsert_jsonl  # noqa: E402
 from _paths import nerdwallet_jsonl, nerdwallet_today_view  # noqa: E402
 from states import by_slug  # noqa: E402
 
@@ -140,6 +141,25 @@ def _parse_as_of(raw: str | None) -> str | None:
     return None
 
 
+RATE_MIN_PCT = 1.0
+RATE_MAX_PCT = 20.0
+
+
+def plausible(v: float | None) -> float | None:
+    """Reject an extracted value outside a sane mortgage-rate band.
+
+    The same guard fetch_bankrate_state.real() already applies. Four archive
+    rows (california, kansas, kentucky, washington — all 2021-04-2x) parsed a
+    FRACTION rather than a percent (0.0299 for 2.99%), which then plotted as a
+    flat line at the bottom of every chart. backfill_nerdwallet_state_wayback
+    imports extract(), so guarding here covers the live and archive paths at
+    once.
+    """
+    if v is None:
+        return None
+    return v if RATE_MIN_PCT <= v <= RATE_MAX_PCT else None
+
+
 def extract(text: str) -> dict | None:
     """Pull both Interest rate (canonical) and APR (secondary) from one page.
 
@@ -164,10 +184,10 @@ def extract(text: str) -> dict | None:
             return float(s_all.group(idx_in_sentence))
         return None
 
-    term_30 = float(p30.group(1)) if p30 else None
-    term_30_apr = float(p30.group(2)) if p30 else headline_or_sentence_apr(h30, 1)
-    term_15 = float(p15.group(1)) if p15 else None
-    term_15_apr = float(p15.group(2)) if p15 else headline_or_sentence_apr(h15, 2)
+    term_30 = plausible(float(p30.group(1)) if p30 else None)
+    term_30_apr = plausible(float(p30.group(2)) if p30 else headline_or_sentence_apr(h30, 1))
+    term_15 = plausible(float(p15.group(1)) if p15 else None)
+    term_15_apr = plausible(float(p15.group(2)) if p15 else headline_or_sentence_apr(h15, 2))
 
     if term_15 is None and term_30 is None and term_15_apr is None and term_30_apr is None:
         return None
@@ -192,23 +212,10 @@ def extract(text: str) -> dict | None:
 
 
 def write_jsonl_idempotent(path: str, new_row: dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    existing: list[dict] = []
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    existing.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    by_date = {r.get("date_iso"): r for r in existing if r.get("date_iso")}
-    by_date[new_row["date_iso"]] = new_row
-    with open(path, "w", encoding="utf-8") as f:
-        for r in sorted(by_date.values(), key=lambda r: r.get("date_iso", "")):
-            f.write(json.dumps(r) + "\n")
+    """Insert-or-replace today's row. Delegates to the shared helper so the
+    write is atomic and malformed lines are reported rather than silently
+    deleted from the archive — see scripts/_jsonl.py."""
+    upsert_jsonl(path, new_row)
 
 
 def write_today_view(path: str, row: dict) -> None:
@@ -244,7 +251,21 @@ def run_one(slug: str) -> int:
             return 0
         print("ERROR: rate values not found", file=sys.stderr)
         return 3
-    date_iso = _parse_as_of(found["as_of_raw"]) or dt.date.today().isoformat()
+    if found["term_15"] is None and found["term_30"] is None:
+        # APR-only page: extract() succeeded, but neither NOTE RATE was found,
+        # so the row we would write carries no plottable rate. Writing it
+        # anyway refreshes date_iso and clears every freshness alarm while the
+        # series quietly stops advancing. Fail like the other fetchers do
+        # (fetch_mnd_state:84-86, fetch_bankrate_state:362-364).
+        print(
+            f"ERROR: {slug}: APR-only page — no note rate for either term "
+            f"(15-yr APR {found['term_15_apr']}, 30-yr APR {found['term_30_apr']}, "
+            f"src {found['extracted_from']})",
+            file=sys.stderr,
+        )
+        return 3
+    # UTC, not local — see the note in fetch_mnd_state.run_one.
+    date_iso = _parse_as_of(found["as_of_raw"]) or dt.datetime.now(dt.UTC).date().isoformat()
     row = {
         "date_iso": date_iso,
         "term_15": found["term_15"],

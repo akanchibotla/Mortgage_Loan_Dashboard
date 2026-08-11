@@ -63,6 +63,13 @@ export function buildBuydownPlan(
           : []),
       ];
     }
+    // Carried over from CalculatorPage's now-deleted private copy. The
+    // switch is exhaustive over BuydownProduct, so this is unreachable
+    // under the type system — it exists so a non-buydown product that
+    // reaches here at runtime (untyped JSON, a widened call site) yields
+    // a single no-reduction phase rather than `undefined`.
+    default:
+      return [{ months: totalMonths, rateReduction: 0, label: "Note rate" }];
   }
 }
 

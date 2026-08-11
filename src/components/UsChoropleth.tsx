@@ -69,6 +69,21 @@ export function UsChoropleth({ index, term, loanAmount, selectedSlug }: Props) {
   );
   const pathFn = useMemo(() => geoPath(projection), [projection]);
 
+  // Project once, not once per render. Every pointer move over the map sets
+  // hover state, and re-running geoPath across all 50+ features inside the
+  // render body cost ~14.5 ms per frame — over a 60 Hz budget before React
+  // had even diffed the ~217 KB of regenerated path strings. `features` and
+  // `pathFn` are already stable useMemos, so this recomputes only when the
+  // geometry itself changes.
+  const paths = useMemo(
+    () =>
+      features.map((f: Feature<Geometry, { name: string }>) => ({
+        fips: String(f.id).padStart(2, "0"),
+        d: pathFn(f) ?? "",
+      })),
+    [features, pathFn],
+  );
+
   return (
     <div className="map-wrap">
       <svg
@@ -76,11 +91,9 @@ export function UsChoropleth({ index, term, loanAmount, selectedSlug }: Props) {
         className="us-choropleth"
         preserveAspectRatio="xMidYMid meet"
       >
-        {features.map((f: Feature<Geometry, { name: string }>) => {
-          const fips = String(f.id).padStart(2, "0");
+        {paths.map(({ fips, d }) => {
           const entry = byFips.get(fips);
           const rate = entry ? (term === 15 ? entry.latest_15 : entry.latest_30) : null;
-          const d = pathFn(f) ?? "";
           return (
             <path
               key={fips}
