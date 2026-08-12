@@ -459,5 +459,12 @@
     "src": "Bankrate",
     "field": "intro",
     "method": "browser"
+  },
+  {
+    "date": "2026-08-12",
+    "rate": 6.13,
+    "src": "Bankrate",
+    "field": "intro",
+    "method": "browser"
   }
 ]
