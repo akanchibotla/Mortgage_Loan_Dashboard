@@ -47,3 +47,4 @@
 {"date_iso": "2026-08-07", "term_15": 6.25, "term_30": 6.74, "as_of_raw": "8/7/2026", "fetched_at_utc": "2026-08-10T13:36:33+00:00", "state_slug": "arizona", "source": "mnd_live"}
 {"date_iso": "2026-08-10", "term_15": 6.27, "term_30": 6.76, "as_of_raw": "8/10/2026", "fetched_at_utc": "2026-08-11T13:19:05+00:00", "state_slug": "arizona", "source": "mnd_live"}
 {"date_iso": "2026-08-11", "term_15": 6.28, "term_30": 6.79, "as_of_raw": "8/11/2026", "fetched_at_utc": "2026-08-12T13:22:30+00:00", "state_slug": "arizona", "source": "mnd_live"}
+{"date_iso": "2026-08-12", "term_15": 6.27, "term_30": 6.74, "as_of_raw": "8/12/2026", "fetched_at_utc": "2026-08-13T13:24:33+00:00", "state_slug": "arizona", "source": "mnd_live"}
