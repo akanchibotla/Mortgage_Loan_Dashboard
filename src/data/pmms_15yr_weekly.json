@@ -568,5 +568,10 @@
     "date": "2026-08-06",
     "rate": 6.01,
     "src": "FRED PMMS"
+  },
+  {
+    "date": "2026-08-13",
+    "rate": 5.96,
+    "src": "FRED PMMS"
   }
 ]
