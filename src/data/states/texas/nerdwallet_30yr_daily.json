@@ -373,5 +373,10 @@
     "date": "2026-08-17",
     "rate": 6.62,
     "src": "NerdWallet"
+  },
+  {
+    "date": "2026-08-18",
+    "rate": 6.56,
+    "src": "NerdWallet"
   }
 ]
