@@ -1,12 +1,5 @@
 [
   {
-    "date": "2026-06-03",
-    "rate": 6.63,
-    "src": "Bankrate",
-    "field": "intro",
-    "method": "browser"
-  },
-  {
     "date": "2026-06-04",
     "rate": 6.61,
     "src": "Bankrate",
@@ -611,6 +604,13 @@
   {
     "date": "2026-09-01",
     "rate": 6.76,
+    "src": "Bankrate",
+    "field": "table",
+    "method": "browser"
+  },
+  {
+    "date": "2026-09-02",
+    "rate": 6.75,
     "src": "Bankrate",
     "field": "table",
     "method": "browser"
