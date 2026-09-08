@@ -64,3 +64,4 @@
 {"date_iso": "2026-09-02", "term_15": 6.5, "term_30": 6.91, "as_of_raw": "9/2/2026", "fetched_at_utc": "2026-09-03T16:12:18+00:00", "state_slug": "tennessee", "source": "mnd_live"}
 {"date_iso": "2026-09-03", "term_15": 6.48, "term_30": 6.88, "as_of_raw": "9/3/2026", "fetched_at_utc": "2026-09-04T16:08:01+00:00", "state_slug": "tennessee", "source": "mnd_live"}
 {"date_iso": "2026-09-04", "term_15": 6.49, "term_30": 6.89, "as_of_raw": "9/4/2026", "fetched_at_utc": "2026-09-07T17:40:57+00:00", "state_slug": "tennessee", "source": "mnd_live"}
+{"date_iso": "2026-09-08", "term_15": 6.49, "term_30": 6.89, "as_of_raw": "9/8/2026", "fetched_at_utc": "2026-09-08T16:25:27+00:00", "state_slug": "tennessee", "source": "mnd_live"}
