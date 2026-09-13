@@ -26,3 +26,4 @@
 {"date_iso": "2026-08-31", "term_15": 5.99, "term_30": 6.875, "term_15_apr": 6.447, "term_30_apr": 7.154, "fetched_at_utc": "2026-08-31T01:00:03+00:00", "source": "rocket_live", "source_method": "static"}
 {"date_iso": "2026-09-06", "term_15": 6.125, "term_30": 6.875, "term_15_apr": 6.564, "term_30_apr": 7.167, "fetched_at_utc": "2026-09-06T22:00:04+00:00", "source": "rocket_live", "source_method": "static"}
 {"date_iso": "2026-09-07", "term_15": 6.125, "term_30": 6.875, "term_15_apr": 6.564, "term_30_apr": 7.167, "fetched_at_utc": "2026-09-07T01:32:02+00:00", "source": "rocket_live", "source_method": "static"}
+{"date_iso": "2026-09-13", "term_15": 6.375, "term_30": 7.125, "term_15_apr": 6.84, "term_30_apr": 7.41, "fetched_at_utc": "2026-09-13T22:00:03+00:00", "source": "rocket_live", "source_method": "static"}

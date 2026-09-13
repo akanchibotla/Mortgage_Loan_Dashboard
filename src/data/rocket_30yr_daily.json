@@ -133,5 +133,10 @@
     "date": "2026-09-07",
     "rate": 6.875,
     "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-09-13",
+    "rate": 7.125,
+    "src": "Rocket Mortgage"
   }
 ]
