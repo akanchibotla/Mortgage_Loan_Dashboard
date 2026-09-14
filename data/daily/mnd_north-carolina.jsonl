@@ -72,3 +72,4 @@
 {"date_iso": "2026-09-08", "term_15": 6.49, "term_30": 6.89, "as_of_raw": "9/8/2026", "fetched_at_utc": "2026-09-09T16:19:08+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
 {"date_iso": "2026-09-10", "term_15": 6.62, "term_30": 7.07, "as_of_raw": "9/10/2026", "fetched_at_utc": "2026-09-10T16:11:26+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
 {"date_iso": "2026-09-11", "term_15": 6.65, "term_30": 7.12, "as_of_raw": "9/11/2026", "fetched_at_utc": "2026-09-13T15:58:49+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
+{"date_iso": "2026-09-14", "term_15": 6.7, "term_30": 7.17, "as_of_raw": "9/14/2026", "fetched_at_utc": "2026-09-14T18:03:13+00:00", "state_slug": "north-carolina", "source": "mnd_live"}
