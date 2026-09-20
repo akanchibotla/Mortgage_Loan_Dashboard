@@ -72,4 +72,4 @@
 {"date_iso": "2026-09-15", "term_15": 6.82, "term_30": 7.22, "as_of_raw": "9/15/2026", "fetched_at_utc": "2026-09-15T16:41:38+00:00", "state_slug": "michigan", "source": "mnd_live"}
 {"date_iso": "2026-09-16", "term_15": 6.81, "term_30": 7.19, "as_of_raw": "9/16/2026", "fetched_at_utc": "2026-09-17T16:55:00+00:00", "state_slug": "michigan", "source": "mnd_live"}
 {"date_iso": "2026-09-17", "term_15": 6.81, "term_30": 7.19, "as_of_raw": "9/17/2026", "fetched_at_utc": "2026-09-18T16:26:25+00:00", "state_slug": "michigan", "source": "mnd_live"}
-{"date_iso": "2026-09-18", "term_15": 6.83, "term_30": 7.2, "as_of_raw": "9/18/2026", "fetched_at_utc": "2026-09-19T15:59:11+00:00", "state_slug": "michigan", "source": "mnd_live"}
+{"date_iso": "2026-09-18", "term_15": 6.83, "term_30": 7.2, "as_of_raw": "9/18/2026", "fetched_at_utc": "2026-09-20T16:04:49+00:00", "state_slug": "michigan", "source": "mnd_live"}
