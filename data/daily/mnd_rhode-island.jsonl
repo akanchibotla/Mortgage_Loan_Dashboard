@@ -74,3 +74,4 @@
 {"date_iso": "2026-09-18", "term_15": 6.83, "term_30": 7.2, "as_of_raw": "9/18/2026", "fetched_at_utc": "2026-09-20T16:05:26+00:00", "state_slug": "rhode-island", "source": "mnd_live"}
 {"date_iso": "2026-09-21", "term_15": 6.83, "term_30": 7.19, "as_of_raw": "9/21/2026", "fetched_at_utc": "2026-09-21T18:26:00+00:00", "state_slug": "rhode-island", "source": "mnd_live"}
 {"date_iso": "2026-09-22", "term_15": 6.83, "term_30": 7.17, "as_of_raw": "9/22/2026", "fetched_at_utc": "2026-09-23T16:48:07+00:00", "state_slug": "rhode-island", "source": "mnd_live"}
+{"date_iso": "2026-09-24", "term_15": 7.0, "term_30": 7.37, "as_of_raw": "9/24/2026", "fetched_at_utc": "2026-09-24T17:09:33+00:00", "state_slug": "rhode-island", "source": "mnd_live"}
