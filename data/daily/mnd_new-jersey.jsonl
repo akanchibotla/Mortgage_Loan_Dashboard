@@ -74,4 +74,4 @@
 {"date_iso": "2026-09-21", "term_15": 6.83, "term_30": 7.19, "as_of_raw": "9/21/2026", "fetched_at_utc": "2026-09-21T18:25:38+00:00", "state_slug": "new-jersey", "source": "mnd_live"}
 {"date_iso": "2026-09-22", "term_15": 6.83, "term_30": 7.17, "as_of_raw": "9/22/2026", "fetched_at_utc": "2026-09-23T16:47:47+00:00", "state_slug": "new-jersey", "source": "mnd_live"}
 {"date_iso": "2026-09-24", "term_15": 7.0, "term_30": 7.37, "as_of_raw": "9/24/2026", "fetched_at_utc": "2026-09-24T17:09:14+00:00", "state_slug": "new-jersey", "source": "mnd_live"}
-{"date_iso": "2026-09-25", "term_15": 7.12, "term_30": 7.49, "as_of_raw": "9/25/2026", "fetched_at_utc": "2026-09-25T17:14:19+00:00", "state_slug": "new-jersey", "source": "mnd_live"}
+{"date_iso": "2026-09-25", "term_15": 7.1, "term_30": 7.43, "as_of_raw": "9/25/2026", "fetched_at_utc": "2026-09-26T16:25:27+00:00", "state_slug": "new-jersey", "source": "mnd_live"}
