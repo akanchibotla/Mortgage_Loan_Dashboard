@@ -30,5 +30,6 @@
 {"date_iso": "2026-09-14", "term_15": 6.375, "term_30": 7.125, "term_15_apr": 6.86, "term_30_apr": 7.423, "fetched_at_utc": "2026-09-15T16:35:10+00:00", "source": "rocket_live", "source_method": "wayback_20260914"}
 {"date_iso": "2026-09-20", "term_15": 6.5, "term_30": 7.25, "term_15_apr": 6.967, "term_30_apr": 7.524, "fetched_at_utc": "2026-09-20T22:00:02+00:00", "source": "rocket_live", "source_method": "static"}
 {"date_iso": "2026-09-21", "term_15": 6.5, "term_30": 7.25, "term_15_apr": 6.967, "term_30_apr": 7.524, "fetched_at_utc": "2026-09-21T05:21:54+00:00", "source": "rocket_live", "source_method": "static"}
+{"date_iso": "2026-09-23", "term_15": null, "term_30": 7.125, "term_15_apr": null, "term_30_apr": 7.436, "fetched_at_utc": "2026-09-30T17:48:42+00:00", "source": "rocket_live", "source_method": "wayback_20260923"}
 {"date_iso": "2026-09-27", "term_15": 6.625, "term_30": 7.375, "term_15_apr": 7.116, "term_30_apr": 7.678, "fetched_at_utc": "2026-09-27T22:00:03+00:00", "source": "rocket_live", "source_method": "static"}
 {"date_iso": "2026-09-28", "term_15": 6.625, "term_30": 7.375, "term_15_apr": 7.116, "term_30_apr": 7.678, "fetched_at_utc": "2026-09-28T01:20:56+00:00", "source": "rocket_live", "source_method": "static"}
