@@ -78,3 +78,4 @@
 {"date_iso": "2026-09-28", "term_15": 7.12, "term_30": 7.5, "as_of_raw": "9/28/2026", "fetched_at_utc": "2026-09-28T19:48:14+00:00", "state_slug": "district-of-columbia", "source": "mnd_live"}
 {"date_iso": "2026-09-29", "term_15": 7.2, "term_30": 7.58, "as_of_raw": "9/29/2026", "fetched_at_utc": "2026-09-29T18:14:14+00:00", "state_slug": "district-of-columbia", "source": "mnd_live"}
 {"date_iso": "2026-09-30", "term_15": 7.18, "term_30": 7.54, "as_of_raw": "9/30/2026", "fetched_at_utc": "2026-09-30T18:09:36+00:00", "state_slug": "district-of-columbia", "source": "mnd_live"}
+{"date_iso": "2026-10-01", "term_15": 7.18, "term_30": 7.54, "as_of_raw": "10/1/2026", "fetched_at_utc": "2026-10-01T18:35:40+00:00", "state_slug": "district-of-columbia", "source": "mnd_live"}

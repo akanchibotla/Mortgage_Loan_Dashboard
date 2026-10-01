@@ -166,5 +166,11 @@
     "date": "2026-09-30",
     "rate": 6.81,
     "src": "Bankrate (live)"
+  },
+  {
+    "m": "2026-10",
+    "date": "2026-10-01",
+    "rate": 6.76,
+    "src": "Bankrate (live)"
   }
 ]
