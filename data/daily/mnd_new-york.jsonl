@@ -79,4 +79,4 @@
 {"date_iso": "2026-09-29", "term_15": 7.2, "term_30": 7.58, "as_of_raw": "9/29/2026", "fetched_at_utc": "2026-09-29T18:15:14+00:00", "state_slug": "new-york", "source": "mnd_live"}
 {"date_iso": "2026-09-30", "term_15": 7.18, "term_30": 7.54, "as_of_raw": "9/30/2026", "fetched_at_utc": "2026-09-30T18:10:29+00:00", "state_slug": "new-york", "source": "mnd_live"}
 {"date_iso": "2026-10-01", "term_15": 7.18, "term_30": 7.54, "as_of_raw": "10/1/2026", "fetched_at_utc": "2026-10-01T18:36:36+00:00", "state_slug": "new-york", "source": "mnd_live"}
-{"date_iso": "2026-10-02", "term_15": 7.19, "term_30": 7.57, "as_of_raw": "10/2/2026", "fetched_at_utc": "2026-10-03T16:20:37+00:00", "state_slug": "new-york", "source": "mnd_live"}
+{"date_iso": "2026-10-02", "term_15": 7.19, "term_30": 7.57, "as_of_raw": "10/2/2026", "fetched_at_utc": "2026-10-04T17:03:28+00:00", "state_slug": "new-york", "source": "mnd_live"}
