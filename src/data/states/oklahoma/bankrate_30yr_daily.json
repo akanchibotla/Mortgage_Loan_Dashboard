@@ -621,5 +621,12 @@
     "src": "Bankrate",
     "field": "intro",
     "method": "static_html"
+  },
+  {
+    "date": "2026-10-07",
+    "rate": 7.71,
+    "src": "Bankrate",
+    "field": "intro",
+    "method": "static_html"
   }
 ]
