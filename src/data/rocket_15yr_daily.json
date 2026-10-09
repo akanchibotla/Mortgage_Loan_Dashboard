@@ -123,5 +123,10 @@
     "date": "2026-10-04",
     "rate": 6.875,
     "src": "Rocket Mortgage"
+  },
+  {
+    "date": "2026-10-07",
+    "rate": 6.875,
+    "src": "Rocket Mortgage (Wayback)"
   }
 ]
