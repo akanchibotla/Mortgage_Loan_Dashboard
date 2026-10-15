@@ -1,12 +1,5 @@
 [
   {
-    "date": "2026-07-16",
-    "rate": 6.7,
-    "src": "Bankrate",
-    "field": "intro",
-    "method": "static_html"
-  },
-  {
     "date": "2026-07-17",
     "rate": 6.75,
     "src": "Bankrate",
@@ -624,6 +617,13 @@
   },
   {
     "date": "2026-10-14",
+    "rate": 7.48,
+    "src": "Bankrate",
+    "field": "intro",
+    "method": "static_html"
+  },
+  {
+    "date": "2026-10-15",
     "rate": 7.48,
     "src": "Bankrate",
     "field": "intro",
