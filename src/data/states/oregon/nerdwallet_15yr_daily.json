@@ -1,10 +1,5 @@
 [
   {
-    "date": "2026-07-22",
-    "rate": 5.73,
-    "src": "NerdWallet"
-  },
-  {
     "date": "2026-07-23",
     "rate": 5.73,
     "src": "NerdWallet"
@@ -447,6 +442,11 @@
   {
     "date": "2026-10-20",
     "rate": 6.59,
+    "src": "NerdWallet"
+  },
+  {
+    "date": "2026-10-21",
+    "rate": 6.69,
     "src": "NerdWallet"
   }
 ]
