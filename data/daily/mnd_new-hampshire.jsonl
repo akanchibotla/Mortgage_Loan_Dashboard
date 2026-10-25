@@ -94,4 +94,4 @@
 {"date_iso": "2026-10-20", "term_15": 7.05, "term_30": 7.4, "as_of_raw": "10/20/2026", "fetched_at_utc": "2026-10-20T16:56:09+00:00", "state_slug": "new-hampshire", "source": "mnd_live"}
 {"date_iso": "2026-10-21", "term_15": 7.03, "term_30": 7.38, "as_of_raw": "10/21/2026", "fetched_at_utc": "2026-10-21T17:15:02+00:00", "state_slug": "new-hampshire", "source": "mnd_live"}
 {"date_iso": "2026-10-22", "term_15": 7.0, "term_30": 7.36, "as_of_raw": "10/22/2026", "fetched_at_utc": "2026-10-22T17:14:17+00:00", "state_slug": "new-hampshire", "source": "mnd_live"}
-{"date_iso": "2026-10-23", "term_15": 6.98, "term_30": 7.33, "as_of_raw": "10/23/2026", "fetched_at_utc": "2026-10-24T15:58:30+00:00", "state_slug": "new-hampshire", "source": "mnd_live"}
+{"date_iso": "2026-10-23", "term_15": 6.98, "term_30": 7.33, "as_of_raw": "10/23/2026", "fetched_at_utc": "2026-10-25T16:10:07+00:00", "state_slug": "new-hampshire", "source": "mnd_live"}
