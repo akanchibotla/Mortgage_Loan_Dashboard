@@ -100,3 +100,4 @@
 {"date_iso": "2026-10-28", "term_15": 7.0, "term_30": 7.35, "as_of_raw": "10/28/2026", "fetched_at_utc": "2026-10-28T18:27:35+00:00", "state_slug": "oklahoma", "source": "mnd_live"}
 {"date_iso": "2026-10-29", "term_15": 6.95, "term_30": 7.29, "as_of_raw": "10/29/2026", "fetched_at_utc": "2026-10-30T18:14:06+00:00", "state_slug": "oklahoma", "source": "mnd_live"}
 {"date_iso": "2026-10-30", "term_15": 6.92, "term_30": 7.27, "as_of_raw": "10/30/2026", "fetched_at_utc": "2026-11-01T18:09:08+00:00", "state_slug": "oklahoma", "source": "mnd_live"}
+{"date_iso": "2026-11-02", "term_15": 6.92, "term_30": 7.27, "as_of_raw": "11/2/2026", "fetched_at_utc": "2026-11-02T21:53:53+00:00", "state_slug": "oklahoma", "source": "mnd_live"}
