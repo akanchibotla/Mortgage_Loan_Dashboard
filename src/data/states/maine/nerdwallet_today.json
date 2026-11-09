@@ -1,15 +1,15 @@
 {
-  "fetched_at_utc": "2026-11-08T18:10:03+00:00",
-  "as_of_raw": "November 8, 2026 1:06 PM EST",
-  "as_of_iso": "2026-11-08",
+  "fetched_at_utc": "2026-11-09T22:28:56+00:00",
+  "as_of_raw": "November 9, 2026 5:20 PM EST",
+  "as_of_iso": "2026-11-09",
   "term_15": {
     "rate_pct": 6.34,
     "apr_pct": 6.37,
-    "as_of_iso": "2026-11-08"
+    "as_of_iso": "2026-11-09"
   },
   "term_30": {
     "rate_pct": 6.94,
     "apr_pct": 6.94,
-    "as_of_iso": "2026-11-08"
+    "as_of_iso": "2026-11-09"
   }
 }
