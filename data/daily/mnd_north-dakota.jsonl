@@ -106,3 +106,4 @@
 {"date_iso": "2026-11-09", "term_15": 6.83, "term_30": 7.18, "as_of_raw": "11/9/2026", "fetched_at_utc": "2026-11-09T22:27:26+00:00", "state_slug": "north-dakota", "source": "mnd_live"}
 {"date_iso": "2026-11-10", "term_15": 6.92, "term_30": 7.3, "as_of_raw": "11/10/2026", "fetched_at_utc": "2026-11-11T19:46:57+00:00", "state_slug": "north-dakota", "source": "mnd_live"}
 {"date_iso": "2026-11-12", "term_15": 7.0, "term_30": 7.42, "as_of_raw": "11/12/2026", "fetched_at_utc": "2026-11-12T20:04:36+00:00", "state_slug": "north-dakota", "source": "mnd_live"}
+{"date_iso": "2026-11-13", "term_15": 7.03, "term_30": 7.5, "as_of_raw": "11/13/2026", "fetched_at_utc": "2026-11-13T19:46:20+00:00", "state_slug": "north-dakota", "source": "mnd_live"}
