@@ -108,3 +108,4 @@
 {"date_iso": "2026-11-13", "term_15": 7.03, "term_30": 7.5, "as_of_raw": "11/13/2026", "fetched_at_utc": "2026-11-15T18:59:48+00:00", "state_slug": "alabama", "source": "mnd_live"}
 {"date_iso": "2026-11-16", "term_15": 7.04, "term_30": 7.51, "as_of_raw": "11/16/2026", "fetched_at_utc": "2026-11-16T22:08:42+00:00", "state_slug": "alabama", "source": "mnd_live"}
 {"date_iso": "2026-11-17", "term_15": 7.02, "term_30": 7.48, "as_of_raw": "11/17/2026", "fetched_at_utc": "2026-11-17T20:59:12+00:00", "state_slug": "alabama", "source": "mnd_live"}
+{"date_iso": "2026-11-18", "term_15": 6.98, "term_30": 7.46, "as_of_raw": "11/18/2026", "fetched_at_utc": "2026-11-18T20:32:12+00:00", "state_slug": "alabama", "source": "mnd_live"}
