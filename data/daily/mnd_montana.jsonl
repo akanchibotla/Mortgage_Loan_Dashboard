@@ -114,3 +114,4 @@
 {"date_iso": "2026-11-19", "term_15": 6.99, "term_30": 7.45, "as_of_raw": "11/19/2026", "fetched_at_utc": "2026-11-19T20:35:13+00:00", "state_slug": "montana", "source": "mnd_live"}
 {"date_iso": "2026-11-20", "term_15": 6.89, "term_30": 7.33, "as_of_raw": "11/20/2026", "fetched_at_utc": "2026-11-22T19:35:43+00:00", "state_slug": "montana", "source": "mnd_live"}
 {"date_iso": "2026-11-23", "term_15": 6.89, "term_30": 7.34, "as_of_raw": "11/23/2026", "fetched_at_utc": "2026-11-24T00:00:32+00:00", "state_slug": "montana", "source": "mnd_live"}
+{"date_iso": "2026-11-24", "term_15": 6.87, "term_30": 7.32, "as_of_raw": "11/24/2026", "fetched_at_utc": "2026-11-24T22:26:15+00:00", "state_slug": "montana", "source": "mnd_live"}
