@@ -111,3 +111,4 @@
 {"date_iso": "2026-11-18", "term_15": 6.98, "term_30": 7.46, "as_of_raw": "11/18/2026", "fetched_at_utc": "2026-11-18T20:32:58+00:00", "state_slug": "louisiana", "source": "mnd_live"}
 {"date_iso": "2026-11-19", "term_15": 6.99, "term_30": 7.45, "as_of_raw": "11/19/2026", "fetched_at_utc": "2026-11-19T20:34:56+00:00", "state_slug": "louisiana", "source": "mnd_live"}
 {"date_iso": "2026-11-20", "term_15": 6.89, "term_30": 7.33, "as_of_raw": "11/20/2026", "fetched_at_utc": "2026-11-22T19:35:26+00:00", "state_slug": "louisiana", "source": "mnd_live"}
+{"date_iso": "2026-11-23", "term_15": 6.89, "term_30": 7.34, "as_of_raw": "11/23/2026", "fetched_at_utc": "2026-11-24T00:00:12+00:00", "state_slug": "louisiana", "source": "mnd_live"}
